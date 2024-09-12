@@ -25,14 +25,19 @@ cmake ..
 
 sudo make install
 ```
+# Running the client-server
 
-# To compile and run the scripts use the following commands
+To compile the client-server use the following commands
 
-```Makefile
+```bash
 
 make client
 
+./client
 
 make server
 
+./server
+
 ```
+
