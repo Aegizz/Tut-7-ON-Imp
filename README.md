@@ -13,9 +13,21 @@ Feel free to modify this code to implement you're vulnerabilties. As far as I am
 sudo apt-get install libboost-all-dev && sudo apt-get install libssl-dev && sudo apt-get install zlib1g-dev
 
 
-git clone https://github.com/zaphoyd/websocketpp.git
-
 cd websocketpp
+
+mkdir build
+
+cd build
+
+cmake ..
+
+sudo make install
+
+cd ..
+
+cd ..
+
+cd json
 
 mkdir build
 

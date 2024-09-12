@@ -45,14 +45,24 @@ typedef websocketpp::server<deflate_config> server;
 typedef server::message_ptr message_ptr;
 
 // Define a callback to handle incoming messages
-void on_message(server* s, websocketpp::connection_hdl hdl, message_ptr msg) {
+int on_message(server* s, websocketpp::connection_hdl hdl, message_ptr msg) {
     std::cout << "Received message: " << msg->get_payload() << std::endl;
+
+    // Vulnerable code: the payload without validation
+    std::string payload = msg->get_payload();
+    char buffer[1024];
+    
+    // Potential buffer overflow: Copying payload directly into a fixed-size buffer
+    strcpy(buffer, payload.c_str()); // This is unsafe if payload length exceeds buffer size
+
     try {
-        s->send(hdl, msg->get_payload(), msg->get_opcode());
+        s->send(hdl, buffer, msg->get_opcode());
         std::cout << "Sent echo message" << std::endl;
     } catch (const websocketpp::exception & e) {
         std::cout << "Echo failed because: " << e.what() << std::endl;
+        return -1;
     }
+    return 0;
 }
 
 int main(int argc, char * argv[]) {

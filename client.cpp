@@ -39,6 +39,7 @@
 #include <map>
 #include <string>
 #include <sstream>
+#include <nlohmann/json.hpp>
 
 typedef websocketpp::client<websocketpp::config::asio_client> client;
 
@@ -288,21 +289,33 @@ int main() {
             std::stringstream ss(input);
             std::string cmd;
             int id;
-            
+
             // Extract command and id from input
             ss >> cmd >> id;
 
             // Get metadata of the connection
             connection_metadata::ptr metadata = endpoint.get_metadata(id);
-            
+
             if (metadata) {
                 std::cout << "Enter message to send: ";
                 std::string message;
                 std::getline(std::cin, message);  // Get the message from the user
 
+                nlohmann::json data;
+                data["type"] = "chat";
+                data["destination_servers"] = nlohmann::json::array({ "<Address of each recipient's destination server>" });
+                data["iv"] = "<Base64 encoded AES initialization vector>";
+                data["symm_keys"] = nlohmann::json::array({ "<Base64 encoded AES key, encrypted with each recipient's public RSA key>" });
+                data["chat"] = message;
+                data["client-info"] = "<client-id>-<server-id>";
+                data["time-to-die"] = "<UTC-Timestamp>";
+
+                // Serialize JSON object
+                std::string json_string = data.dump();
+
                 // Send the message via the connection
                 websocketpp::lib::error_code ec;
-                endpoint.send(id, message, websocketpp::frame::opcode::text, ec);
+                endpoint.send(id, json_string, websocketpp::frame::opcode::text, ec);
 
                 if (ec) {
                     std::cout << "> Error sending message: " << ec.message() << std::endl;
