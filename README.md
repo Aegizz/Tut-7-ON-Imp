@@ -26,4 +26,13 @@ cmake ..
 sudo make install
 ```
 
+# To compile and run the scripts use the following commands
 
+```Makefile
+
+make client
+
+
+make server
+
+```
