@@ -1,7 +1,7 @@
 # Implementation of Olaf-Neighbourhood Protocol for Tutorial 7
 
-- Code server in Python
-- Code client in C/C++
+- Code server in C++
+- Code client in C++
 
 We need to come to some consensus on what parameters to use.
 
@@ -12,6 +12,7 @@ Feel free to modify this code to implement you're vulnerabilties. As far as I am
 ```bash
 sudo apt-get install libboost-all-dev && sudo apt-get install libssl-dev && sudo apt-get install zlib1g-dev
 
+git clone https://github.com/zaphoyd/websocketpp
 
 cd websocketpp
 
@@ -26,6 +27,8 @@ sudo make install
 cd ..
 
 cd ..
+
+git clone https://github.com/nlohmann/json
 
 cd json
 
@@ -53,3 +56,4 @@ make server
 
 ```
 
+To establish connection between client and server, run in client ```connect ws://localhost:9002```

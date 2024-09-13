@@ -254,77 +254,94 @@ int main() {
             std::cout
                 << "\nCommand List:\n"
                 << "connect <ws uri>\n"
+                << "send <connection id>\n"
                 << "close <connection id> [<close code:default=1000>] [<close reason>]\n"
                 << "show <connection id>\n"
                 << "help: Display this help text\n"
                 << "quit: Exit the program\n"
                 << std::endl;
         } else if (input.substr(0,7) == "connect") {
-            int id = endpoint.connect(input.substr(8));
-            if (id != -1) {
-                std::cout << "> Created connection with id " << id << std::endl;
+            if((int)input.size() == 7){
+                std::cout << "> Incorrect usage of command 'connect <ws uri>'" << std::endl;
+            }else{
+                int id = endpoint.connect(input.substr(8));
+                if (id != -1) {
+                    std::cout << "> Created connection with id " << id << std::endl;
+                }
             }
         } else if (input.substr(0,5) == "close") {
-            std::stringstream ss(input);
-            
-            std::string cmd;
-            int id;
-            int close_code = websocketpp::close::status::normal;
-            std::string reason;
-            
-            ss >> cmd >> id >> close_code;
-            std::getline(ss,reason);
-            
-            endpoint.close(id, close_code, reason);
-        }  else if (input.substr(0,4) == "show") {
-            int id = atoi(input.substr(5).c_str());
+            if((int)input.size() == 5){
+                std::cout << "> Incorrect usage of command 'close <connection id> [<close code:default=1000>] [<close reason>]'" << std::endl;
+            }else{
+                std::stringstream ss(input);
+                
+                std::string cmd;
+                int id;
+                int close_code = websocketpp::close::status::normal;
+                std::string reason;
+                
+                ss >> cmd >> id >> close_code;
+                std::getline(ss,reason);
 
-            connection_metadata::ptr metadata = endpoint.get_metadata(id);
-            if (metadata) {
-                std::cout << *metadata << std::endl;
-            } else {
-                std::cout << "> Unknown connection id " << id << std::endl;
+                endpoint.close(id, close_code, reason);
+            }
+        }  else if (input.substr(0,4) == "show") {
+            if((int)input.size() == 4){
+                std::cout << "> Incorrect usage of command 'show <connection id>'" << std::endl;
+            }else{
+                int id = atoi(input.substr(5).c_str());
+
+                connection_metadata::ptr metadata = endpoint.get_metadata(id);
+                if (metadata) {
+                    std::cout << *metadata << std::endl;
+                } else {
+                    std::cout << "> Unknown connection id " << id << std::endl;
+                }
             }
         } else if (input.substr(0,4) == "send") {
-            std::stringstream ss(input);
-            std::string cmd;
-            int id;
+            if((int)input.size() == 4){
+                std::cout << "> Incorrect usage of command 'send <connection id>'" << std::endl;
+            }else{
+                std::stringstream ss(input);
+                std::string cmd;
+                int id;
 
-            // Extract command and id from input
-            ss >> cmd >> id;
+                // Extract command and id from input
+                ss >> cmd >> id;
 
-            // Get metadata of the connection
-            connection_metadata::ptr metadata = endpoint.get_metadata(id);
+                // Get metadata of the connection
+                connection_metadata::ptr metadata = endpoint.get_metadata(id);
 
-            if (metadata) {
-                std::cout << "Enter message to send: ";
-                std::string message;
-                std::getline(std::cin, message);  // Get the message from the user
+                if (metadata) {
+                    std::cout << "Enter message to send: ";
+                    std::string message;
+                    std::getline(std::cin, message);  // Get the message from the user
 
-                nlohmann::json data;
-                data["type"] = "chat";
-                data["destination_servers"] = nlohmann::json::array({ "<Address of each recipient's destination server>" });
-                data["iv"] = "<Base64 encoded AES initialization vector>";
-                data["symm_keys"] = nlohmann::json::array({ "<Base64 encoded AES key, encrypted with each recipient's public RSA key>" });
-                data["chat"] = message;
-                data["client-info"] = "<client-id>-<server-id>";
-                data["time-to-die"] = "<UTC-Timestamp>";
+                    nlohmann::json data;
+                    data["type"] = "chat";
+                    data["destination_servers"] = nlohmann::json::array({ "<Address of each recipient's destination server>" });
+                    data["iv"] = "<Base64 encoded AES initialization vector>";
+                    data["symm_keys"] = nlohmann::json::array({ "<Base64 encoded AES key, encrypted with each recipient's public RSA key>" });
+                    data["chat"] = message;
+                    data["client-info"] = "<client-id>-<server-id>";
+                    data["time-to-die"] = "<UTC-Timestamp>";
 
-                // Serialize JSON object
-                std::string json_string = data.dump();
+                    // Serialize JSON object
+                    std::string json_string = data.dump();
 
-                // Send the message via the connection
-                websocketpp::lib::error_code ec;
-                endpoint.send(id, json_string, websocketpp::frame::opcode::text, ec);
+                    // Send the message via the connection
+                    websocketpp::lib::error_code ec;
+                    endpoint.send(id, json_string, websocketpp::frame::opcode::text, ec);
 
-                if (ec) {
-                    std::cout << "> Error sending message: " << ec.message() << std::endl;
+                    if (ec) {
+                        std::cout << "> Error sending message: " << ec.message() << std::endl;
+                    } else {
+                        std::cout << "> Message sent" << std::endl;
+                    }
+
                 } else {
-                    std::cout << "> Message sent" << std::endl;
+                    std::cout << "> Unknown connection id " << id << std::endl;
                 }
-
-            } else {
-                std::cout << "> Unknown connection id " << id << std::endl;
             }
         } else {
             std::cout << "> Unrecognized Command" << std::endl;
