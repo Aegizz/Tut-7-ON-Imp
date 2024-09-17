@@ -3,6 +3,8 @@
 #include <websocketpp/server.hpp>
 #include <websocketpp/extensions/permessage_deflate/enabled.hpp>
 
+#include <nlohmann/json.hpp> // For JSON library
+
 struct deflate_config : public websocketpp::config::debug_core {
     typedef deflate_config type;
     typedef debug_core base;
@@ -51,17 +53,13 @@ int on_message(server* s, websocketpp::connection_hdl hdl, message_ptr msg) {
     // Vulnerable code: the payload without validation
     std::string payload = msg->get_payload();
 
-    size_t typeInd = payload.find("type");
+    // Deserialize JSON message
+    nlohmann::json data = nlohmann::json::parse(payload);
 
-    if(typeInd != std::string::npos ){
-        if(typeInd+12 < payload.size()){
-            std::string type = payload.substr(typeInd+7, 5); // Attempt to extract hello
-            if(type == "hello"){
-                // Send client list
-                std::cout << "send client list" << std::endl;
-            }
-        }
-    } 
+    if(data["type"] == "hello"){
+        // Send client list
+        std::cout << "send client list" << std::endl;
+    }
 
     char buffer[1024];
     
