@@ -23,11 +23,6 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y libboost-all-dev libssl-dev zlib1g-dev cmake
 
-      - name: Pull C++ Libraries
-        run: |
-          git clone https://github.com/nlohmann/json
-          git clone https://github.com/zaphoyd/websocketpp
-
       - name: Create Build Directories
         run: |
           mkdir -p json/build websocketpp/build
