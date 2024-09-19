@@ -41,7 +41,7 @@ jobs:
       - name: Install JSON Header-Only Library if Not Installed
         run: |
           if [ ! -f "/usr/local/include/nlohmann/json.hpp" ]; then
-            sudo cp -r json/single_include/nlohmann /usr/local/include/
+            sudo cp -r json/include/nlohmann /usr/local/include/
           else
             echo "JSON library is already installed, skipping copy."
           fi
