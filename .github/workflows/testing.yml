@@ -1,0 +1,76 @@
+name: Olaf-Neighbourhood Protocol App
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+env:
+  BUILD_TYPE: Release
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v3
+        with: 
+          submodules: true
+
+      - name: Install Dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libboost-all-dev libssl-dev zlib1g-dev cmake
+
+      - name: Create Build Directories
+        run: |
+          mkdir -p json/build websocketpp/build
+
+      - name: Cache build
+        id: cache-json
+        uses: actions/cache@v3
+        with:
+          path: json/build
+          key: json-build-${{ hashFiles('json/build') }}
+          restore-keys: |
+            json-build-
+
+      - name: Cache build
+        id: cache-websocketpp
+        uses: actions/cache@v3
+        with:
+          path: websocketpp/build
+          key: websocketpp-build-${{ hashFiles('websocketpp/build') }}
+          restore-keys: |
+            websocketpp-build-
+
+      - if: ${{ steps.cache-json.outputs.cache-hit != 'true'}}
+        name: Build JSON Dependency
+        working-directory: ${{github.workspace}}/json/build/
+        run: |
+          cmake ..
+
+      - name: Install JSON Dependency
+        working-directory: ${{github.workspace}}/json/build/
+        run:
+          sudo make install/fast
+
+      - if: ${{ steps.cache-websocketpp.outputs.cache-hit != 'true'}}
+        name: Build websocketpp Dependency
+        working-directory: ${{github.workspace}}/websocketpp/build/
+        run: |
+          cmake ..
+
+      - name: Install websocketpp Dependency
+        working-directory: ${{github.workspace}}/websocketpp/build/
+        run:
+          sudo make install
+
+      - name: Run Tests
+        run: |
+          make test
+
+
+
+
