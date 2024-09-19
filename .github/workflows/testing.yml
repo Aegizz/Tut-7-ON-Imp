@@ -31,20 +31,15 @@ jobs:
         working-directory: ${{github.workspace}}/json/build/
         run: |
           cmake ..
-          cmake --build .
+          sudo make install
 
       - name: Build websocketpp Dependency
         working-directory: ${{github.workspace}}/websocketpp/build/
         run: |
           cmake ..
-          cmake --build .
+          sudo make install
 
-      - name: Build Project
-        run: |
-          mkdir -p build
-          cd build
-          cmake ..
-          cmake --build .
+  
 
   test:
     runs-on: ubuntu-latest
@@ -57,5 +52,5 @@ jobs:
 
       - name: Run Tests
         run: |
-          cd build
-          ctest
+          make test
+    
