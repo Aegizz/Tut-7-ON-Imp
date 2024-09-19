@@ -27,19 +27,50 @@ jobs:
         run: |
           mkdir -p json/build websocketpp/build
 
-      - name: Build JSON Dependency
+      - name: Cache build
+        id: cache-cmake
+        uses: actions/cache@v3
+        env:
+          cache-json-cmake
+        with:
+          path: json/build
+          key: json-build-${{ hashFiles('json/build') }}
+          restore-keys: |
+            json-build-
+
+      - name: Cache build
+        id: cache-cmake
+        uses: actions/cache@v3
+        env:
+          cache-websocketpp-cmake
+        with:
+          path: websocketpp/build
+          key: websocketpp-build-${{ hashFiles('websocketpp/build') }}
+          restore-keys: |
+            websocketpp-build-
+
+      - if: ${{ steps.cache-cmake.outputs.cache-hit != 'true'}}
+        name: Build JSON Dependency
         working-directory: ${{github.workspace}}/json/build/
         run: |
           cmake ..
+
+      - name: Install JSON Dependency
+        working-directory: ${{github.workspace}}/json/build/
+        run:
           sudo make install
 
-      - name: Build websocketpp Dependency
+      - if: ${{ steps.cache-cmake.outputs.cache-hit != 'true'}}
+        name: Build websocketpp Dependency
         working-directory: ${{github.workspace}}/websocketpp/build/
         run: |
           cmake ..
+
+      - name: Install websocketpp Dependency
+        working-directory: ${{github.workspace}}/websocketpp/build/
+        run:
           sudo make install
 
-  
 
   test:
     runs-on: ubuntu-latest
@@ -53,4 +84,3 @@ jobs:
       - name: Run Tests
         run: |
           make test
-    
