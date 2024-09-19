@@ -30,8 +30,6 @@ jobs:
       - name: Cache build
         id: cache-cmake
         uses: actions/cache@v3
-        env:
-          cache-json-cmake
         with:
           path: json/build
           key: json-build-${{ hashFiles('json/build') }}
