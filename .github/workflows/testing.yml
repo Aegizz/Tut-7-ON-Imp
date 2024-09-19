@@ -50,21 +50,25 @@ jobs:
         run: |
           mkdir -p json/build websocketpp/build
 
-      - name: Build JSON Dependency if Not Cached
-        working-directory: ${{github.workspace}}/json/build/
-        run: cmake ..
+      - name: Build and Install JSON Dependency if Not Installed
+        run: |
+          if [ ! -f "/usr/local/include/nlohmann/json.hpp" ]; then
+            cd json/build
+            cmake ..
+            sudo make install
+          else
+            echo "JSON library is already installed, skipping build."
+          fi
 
-      - name: Install JSON Dependency if Not Cached
-        working-directory: ${{github.workspace}}/json/build/
-        run: sudo make install
-
-      - name: Build websocketpp Dependency if Not Cached
-        working-directory: ${{github.workspace}}/websocketpp/build/
-        run: cmake ..
-
-      - name: Install websocketpp Dependency if Not Cached
-        working-directory: ${{github.workspace}}/websocketpp/build/
-        run: sudo make install
+      - name: Build and Install websocketpp Dependency if Not Installed
+        run: |
+          if [ ! -f "/usr/local/include/websocketpp/config.hpp" ]; then
+            cd websocketpp/build
+            cmake ..
+            sudo make install
+          else
+            echo "websocketpp library is already installed, skipping build."
+          fi
 
       - name: Run Makefile Test
         run: make test
