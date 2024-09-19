@@ -9,35 +9,16 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
-    
+
     steps:
       - uses: actions/checkout@v3
+        with:
+          submodules: true  # Initialize and update submodules
 
       - name: Install Dependencies
         run: |
           sudo apt-get update
           sudo apt-get install -y libboost-all-dev libssl-dev zlib1g-dev
-
-      - name: Cache JSON Library
-        uses: actions/cache@v3
-        with:
-          path: json/build
-          key: json-build-${{ hashFiles('json/CMakeLists.txt') }}
-          restore-keys: |
-            json-build-
-
-      - name: Cache websocketpp Library
-        uses: actions/cache@v3
-        with:
-          path: websocketpp/build
-          key: websocketpp-build-${{ hashFiles('websocketpp/CMakeLists.txt') }}
-          restore-keys: |
-            websocketpp-build-
-
-      - name: Pull C++ Libraries
-        run: |
-          git clone https://github.com/nlohmann/json
-          git clone https://github.com/zaphoyd/websocketpp
 
       - name: Create Build Directories
         run: |
