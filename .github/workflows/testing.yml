@@ -15,11 +15,27 @@ jobs:
     
     steps:
       - uses: actions/checkout@v3
-      
+
       - name: Install Dependencies
         run: |
           sudo apt-get update
           sudo apt-get install -y libboost-all-dev libssl-dev zlib1g-dev
+
+      - name: Cache CMake Build for JSON
+        uses: actions/cache@v3
+        with:
+          path: json/build
+          key: json-build-${{ hashFiles('json/CMakeLists.txt') }}
+          restore-keys: |
+            json-build-
+
+      - name: Cache CMake Build for websocketpp
+        uses: actions/cache@v3
+        with:
+          path: websocketpp/build
+          key: websocketpp-build-${{ hashFiles('websocketpp/CMakeLists.txt') }}
+          restore-keys: |
+            websocketpp-build-
 
       - name: Pull C++ Libraries
         run: |
