@@ -10,12 +10,17 @@ LIBS = -lssl -lcrypto -pthread
 # Targets
 all: client server
 
+test: debug server
+
 client: client.cpp
 	$(CXX) $(CXXFLAGS) -o $@ $^ $(LIBS)
+
+debug: debugClient.cpp
+	$(CXX) $(CXXFLAGS) -o debugClient $^ $(LIBS)
 
 server: server.cpp
 	$(CXX) $(CXXFLAGS) -o $@ $^ $(LIBS) -lz
 
 # Clean up build artifacts
 clean:
-	rm -f client server
+	rm -f client server debugClient

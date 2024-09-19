@@ -57,6 +57,7 @@ make server
 ```
 
 To establish connection between client and server, run in client ```connect ws://localhost:9002```
+Alternatively, compile debugClient using ```make test``` which automatically makes a connection (make sure server is running before debugClient)
 
 # Current Implemented Features
 - Client <-> Server communication with multiple clients able to connect
