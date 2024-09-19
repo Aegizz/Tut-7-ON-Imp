@@ -39,8 +39,11 @@
 #include <map>
 #include <string>
 #include <sstream>
-#include <nlohmann/json.hpp>
-#include <stdlib.h> // For sleep command
+#include <nlohmann/json.hpp> // For JSON library
+
+// For UTC timestamp
+#include <chrono>
+#include <ctime> 
 
 typedef websocketpp::client<websocketpp::config::asio_client> client;
 
@@ -79,6 +82,22 @@ public:
           << websocketpp::close::status::get_string(con->get_remote_close_code()) 
           << "), close reason: " << con->get_remote_close_reason();
         m_error_reason = s.str();
+    }
+
+    void on_message(client* c, websocketpp::connection_hdl hdl, client::message_ptr msg) {
+        // Vulnerable code: the payload without validation
+        std::string payload = msg->get_payload();
+
+        // Deserialize JSON message
+        nlohmann::json data = nlohmann::json::parse(payload);
+
+        if(data["type"] == "client_list"){
+            std::cout << "Client list received: " << payload << std::endl;
+            // Process client list
+        }else{
+            // Print the received message
+            std::cout << "> Message received: " << payload << std::endl;
+        }
     }
 
     websocketpp::connection_hdl get_hdl() const {
@@ -178,6 +197,13 @@ public:
             &m_endpoint,
             websocketpp::lib::placeholders::_1
         ));
+        con->set_message_handler(websocketpp::lib::bind(
+            &connection_metadata::on_message,
+            metadata_ptr,
+            &m_endpoint,
+            websocketpp::lib::placeholders::_1,
+            websocketpp::lib::placeholders::_2
+        ));
 
         m_endpoint.connect(con);
 
@@ -238,6 +264,70 @@ void send_message(client& c, websocketpp::connection_hdl hdl, const std::string&
     }
 }
 
+std::string get_ttd(){
+    // Generate current time
+    std::chrono::system_clock::time_point now = std::chrono::system_clock::now();
+
+    std::chrono::minutes minute(1);
+
+    // Add one minute
+    std::chrono::system_clock::time_point newTime = now + minute;
+
+    std::time_t convTime = std::chrono::system_clock::to_time_t(newTime);
+
+    // Convert to GMT time and time structure
+    std::tm* utc_tm = std::gmtime(&convTime);
+
+    // Convert to ISO 8601 structure
+    std::stringstream timeString;
+    timeString << std::put_time(utc_tm, "%Y-%m-%dT%H:%M:%SZ");
+    
+    return timeString.str();
+}
+
+void send_hello_message(websocket_endpoint* endpoint, int id){
+    nlohmann::json data;
+
+    // Format hello message
+    data["type"] = "hello";
+    data["public_key"] = "<Exported RSA public key>";
+    data["client-info"] = "<client-id>-<server-id>";
+    data["time-to-die"] = get_ttd();
+
+    // Serialize JSON object
+    std::string json_string = data.dump();
+
+    // Send the message via the connection
+    websocketpp::lib::error_code ec;
+    endpoint->send(id, json_string, websocketpp::frame::opcode::text, ec);
+
+    if (ec) {
+        std::cout << "> Error sending hello message: " << ec.message() << std::endl;
+    } else {
+        std::cout << "> Hello message sent" << std::endl;
+    }
+}
+
+void send_client_list_request(websocket_endpoint* endpoint, int id){
+    nlohmann::json data;
+
+    // Format client list request message
+    data["type"] = "client_list_request";
+
+    // Serialize JSON object
+    std::string json_string = data.dump();
+
+    // Send the message via the connection
+    websocketpp::lib::error_code ec;
+    endpoint->send(id, json_string, websocketpp::frame::opcode::text, ec);
+
+    if (ec) {
+        std::cout << "> Error sending client list request message: " << ec.message() << std::endl;
+    } else {
+        std::cout << "> Client list request sent" << std::endl;
+    }
+}
+
 
 
 int main() {
@@ -269,27 +359,17 @@ int main() {
                 if (id != -1) {
                     std::cout << "> Created connection with id " << id << std::endl;
 
-                    sleep(1);
+                    connection_metadata::ptr metadata = endpoint.get_metadata(id);
 
-                    nlohmann::json data;
-
-                    data["type"] = "hello";
-                    data["public_key"] = "<Exported RSA public key>";
-                    data["client-info"] = "<client-id>-<server-id>";
-                    data["time-to-die"] = "<UTC-Timestamp>";
-
-                    // Serialize JSON object
-                    std::string json_string = data.dump();
-
-                    // Send the message via the connection
-                    websocketpp::lib::error_code ec;
-                    endpoint.send(id, json_string, websocketpp::frame::opcode::text, ec);
-
-                    if (ec) {
-                        std::cout << "> Error sending hello message: " << ec.message() << std::endl;
-                    } else {
-                        std::cout << "> Hello message sent" << std::endl;
+                    // Do not continue until websocket has finished connecting
+                    while(metadata->get_status() == "Connecting"){
+                        metadata = endpoint.get_metadata(id);
                     }
+
+                    // Send server intialization messages
+                    send_hello_message(&endpoint, id);
+
+                    send_client_list_request(&endpoint, id);
                 }
             }
         } else if (input.substr(0,5) == "close") {
@@ -347,7 +427,7 @@ int main() {
                     data["symm_keys"] = nlohmann::json::array({ "<Base64 encoded AES key, encrypted with each recipient's public RSA key>" });
                     data["chat"] = message;
                     data["client-info"] = "<client-id>-<server-id>";
-                    data["time-to-die"] = "<UTC-Timestamp>";
+                    data["time-to-die"] = get_ttd();
 
                     // Serialize JSON object
                     std::string json_string = data.dump();
