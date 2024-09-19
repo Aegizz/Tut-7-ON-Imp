@@ -6,71 +6,54 @@ on:
   pull_request:
     branches: [ "main" ]
 
+env:
+  BUILD_TYPE: Release
+
 jobs:
   build:
     runs-on: ubuntu-latest
-
+    
     steps:
       - uses: actions/checkout@v3
-        with:
-          submodules: true  # Initialize and update submodules
+        with: submodules
 
+      
       - name: Install Dependencies
         run: |
           sudo apt-get update
           sudo apt-get install -y libboost-all-dev libssl-dev zlib1g-dev
+
+      - name: Pull C++ Libraries
+        run: |
+          git clone https://github.com/nlohmann/json
+          git clone https://github.com/zaphoyd/websocketpp
 
       - name: Create Build Directories
         run: |
           mkdir -p json/build websocketpp/build
 
-      - name: Build JSON Library
+      - name: Build JSON Dependency
         working-directory: ${{github.workspace}}/json/build/
-        run: |
-          cmake ..
-          make
+        run: cmake ..
 
-      - name: Cache Built JSON Library
-        uses: actions/cache@v3
-        with:
-          path: json/build
-          key: json-build-${{ hashFiles('json/build') }}
-          restore-keys: |
-            json-build-
-
-      - name: Install JSON Library
+      - name: Install JSON Dependency
         working-directory: ${{github.workspace}}/json/build/
         run: sudo make install
 
-      - name: Build websocketpp Library
+      - name: Build websocketpp Dependency
         working-directory: ${{github.workspace}}/websocketpp/build/
-        run: |
-          cmake ..
-          make
+        run: cmake ..
 
-      - name: Cache Built websocketpp Library
-        uses: actions/cache@v3
-        with:
-          path: websocketpp/build
-          key: websocketpp-build-${{ hashFiles('websocketpp/build') }}
-          restore-keys: |
-            websocketpp-build-
-
-      - name: Install websocketpp Library
+      - name: Install websocketpp Dependency
         working-directory: ${{github.workspace}}/websocketpp/build/
         run: sudo make install
 
   test:
-    runs-on: ubuntu-latest
-    needs: build
-
+      runs-on: ubuntu-latest
+    
     steps:
       - uses: actions/checkout@v3
-
-      - name: Install Dependencies
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y libboost-all-dev libssl-dev zlib1g-dev
-
+        with: submodules
+  
       - name: Run Makefile Test
         run: make test
