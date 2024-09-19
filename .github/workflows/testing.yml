@@ -1,0 +1,50 @@
+name: Olaf-Neighbourhood Protocol App
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+env:
+  BUILD_TYPE: Release
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - uses: actions/checkout@v3
+      
+      - name: Install Dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libboost-all-dev libssl-dev zlib1g-dev
+
+      - name: Pull C++ Libraries
+        run: |
+          git clone https://github.com/nlohmann/json
+          git clone https://github.com/zaphoyd/websocketpp
+
+      - name: Create Build Directories
+        run: |
+          mkdir -p json/build websocketpp/build
+
+      - name: Build JSON Dependency
+        working-directory: ${{github.workspace}}/json/build/
+        run: cmake ..
+
+      - name: Install JSON Dependency
+        working-directory: ${{github.workspace}}/json/build/
+        run: sudo make install
+
+      - name: Build websocketpp Dependency
+        working-directory: ${{github.workspace}}/websocketpp/build/
+        run: cmake ..
+
+      - name: Install websocketpp Dependency
+        working-directory: ${{github.workspace}}/websocketpp/build/
+        run: sudo make install
+
+      - name: Run Makefile Test
+        run: make test

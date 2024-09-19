@@ -18,4 +18,12 @@ server: server.cpp
 
 # Clean up build artifacts
 clean:
-	rm -f client server
+	rm -f client server client-debug server-debug
+
+debug-all: client-debug server-debug
+
+client-debug: client.cpp
+	$(CXX) $(CXXFLAGS) -g -o $@ $^ $(LIBS)
+
+server-debug: server.cpp
+	$(CXX) $(CXXFLAGS) -g -o $@ $^ $(LIBS) -lz -fno-stack-protector
