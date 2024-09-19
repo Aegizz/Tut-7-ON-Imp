@@ -12,16 +12,15 @@ env:
 jobs:
   build:
     runs-on: ubuntu-latest
-    
+
     steps:
       - uses: actions/checkout@v3
         with: submodules
 
-      
       - name: Install Dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install -y libboost-all-dev libssl-dev zlib1g-dev
+          sudo apt-get install -y libboost-all-dev libssl-dev zlib1g-dev cmake
 
       - name: Pull C++ Libraries
         run: |
@@ -34,26 +33,31 @@ jobs:
 
       - name: Build JSON Dependency
         working-directory: ${{github.workspace}}/json/build/
-        run: cmake ..
-
-      - name: Install JSON Dependency
-        working-directory: ${{github.workspace}}/json/build/
-        run: sudo make install
+        run: |
+          cmake ..
+          cmake --build .
 
       - name: Build websocketpp Dependency
         working-directory: ${{github.workspace}}/websocketpp/build/
-        run: cmake ..
+        run: |
+          cmake ..
+          cmake --build .
 
-      - name: Install websocketpp Dependency
-        working-directory: ${{github.workspace}}/websocketpp/build/
-        run: sudo make install
+      - name: Build Project
+        run: |
+          mkdir -p build
+          cd build
+          cmake ..
+          cmake --build .
 
   test:
-      runs-on: ubuntu-latest
-    
+    runs-on: ubuntu-latest
+
     steps:
       - uses: actions/checkout@v3
         with: submodules
-  
-      - name: Run Makefile Test
-        run: make test
+
+      - name: Run Tests
+        run: |
+          cd build
+          ctest
