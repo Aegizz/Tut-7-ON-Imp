@@ -54,7 +54,7 @@ jobs:
       - name: Install JSON Dependency
         working-directory: ${{github.workspace}}/json/build/
         run:
-          sudo make install
+          sudo make install/fast
 
       - if: ${{ steps.cache-websocketpp.outputs.cache-hit != 'true'}}
         name: Build websocketpp Dependency
