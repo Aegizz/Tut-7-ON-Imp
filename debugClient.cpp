@@ -335,6 +335,23 @@ int main() {
     std::string input;
     websocket_endpoint endpoint;
 
+    int initId = endpoint.connect("ws://localhost:9002");
+    if (initId != -1) {
+        std::cout << "> Created connection with id " << initId << std::endl;
+
+        connection_metadata::ptr metadata = endpoint.get_metadata(initId);
+
+        // Do not continue until websocket has finished connecting
+        while(metadata->get_status() == "Connecting"){
+            metadata = endpoint.get_metadata(initId);
+        }
+
+        // Send server intialization messages
+        send_hello_message(&endpoint, initId);
+
+        send_client_list_request(&endpoint, initId);
+    }
+
     while (!done) {
         std::cout << "Enter Command: ";
         std::getline(std::cin, input);
