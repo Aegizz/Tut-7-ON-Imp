@@ -12,7 +12,7 @@ env:
 jobs:
   build:
     runs-on: ubuntu-latest
-    
+
     steps:
       - uses: actions/checkout@v3
 
@@ -21,15 +21,7 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y libboost-all-dev libssl-dev zlib1g-dev
 
-      - name: Cache CMake Build for JSON
-        uses: actions/cache@v3
-        with:
-          path: json/build
-          key: json-build-${{ hashFiles('json/CMakeLists.txt') }}
-          restore-keys: |
-            json-build-
-
-      - name: Cache CMake Build for websocketpp
+      - name: Cache websocketpp Build
         uses: actions/cache@v3
         with:
           path: websocketpp/build
@@ -46,19 +38,16 @@ jobs:
             git clone https://github.com/zaphoyd/websocketpp
           fi
 
-      - name: Create Build Directories if Not Exist
-        run: |
-          mkdir -p json/build websocketpp/build
-
-      - name: Build and Install JSON Dependency if Not Installed
+      - name: Install JSON Header-Only Library if Not Installed
         run: |
           if [ ! -f "/usr/local/include/nlohmann/json.hpp" ]; then
-            cd json/build
-            cmake ..
-            sudo make install
+            sudo cp -r json/single_include/nlohmann /usr/local/include/
           else
-            echo "JSON library is already installed, skipping build."
+            echo "JSON library is already installed, skipping copy."
           fi
+
+      - name: Create websocketpp Build Directory if Not Exist
+        run: mkdir -p websocketpp/build
 
       - name: Build and Install websocketpp Dependency if Not Installed
         run: |
