@@ -1,4 +1,4 @@
 > Created connection with id 0
 > Hello message sent
 > Client list request sent
-> Closing connection 0 # Error on purpose
+> Closing connection 0
