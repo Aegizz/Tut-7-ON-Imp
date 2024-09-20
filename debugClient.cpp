@@ -93,6 +93,7 @@ public:
 
         if(data["type"] == "client_list"){
             std::cout << "\nClient list received: " << payload << std::endl;
+            exit(EXIT_SUCCESS);
             // Process client list
         }else{
             // Print the received message
