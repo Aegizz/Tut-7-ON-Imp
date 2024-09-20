@@ -38,13 +38,6 @@ if grep -i "error" tests/client.log; then
     exit 1
 fi
 
-# Remove repetitive "Enter Command:" lines from the log before comparison
-sed -i '/Enter Command:/d' tests/client.log
-echo >> tests/client.log
-
-
-sed -i '/Enter Command:/d' tests/expected_output.txt
-echo >> tests/expected_output.txt
 
 
 # Ensure there's a newline at the end of the log file
