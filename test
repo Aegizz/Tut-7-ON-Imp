@@ -1,0 +1,30 @@
+#!/bin/bash
+
+# Start the server in the background
+./server &
+
+# Capture the server's process ID
+SERVER_PID=$!
+
+# Wait a moment to ensure the server starts properly (adjust as needed)
+sleep 2
+
+# Run the client program and capture its output
+./client > client_output.txt
+
+# Define the expected output file
+EXPECTED_OUTPUT="tests/expected_output.txt"
+
+# Compare the client's output to the expected output
+if diff -q client_output.txt "$EXPECTED_OUTPUT" > /dev/null; then
+    echo "Client output matches expected output."
+else
+    echo "Client output does not match expected output."
+    diff client_output.txt "$EXPECTED_OUTPUT"
+fi
+
+# Terminate the server process
+kill $SERVER_PID
+
+# Optionally, wait for the server to clean up properly
+wait $SERVER_PID

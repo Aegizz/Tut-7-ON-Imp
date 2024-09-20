@@ -350,6 +350,8 @@ int main() {
         send_hello_message(&endpoint, initId);
 
         send_client_list_request(&endpoint, initId);
+
+        return 0;
     }
 
     while (!done) {

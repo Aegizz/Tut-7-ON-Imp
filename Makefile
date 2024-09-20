@@ -10,7 +10,8 @@ LIBS = -lssl -lcrypto -pthread
 # Targets
 all: client server
 
-test: debug server client
+test: debug-all server client
+	bash test.sh
 
 client: client.cpp
 	$(CXX) $(CXXFLAGS) -o $@ $^ $(LIBS)
@@ -25,7 +26,7 @@ server: server.cpp
 clean:
 	rm -f client server client-debug server-debug debugClient
 
-debug-all: client-debug server-debug
+debug-all: client-debug server-debug debug
 
 client-debug: client.cpp
 	$(CXX) $(CXXFLAGS) -g -o $@ $^ $(LIBS)
