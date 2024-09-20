@@ -28,7 +28,7 @@ fi
 # Continue with the client and comparison as before
 ./debugClient > tests/client.log 2>&1 &
 CLIENT_PID=$!
-kill $CLIENT_PID
+wait $CLIENT_PID
 
 # Check if the client log contains any errors (optional)
 if grep -i "error" tests/client.log; then
