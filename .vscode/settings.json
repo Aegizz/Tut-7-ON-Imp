@@ -99,6 +99,8 @@
         "semaphore": "cpp",
         "cfenv": "cpp",
         "cinttypes": "cpp",
-        "typeindex": "cpp"
+        "typeindex": "cpp",
+        "*.def": "cpp",
+        "*.ipp": "cpp"
     }
 }

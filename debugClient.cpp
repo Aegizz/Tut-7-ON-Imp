@@ -92,7 +92,7 @@ public:
         nlohmann::json data = nlohmann::json::parse(payload);
 
         if(data["type"] == "client_list"){
-            std::cout << "\nClient list received: " << payload << std::endl;
+            std::cout << "Client list received: " << payload << std::endl;
             // Process client list
         }else{
             // Print the received message
@@ -350,9 +350,11 @@ int main() {
         send_hello_message(&endpoint, initId);
 
         send_client_list_request(&endpoint, initId);
+        sleep(3);
+        int close_code = websocketpp::close::status::normal;
+        endpoint.close(initId, close_code, "Reached end of run");
         return 0;
     }
-
     while (!done) {
         std::cout << "Enter Command: ";
         if (std::getline(std::cin, input)){
