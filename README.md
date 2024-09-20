@@ -12,7 +12,7 @@ Feel free to modify this code to implement your vulnerabilties. As far as I am a
 ```bash
 sudo apt-get install libboost-all-dev && sudo apt-get install libssl-dev && sudo apt-get install zlib1g-dev
 
-git clone https://github.com/zaphoyd/websocketpp
+git submodule update --init
 
 cd websocketpp
 
@@ -27,8 +27,6 @@ sudo make install
 cd ..
 
 cd ..
-
-git clone https://github.com/nlohmann/json
 
 cd json
 
