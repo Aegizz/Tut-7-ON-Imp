@@ -1,0 +1,5 @@
+> Created connection with id 0
+> Hello message sent
+> Client list request sent
+Enter Command: 
+Client list received: {"servers":[{"address":"<Address of server>","clients":[{"client-id":"<client-id>","public-key":"<Exported RSA public key of client>"},{"client-id":"<client-id>","public-key":"<Exported RSA public key of client>"}],"server-id":"<server-id>"}],"type":"client_list"}
