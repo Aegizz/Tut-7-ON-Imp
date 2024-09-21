@@ -16,7 +16,7 @@ test: debug-all server client testClient test.sh test-client-list
 	chmod +x test.sh
 	bash test.sh
 	echo "Running client tests..."
-	./test_client_list
+	./test-client-list
 
 client: client.cpp
 	$(CXX) $(CXXFLAGS) -o $@ $^ $(LIBS)
