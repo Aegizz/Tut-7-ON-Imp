@@ -45,6 +45,14 @@
 #include <chrono>
 #include <ctime> 
 
+
+//Self made client list implementation
+#include "client/client_list.h"
+
+//Global pointer for client list
+ClientList * global_client_list = nullptr;
+
+
 typedef websocketpp::client<websocketpp::config::asio_client> client;
 
 class connection_metadata {
@@ -93,6 +101,10 @@ public:
 
         if(data["type"] == "client_list"){
             std::cout << "Client list received: " << payload << std::endl;
+            if (global_client_list != nullptr){
+                delete global_client_list;
+            }
+            global_client_list = new ClientList(data);
             // Process client list
         }else{
             // Print the received message

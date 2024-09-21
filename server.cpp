@@ -63,7 +63,9 @@ void send_client_list(server* s, websocketpp::connection_hdl hdl){
 
         // Set fields
         server["address"] = "<Address of server>";
-        server["server-id"] = "<server-id>";
+
+        // Modified this to be a given number as it needs to be a number for the client to store.
+        server["server-id"] = i;
 
         // Create array of JSON objects for clients connected to server
         nlohmann::json serverClients = nlohmann::json::array();
@@ -72,7 +74,8 @@ void send_client_list(server* s, websocketpp::connection_hdl hdl){
         for(int j=0; j<numClients; j++){
             // Build client JSON object
             nlohmann::json clients;
-            clients["client-id"] = "<client-id>";
+            // Modified this to be a given number as it needs to be a number for the client to store.
+            clients["client-id"] = j;
             clients["public-key"] = "<Exported RSA public key of client>";
             
             // Push to array of clients of server

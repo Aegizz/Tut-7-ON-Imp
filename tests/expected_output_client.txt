@@ -1,6 +1,11 @@
 > Created connection with id 0
 > Hello message sent
 > Client list request sent
-Client list received: {"servers":[{"address":"<Address of server>","clients":[{"client-id":"<client-id>","public-key":"<Exported RSA public key of client>"},{"client-id":"<client-id>","public-key":"<Exported RSA public key of client>"}],"server-id":"<server-id>"}],"type":"client_list"}
+Client list received: {"servers":[{"address":"<Address of server>","clients":[{"client-id":0,"public-key":"<Exported RSA public key of client>"},{"client-id":1,"public-key":"<Exported RSA public key of client>"}],"server-id":0}],"type":"client_list"}
+Server ID: 0
+  Client ID: 0
+  Public Key: <Exported RSA public key of client>
+  Client ID: 1
+  Public Key: <Exported RSA public key of client>
 > Closing connection 0
 > Error closing connection 0: invalid state
