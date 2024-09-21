@@ -11,10 +11,7 @@ class ClientList{
         std::unordered_map<int, std::unordered_map<int, std::string>> servers;
     public:
         ClientList(nlohmann::json data);
-        int updateClientList(nlohmann::json data);
-        int addClient();
-        int removeClient();
-        std::pair<int, std::string> retrieveClient();
+        std::pair<int, std::string> retrieveClient(int server_id, int client_id);
 
 };
 

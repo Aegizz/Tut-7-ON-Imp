@@ -25,18 +25,17 @@ ClientList::ClientList(nlohmann::json data){
     }
 }
 
-int ClientList::addClient(){
-
-}
-
-int ClientList::removeClient(){
-
-}
-
-std::pair<int,std::string> ClientList::retrieveClient(){
-
-}
-
-int ClientList::updateClientList(nlohmann::json data){
-
+std::pair<int, std::string> ClientList::retrieveClient(int server_id, int client_id) {
+    // Check if the server exists
+    if (servers.find(server_id) != servers.end()) {
+        // Check if the client exists in the server
+        auto& client_list = servers[server_id];
+        if (client_list.find(client_id) != client_list.end()) {
+            return {client_id, client_list[client_id]};
+        } else {
+            throw std::runtime_error("Client ID not found.");
+        }
+    } else {
+        throw std::runtime_error("Server ID not found.");
+    }
 }
