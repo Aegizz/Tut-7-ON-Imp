@@ -40,4 +40,4 @@ server-debug: server.cpp
 	$(CXX) $(CXXFLAGS) -g -o $@ $^ $(LIBS) -lz -fno-stack-protector
 
 test-client-list: tests/test_client_list.cpp client/client_list.h client/client_list.cpp
-	$(CXX) $(CXXFLAGS) -g -o $@ $^ $(LIBS) tests/test_client_list.cpp client/client_list.h client/client_list.cpp
+	$(CXX) $(CXXFLAGS) -g -o $@ $^ $(LIBS)
