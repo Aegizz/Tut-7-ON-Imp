@@ -8,25 +8,26 @@ CXXFLAGS = -Wall -std=c++11
 LIBS = -lssl -lcrypto -pthread
 
 # Targets
-all: client server
+all: client server test-client
 
-test: debug-all server client
+test: debug-all server client test-client test.sh
+	chmod +x test.sh
 	bash test.sh
 
 client: client.cpp
 	$(CXX) $(CXXFLAGS) -o $@ $^ $(LIBS)
 
-debug: debugClient.cpp
-	$(CXX) $(CXXFLAGS) -o debugClient $^ $(LIBS)
+test-client: testClient.cpp
+	$(CXX) $(CXXFLAGS) -o testClient $^ $(LIBS)
 
 server: server.cpp
 	$(CXX) $(CXXFLAGS) -o $@ $^ $(LIBS) -lz
 
 # Clean up build artifacts
 clean:
-	rm -f client server client-debug server-debug debugClient tests/server.log tests/client.log
+	rm -f client server client-debug server-debug testClient tests/server.log tests/client.log
 
-debug-all: client-debug server-debug debug
+debug-all: client-debug server-debug
 
 client-debug: client.cpp
 	$(CXX) $(CXXFLAGS) -g -o $@ $^ $(LIBS)
