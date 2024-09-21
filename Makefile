@@ -16,8 +16,8 @@ test: debug-all server client
 client: client.cpp
 	$(CXX) $(CXXFLAGS) -o $@ $^ $(LIBS)
 
-debug: debugClient.cpp
-	$(CXX) $(CXXFLAGS) -o debugClient $^ $(LIBS)
+test-client: testClient.cpp
+	$(CXX) $(CXXFLAGS) -o testClient $^ $(LIBS)
 
 server: server.cpp
 	$(CXX) $(CXXFLAGS) -o $@ $^ $(LIBS) -lz

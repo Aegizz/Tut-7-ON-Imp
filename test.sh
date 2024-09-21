@@ -26,7 +26,7 @@ if grep -i "error" tests/server.log; then
 fi
 
 # Continue with the client and comparison as before
-./debugClient > tests/client.log 2>&1 &
+./testClient > tests/client.log 2>&1 &
 CLIENT_PID=$!
 wait $CLIENT_PID
 
