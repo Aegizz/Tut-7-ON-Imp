@@ -39,18 +39,39 @@ wait $CLIENT_PID
 # fi
 
 
+#Removes client ID, server ID and dates from output to ensure the outputs remain the same
+sed -E 's/\[[0-9]{4}-[0-9]{2}-[0-9]{2} [0-9]{2}:[0-9]{2}:[0-9]{2}\]//g' tests/client.log | \
+sed 's/"client-id":"[^"]*"/"client-id":"<client-id>"/g' | \
+sed 's/"server-id":"[^"]*"/"server-id":"<server-id>"/g' | \
+sed 's/"time-to-die":"[^"]*"/"time-to-die":"<time-to-die>"/g' > tests/processed_output_client.log
 
-# Ensure there's a newline at the end of the log file
+sed -E 's/\[[0-9]{4}-[0-9]{2}-[0-9]{2} [0-9]{2}:[0-9]{2}:[0-9]{2}\]//g' tests/server.log | \
+sed 's/"client-id":"[^"]*"/"client-id":"<client-id>"/g' | \
+sed 's/"server-id":"[^"]*"/"server-id":"<server-id>"/g' | \
+sed 's/"time-to-die":"[^"]*"/"time-to-die":"<time-to-die>"/g' > tests/processed_output_server.log
+
 
 # Define the expected output file
-EXPECTED_OUTPUT="tests/expected_output.txt"
+EXPECTED_OUTPUT_CLIENT="tests/expected_output_client.txt"
+EXPECTED_OUTPUT_SERVER="tests/expected_output_server.txt"
+CLIENT_OUTPUT="tests/processed_output_client.log"
+SERVER_OUTPUT="tests/processed_output_server.log"
 
 # Compare the client's output to the expected output
-if diff -q tests/client.log "$EXPECTED_OUTPUT" > /dev/null; then
+if diff -q "$CLIENT_OUTPUT" "$EXPECTED_OUTPUT_CLIENT" > /dev/null; then
     echo "Client output matches expected output."
 else
     echo "Client output does not match expected output."
-    diff tests/client.log "$EXPECTED_OUTPUT"
+    diff "$CLIENT_OUTPUT" "$EXPECTED_OUTPUT_CLIENT"
+    kill $SERVER_PID
+    exit 1
+fi
+
+if diff -q "$SERVER_OUTPUT" "$EXPECTED_OUTPUT_SERVER" > /dev/null; then
+    echo "Server output matches expected output."
+else
+    echo "Server output does not match expected output."
+    diff "$SERVER_OUTPUT" "$EXPECTED_OUTPUT_SERVER"
     kill $SERVER_PID
     exit 1
 fi

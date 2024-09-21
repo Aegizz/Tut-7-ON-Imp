@@ -353,8 +353,15 @@ int main() {
         sleep(3);
         int close_code = websocketpp::close::status::normal;
         endpoint.close(initId, close_code, "Reached end of run");
-        return 0;
     }
+    return 0;
+
+
+
+// Time wasted fixing: 2hrs
+// Main loop in case of need for testing DO NOT USE UNLESS NEEDED.
+// Bash script will constantly ask for input causing the log file to just be filled with "Enter Command: " literally took a gigabyte of storage on my computer.
+
     while (!done) {
         std::cout << "Enter Command: ";
         if (std::getline(std::cin, input)){
