@@ -24,7 +24,7 @@ server: server.cpp
 
 # Clean up build artifacts
 clean:
-	rm -f client server client-debug server-debug debugClient
+	rm -f client server client-debug server-debug debugClient tests/server.log tests/client.log
 
 debug-all: client-debug server-debug debug
 

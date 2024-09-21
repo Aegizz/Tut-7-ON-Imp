@@ -1,5 +1,0 @@
-[2024-09-20 12:22:58] [devel] endpoint constructor
-[2024-09-20 12:22:58] [devel] server constructor
-Received message: {"client-info":"<client-id>-<server-id>","public_key":"<Exported RSA public key>","time-to-die":"2024-09-20T02:54:00Z","type":"hello"}
-Received message: {"type":"client_list_request"}
-Sent client list
