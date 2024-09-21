@@ -9,11 +9,14 @@ LIBS = -lssl -lcrypto -pthread
 
 CLIENT_FILES=client/client_list.cpp
 # Targets
-all: client server test-client
+all: client server test-client test-client-list
 
-test: debug-all server client testClient test.sh
+test: debug-all server client testClient test.sh test-client-list
+	echo "Running tests..."
 	chmod +x test.sh
 	bash test.sh
+	echo "Running client tests..."
+	./test-client-list
 
 client: client.cpp
 	$(CXX) $(CXXFLAGS) -o $@ $^ $(LIBS)
@@ -35,3 +38,6 @@ client-debug: client.cpp
 
 server-debug: server.cpp
 	$(CXX) $(CXXFLAGS) -g -o $@ $^ $(LIBS) -lz -fno-stack-protector
+
+test-client-list: tests/test_client_list.cpp client/client_list.h client/client_list.cpp
+	$(CXX) $(CXXFLAGS) -g -o $@ $^ $(LIBS)
