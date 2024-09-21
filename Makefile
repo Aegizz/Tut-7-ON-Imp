@@ -8,9 +8,9 @@ CXXFLAGS = -Wall -std=c++11
 LIBS = -lssl -lcrypto -pthread
 
 # Targets
-all: client server
+all: client server test-client
 
-test: debug-all server client test.sh
+test: debug-all server client test-client test.sh
 	chmod +x test.sh
 	bash test.sh
 
