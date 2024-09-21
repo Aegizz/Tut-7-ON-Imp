@@ -10,7 +10,8 @@ LIBS = -lssl -lcrypto -pthread
 # Targets
 all: client server
 
-test: debug-all server client
+test: debug-all server client test.sh
+	chmod +x test.sh
 	bash test.sh
 
 client: client.cpp

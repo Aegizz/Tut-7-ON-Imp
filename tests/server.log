@@ -1,5 +1,3 @@
-[2024-09-21 15:33:36] [devel] endpoint constructor
-[2024-09-21 15:33:36] [devel] server constructor
-Received message: {"client-info":"<client-id>-<server-id>","public_key":"<Exported RSA public key>","time-to-die":"2024-09-21T06:04:38Z","type":"hello"}
-Received message: {"type":"client_list_request"}
-Sent client list
+[2024-09-21 15:40:19] [devel] endpoint constructor
+[2024-09-21 15:40:19] [devel] server constructor
+WebSocket++ exception: Underlying Transport Error
