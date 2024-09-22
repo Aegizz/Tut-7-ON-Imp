@@ -90,6 +90,7 @@ public:
           << websocketpp::close::status::get_string(con->get_remote_close_code()) 
           << "), close reason: " << con->get_remote_close_reason();
         m_error_reason = s.str();
+        std::cout << s.str() << std::endl;
     }
 
     void on_message(client* c, websocketpp::connection_hdl hdl, client::message_ptr msg) {
@@ -297,6 +298,16 @@ std::string get_ttd(){
     return timeString.str();
 }
 
+bool is_connection_open(websocket_endpoint* endpoint, int id){
+    connection_metadata::ptr metadata = endpoint->get_metadata(id);
+
+    // Do not continue until websocket has finished connecting
+    if(metadata->get_status() == "Open"){
+        return true;
+    }
+    return false;
+}
+
 void send_hello_message(websocket_endpoint* endpoint, int id){
     nlohmann::json data;
 
@@ -310,6 +321,9 @@ void send_hello_message(websocket_endpoint* endpoint, int id){
     std::string json_string = data.dump();
 
     // Send the message via the connection
+    if(!is_connection_open(endpoint, id)){
+        return;
+    }
     websocketpp::lib::error_code ec;
     endpoint->send(id, json_string, websocketpp::frame::opcode::text, ec);
 
@@ -330,6 +344,9 @@ void send_client_list_request(websocket_endpoint* endpoint, int id){
     std::string json_string = data.dump();
 
     // Send the message via the connection
+    if(!is_connection_open(endpoint, id)){
+        return;
+    }
     websocketpp::lib::error_code ec;
     endpoint->send(id, json_string, websocketpp::frame::opcode::text, ec);
 
@@ -358,12 +375,18 @@ int main() {
             metadata = endpoint.get_metadata(initId);
         }
 
+        sleep(11);
+
         // Send server intialization messages
         send_hello_message(&endpoint, initId);
 
         send_client_list_request(&endpoint, initId);
+        
         sleep(3);
         int close_code = websocketpp::close::status::normal;
+        if(!is_connection_open(&endpoint, initId)){
+            return 0;
+        }
         endpoint.close(initId, close_code, "Reached end of run");
     }
     return 0;

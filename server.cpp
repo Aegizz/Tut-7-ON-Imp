@@ -102,6 +102,26 @@ void send_client_list(server* s, websocketpp::connection_hdl hdl){
     }
 }
 
+struct connection_data{
+    server* server_instance;
+    websocketpp::connection_hdl connection_hdl;
+    server::timer_ptr timer;
+};
+
+struct connection_hdl_hash {
+    std::size_t operator()(websocketpp::connection_hdl hdl) const {
+        return std::hash<uintptr_t>()(reinterpret_cast<uintptr_t>(hdl.lock().get()));
+    }
+};
+
+struct connection_hdl_equal {
+    bool operator()(websocketpp::connection_hdl a, websocketpp::connection_hdl b) const {
+        return a.lock() == b.lock();
+    }
+};
+
+std::unordered_map<websocketpp::connection_hdl, std::shared_ptr<connection_data>, connection_hdl_hash, connection_hdl_equal> connection_map; 
+
 // Define a callback to handle incoming messages
 int on_message(server* s, websocketpp::connection_hdl hdl, message_ptr msg) {
     std::cout << "Received message: " << msg->get_payload() << std::endl;
@@ -117,7 +137,12 @@ int on_message(server* s, websocketpp::connection_hdl hdl, message_ptr msg) {
     // Deserialize JSON message
     nlohmann::json data = nlohmann::json::parse(payload);
 
+    auto con_data = connection_map[hdl];
     if(data["type"] == "hello"){
+
+        con_data->timer->cancel();
+        std::cout << "Cancelling timer" << std::endl;
+
         // Store public key of new user
         std::string pubKey = data["public_key"];
 
@@ -137,6 +162,24 @@ int on_message(server* s, websocketpp::connection_hdl hdl, message_ptr msg) {
     return 0;
 }
 
+void on_open(server* s, websocketpp::connection_hdl hdl){
+    std::cout << "Connection initiated" << std::endl;
+
+    auto con_data = std::make_shared<connection_data>();
+    con_data->server_instance = s;
+    con_data->connection_hdl = hdl;
+
+    con_data->timer = s->set_timer(10000, [con_data](websocketpp::lib::error_code const &ec){
+        if(ec){
+            return;
+        }
+        std::cout << "Timer expired, closing connection." << std::endl;
+        con_data->server_instance->close(con_data->connection_hdl, websocketpp::close::status::normal, "Hello not received from client.");
+    });
+
+    connection_map[hdl] = con_data;
+}
+
 
 
 int main(int argc, char * argv[]) {
@@ -154,6 +197,8 @@ int main(int argc, char * argv[]) {
 
         // Initialize ASIO
         echo_server.init_asio();
+
+        echo_server.set_open_handler(bind(&on_open, &echo_server, std::placeholders::_1));
         
         // Register our message handler
         echo_server.set_message_handler(bind(&on_message, &echo_server, std::placeholders::_1, std::placeholders::_2));

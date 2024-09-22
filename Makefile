@@ -9,7 +9,7 @@ LIBS = -lssl -lcrypto -pthread
 
 CLIENT_FILES=client/client_list.cpp
 # Targets
-all: client server test-client test-client-list
+all: client server testClient test-client-list
 
 test: debug-all server client testClient test.sh test-client-list
 	echo "Running tests..."
@@ -22,7 +22,7 @@ client: client.cpp
 	$(CXX) $(CXXFLAGS) -o $@ $^ $(LIBS)
 
 testClient: testClient.cpp
-	$(CXX) $(CXXFLAGS) -o testClient $^ $(LIBS) $(CLIENT_FILES)
+	$(CXX) $(CXXFLAGS) -o $@ $^ $(LIBS) $(CLIENT_FILES)
 
 server: server.cpp
 	$(CXX) $(CXXFLAGS) -o $@ $^ $(LIBS) -lz
