@@ -149,8 +149,8 @@ int on_message(server* s, websocketpp::connection_hdl hdl, message_ptr msg) {
         con_data->timer->cancel();
         std::cout << "Cancelling timer" << std::endl;
 
-        // Store public key of new user
-        std::string pubKey = data["data"]["public_key"];
+        // Update client list, this is server 1
+        global_client_list->insertClient(1, data["data"]["public_key"]);
 
         // Update client list
         // Send out client update to other servers (can worry about later)
@@ -181,14 +181,17 @@ std::string getClientIP(server* s, websocketpp::connection_hdl hdl){
 
     // Generate substring
     std::string IP = remote_endpoint.substr(start, end-start);
+    
+    return IP;
 
-    start = remote_endpoint.find_last_of(":");
+    // If we need to use port
+    /*start = remote_endpoint.find_last_of(":");
 
     std::string port = remote_endpoint.substr(start,remote_endpoint.size()-start);
 
     std::string IPPort = IP.append(port);
 
-    return IPPort;
+    return IPPort;*/
 }
 
 void on_open(server* s, websocketpp::connection_hdl hdl){
@@ -218,7 +221,7 @@ void on_open(server* s, websocketpp::connection_hdl hdl){
 int main(int argc, char * argv[]) {
     server echo_server;
 
-    global_client_list = build_client_list();
+    global_client_list = new ClientList;
 
     try {
         // Set logging settings        

@@ -308,12 +308,33 @@ bool is_connection_open(websocket_endpoint* endpoint, int id){
     return false;
 }
 
+#include <random>
+
+std::string generateRandomString(size_t length) {
+    // Define the character set: A-Z, a-z
+    const std::string chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
+    std::string result;
+    result.reserve(length); // Reserve space for efficiency
+
+    // Create a random number generator
+    std::random_device rd; // Seed for random number generator
+    std::mt19937 generator(rd()); // Mersenne Twister generator
+    std::uniform_int_distribution<> distribution(0, chars.size() - 1);
+
+    // Generate random characters
+    for (size_t i = 0; i < length; ++i) {
+        result += chars[distribution(generator)];
+    }
+
+    return result;
+}
+
 void send_hello_message(websocket_endpoint* endpoint, int id){
     nlohmann::json user;
 
     // Format hello message
     user["type"] = "hello";
-    user["public_key"] = "<Exported RSA public key>";
+    user["public_key"] = generateRandomString(12);
     user["time-to-die"] = get_ttd();
 
     nlohmann::json data;
@@ -384,7 +405,7 @@ int main() {
 
         send_client_list_request(&endpoint, initId);
         
-        sleep(3);
+        sleep(5);
         int close_code = websocketpp::close::status::normal;
         endpoint.close(initId, close_code, "Reached end of run");
     }

@@ -1,5 +1,7 @@
 #include "client_list.h"
 
+ClientList::ClientList(){}
+
 ClientList::ClientList(nlohmann::json data){
 
     if (data.contains("servers")){
@@ -38,6 +40,13 @@ std::pair<int, std::string> ClientList::retrieveClient(int server_id, int client
     } else {
         throw std::runtime_error("Server ID not found.");
     }
+}
+
+void ClientList::insertClient(int server_id, std::string public_key){
+    clientID++;
+
+    // Add client to map
+    servers[server_id][clientID] = public_key;
 }
 
 std::string ClientList::exportJSON(){
