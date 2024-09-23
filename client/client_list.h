@@ -12,6 +12,7 @@ class ClientList{
     public:
         ClientList(nlohmann::json data);
         std::pair<int, std::string> retrieveClient(int server_id, int client_id);
+        std::string exportJSON();
 
 };
 

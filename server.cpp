@@ -5,6 +5,12 @@
 
 #include <nlohmann/json.hpp> // For JSON library
 
+//Self made client list implementation
+#include "client/client_list.h"
+
+//Global pointer for client list
+ClientList * global_client_list = nullptr;
+
 struct deflate_config : public websocketpp::config::debug_core {
     typedef deflate_config type;
     typedef debug_core base;
@@ -46,53 +52,50 @@ struct deflate_config : public websocketpp::config::debug_core {
 typedef websocketpp::server<deflate_config> server;
 typedef server::message_ptr message_ptr;
 
+// Test function that builds a pre-defined client list
+ClientList* build_client_list(){
+    // Test JSON string
+    std::string json_str = R"({
+        "type": "client_list",
+        "servers": [
+            {
+                "address": "192.168.1.1",
+                "server-id": 1,
+                "clients": [
+                    {
+                        "client-id": 1001,
+                        "public-key": "RSA_PUBLIC_KEY_1"
+                    },
+                    {
+                        "client-id": 1002,
+                        "public-key": "RSA_PUBLIC_KEY_2"
+                    }
+                ]
+            },
+            {
+                "address": "172.30.30.134",
+                "server-id": 2,
+                "clients": [
+                    {
+                        "client-id": 1001,
+                        "public-key": "RSA_PUBLIC_KEY_3"
+                    }
+                ]
+            }
+        ]
+    })";
+
+    // Parse the JSON
+    nlohmann::json data = nlohmann::json::parse(json_str);
+
+    // Create a ClientList object and pass the JSON data
+    ClientList* client_list = new ClientList(data);
+
+    return client_list;
+}
+
 void send_client_list(server* s, websocketpp::connection_hdl hdl){
-    // Create client list JSON object
-    nlohmann::json clientList;
-
-    // Set type
-    clientList["type"] = "client_list";
-
-    // Create array of JSON objects for all connected servers
-    nlohmann::json servers = nlohmann::json::array();
-    int numServers=1; // If there was 1 server (would be retrieved from external data structure)
-
-    for(int i=0; i<numServers; i++){
-        // Create JSON object for connected server
-        nlohmann::json server;
-
-        // Set fields
-        server["address"] = "<Address of server>";
-
-        // Modified this to be a given number as it needs to be a number for the client to store.
-        server["server-id"] = i;
-
-        // Create array of JSON objects for clients connected to server
-        nlohmann::json serverClients = nlohmann::json::array();
-        int numClients=2; // If there were 2 clients stored in a client list (would be retrieved from external data structure)
-
-        for(int j=0; j<numClients; j++){
-            // Build client JSON object
-            nlohmann::json clients;
-            // Modified this to be a given number as it needs to be a number for the client to store.
-            clients["client-id"] = j;
-            clients["public-key"] = "<Exported RSA public key of client>";
-            
-            // Push to array of clients of server
-            serverClients.push_back(clients);
-        }
-        
-        // Set clients field to array of clients in server
-        server["clients"] = serverClients;
-
-        // Push back array server to array of servers
-        servers.push_back(server);   
-    }
-    // Add servers JSON array
-    clientList["servers"] = servers;
-
-    // Serialize JSON object
-    std::string json_string = clientList.dump();
+    std::string json_string = global_client_list->exportJSON();
 
     try {
         s->send(hdl, json_string, websocketpp::frame::opcode::text);
@@ -102,24 +105,26 @@ void send_client_list(server* s, websocketpp::connection_hdl hdl){
     }
 }
 
+// Data structure to manage connections and their timers
 struct connection_data{
     server* server_instance;
     websocketpp::connection_hdl connection_hdl;
     server::timer_ptr timer;
 };
 
+// Functions used to hash connection_hdl's
 struct connection_hdl_hash {
     std::size_t operator()(websocketpp::connection_hdl hdl) const {
         return std::hash<uintptr_t>()(reinterpret_cast<uintptr_t>(hdl.lock().get()));
     }
 };
-
 struct connection_hdl_equal {
     bool operator()(websocketpp::connection_hdl a, websocketpp::connection_hdl b) const {
         return a.lock() == b.lock();
     }
 };
 
+// Define connection map
 std::unordered_map<websocketpp::connection_hdl, std::shared_ptr<connection_data>, connection_hdl_hash, connection_hdl_equal> connection_map; 
 
 // Define a callback to handle incoming messages
@@ -138,13 +143,14 @@ int on_message(server* s, websocketpp::connection_hdl hdl, message_ptr msg) {
     nlohmann::json data = nlohmann::json::parse(payload);
 
     auto con_data = connection_map[hdl];
-    if(data["type"] == "hello"){
-
+    if(data["data"]["type"] == "hello"){
+        
+        // Cancel connection timer
         con_data->timer->cancel();
         std::cout << "Cancelling timer" << std::endl;
 
         // Store public key of new user
-        std::string pubKey = data["public_key"];
+        std::string pubKey = data["data"]["public_key"];
 
         // Update client list
         // Send out client update to other servers (can worry about later)
@@ -162,9 +168,33 @@ int on_message(server* s, websocketpp::connection_hdl hdl, message_ptr msg) {
     return 0;
 }
 
+std::string getClientIP(server* s, websocketpp::connection_hdl hdl){
+    // Get the connection pointer
+    server::connection_ptr con = s->get_con_from_hdl(hdl);
+
+    // Get the remote endpoint (IP address and port)
+    std::string remote_endpoint = con->get_remote_endpoint();
+
+    // Find start and end of IP
+    size_t start = remote_endpoint.find_last_of("f")+2;
+    size_t end = remote_endpoint.find_last_of("]");
+
+    // Generate substring
+    std::string IP = remote_endpoint.substr(start, end-start);
+
+    start = remote_endpoint.find_last_of(":");
+
+    std::string port = remote_endpoint.substr(start,remote_endpoint.size()-start);
+
+    std::string IPPort = IP.append(port);
+
+    return IPPort;
+}
+
 void on_open(server* s, websocketpp::connection_hdl hdl){
     std::cout << "Connection initiated" << std::endl;
 
+    // Create shared connection_data structure and fill in
     auto con_data = std::make_shared<connection_data>();
     con_data->server_instance = s;
     con_data->connection_hdl = hdl;
@@ -173,17 +203,22 @@ void on_open(server* s, websocketpp::connection_hdl hdl){
         if(ec){
             return;
         }
+        // If timer runs out, close connection
         std::cout << "Timer expired, closing connection." << std::endl;
         con_data->server_instance->close(con_data->connection_hdl, websocketpp::close::status::normal, "Hello not received from client.");
     });
-
+    // Place connection_data structure in map
     connection_map[hdl] = con_data;
+
+    std::cout << "New connection from: " << getClientIP(s, hdl) << std::endl;
 }
 
 
 
 int main(int argc, char * argv[]) {
     server echo_server;
+
+    global_client_list = build_client_list();
 
     try {
         // Set logging settings        

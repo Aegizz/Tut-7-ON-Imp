@@ -309,13 +309,15 @@ bool is_connection_open(websocket_endpoint* endpoint, int id){
 }
 
 void send_hello_message(websocket_endpoint* endpoint, int id){
-    nlohmann::json data;
+    nlohmann::json user;
 
     // Format hello message
-    data["type"] = "hello";
-    data["public_key"] = "<Exported RSA public key>";
-    data["client-info"] = "<client-id>-<server-id>";
-    data["time-to-die"] = get_ttd();
+    user["type"] = "hello";
+    user["public_key"] = "<Exported RSA public key>";
+    user["time-to-die"] = get_ttd();
+
+    nlohmann::json data;
+    data["data"] = user;
 
     // Serialize JSON object
     std::string json_string = data.dump();
@@ -364,7 +366,7 @@ int main() {
     std::string input;
     websocket_endpoint endpoint;
 
-    int initId = endpoint.connect("ws://localhost:9002");
+    int initId = endpoint.connect("ws://172.30.30.134:9002");
     if (initId != -1) {
         std::cout << "> Created connection with id " << initId << std::endl;
 
@@ -375,7 +377,7 @@ int main() {
             metadata = endpoint.get_metadata(initId);
         }
 
-        sleep(11);
+        //sleep(11);
 
         // Send server intialization messages
         send_hello_message(&endpoint, initId);
@@ -384,9 +386,6 @@ int main() {
         
         sleep(3);
         int close_code = websocketpp::close::status::normal;
-        if(!is_connection_open(&endpoint, initId)){
-            return 0;
-        }
         endpoint.close(initId, close_code, "Reached end of run");
     }
     return 0;

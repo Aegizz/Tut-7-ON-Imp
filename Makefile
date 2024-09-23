@@ -25,7 +25,7 @@ testClient: testClient.cpp
 	$(CXX) $(CXXFLAGS) -o $@ $^ $(LIBS) $(CLIENT_FILES)
 
 server: server.cpp
-	$(CXX) $(CXXFLAGS) -o $@ $^ $(LIBS) -lz
+	$(CXX) $(CXXFLAGS) -o $@ $^ $(LIBS) $(CLIENT_FILES) -lz
 
 # Clean up build artifacts
 clean:
