@@ -173,6 +173,11 @@ std::string getClientIP(server* s, websocketpp::connection_hdl hdl){
     // Get the remote endpoint (IP address and port)
     std::string remote_endpoint = con->get_remote_endpoint();
 
+    // Handle error case when connections have been closed
+    if(remote_endpoint == "Unknown"){
+        return remote_endpoint;
+    }
+
     // Find start and end of IP
     size_t start = remote_endpoint.find_last_of("f")+2;
     size_t end = remote_endpoint.find_last_of("]");
@@ -198,6 +203,7 @@ void on_open(server* s, websocketpp::connection_hdl hdl){
     con_data->server_instance = s;
     con_data->connection_hdl = hdl;
 
+    // Create and set timer for connection
     con_data->timer = s->set_timer(10000, [con_data](websocketpp::lib::error_code const &ec){
         if(ec){
             return;
