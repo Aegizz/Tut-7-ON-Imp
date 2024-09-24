@@ -49,6 +49,11 @@
 //Self made client list implementation
 #include "client/client_list.h"
 
+// Hard coded public key for this client instance
+//const std::string PUBLIC_KEY = "ABCDEF";
+const std::string PUBLIC_KEY = "GHIJKL";
+//const std::string PUBLIC_KEY = "MNOPQR";
+
 //Global pointer for client list
 ClientList * global_client_list = nullptr;
 
@@ -105,8 +110,8 @@ public:
             if (global_client_list != nullptr){
                 delete global_client_list;
             }
-            global_client_list = new ClientList(data);
             // Process client list
+            global_client_list = new ClientList(data);
         }else{
             // Print the received message
             std::cout << "> Message received: " << payload << std::endl;
@@ -240,6 +245,9 @@ public:
         if (metadata_it == m_connection_list.end()) {
             std::cout << "> No connection found with id " << id << std::endl;
             return;
+        }else if (metadata_it->second->get_status() != "Open") {
+            // Only close open connections
+            return;
         }
         
         m_endpoint.close(metadata_it->second->get_hdl(), code, reason, ec);
@@ -308,33 +316,12 @@ bool is_connection_open(websocket_endpoint* endpoint, int id){
     return false;
 }
 
-#include <random>
-
-std::string generateRandomString(size_t length) {
-    // Define the character set: A-Z, a-z
-    const std::string chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
-    std::string result;
-    result.reserve(length); // Reserve space for efficiency
-
-    // Create a random number generator
-    std::random_device rd; // Seed for random number generator
-    std::mt19937 generator(rd()); // Mersenne Twister generator
-    std::uniform_int_distribution<> distribution(0, chars.size() - 1);
-
-    // Generate random characters
-    for (size_t i = 0; i < length; ++i) {
-        result += chars[distribution(generator)];
-    }
-
-    return result;
-}
-
 void send_hello_message(websocket_endpoint* endpoint, int id){
     nlohmann::json user;
 
     // Format hello message
     user["type"] = "hello";
-    user["public_key"] = generateRandomString(12);
+    user["public_key"] = PUBLIC_KEY;
     user["time-to-die"] = get_ttd();
 
     nlohmann::json data;
@@ -387,7 +374,8 @@ int main() {
     std::string input;
     websocket_endpoint endpoint;
 
-    int initId = endpoint.connect("ws://172.30.30.134:9002");
+    int initId = endpoint.connect("ws://localhost:9002");
+    //int initId = endpoint.connect("ws://172.30.30.134:9002");
     if (initId != -1) {
         std::cout << "> Created connection with id " << initId << std::endl;
 
@@ -398,14 +386,13 @@ int main() {
             metadata = endpoint.get_metadata(initId);
         }
 
-        //sleep(11);
-
         // Send server intialization messages
         send_hello_message(&endpoint, initId);
 
         send_client_list_request(&endpoint, initId);
         
         sleep(5);
+        
         int close_code = websocketpp::close::status::normal;
         endpoint.close(initId, close_code, "Reached end of run");
     }

@@ -6,10 +6,10 @@
 #include <nlohmann/json.hpp> // For JSON library
 
 //Self made client list implementation
-#include "client/client_list.h"
+#include "server-files/server_list.h"
 
 //Global pointer for client list
-ClientList * global_client_list = nullptr;
+ServerList * global_server_list = nullptr;
 
 struct deflate_config : public websocketpp::config::debug_core {
     typedef deflate_config type;
@@ -52,50 +52,8 @@ struct deflate_config : public websocketpp::config::debug_core {
 typedef websocketpp::server<deflate_config> server;
 typedef server::message_ptr message_ptr;
 
-// Test function that builds a pre-defined client list
-ClientList* build_client_list(){
-    // Test JSON string
-    std::string json_str = R"({
-        "type": "client_list",
-        "servers": [
-            {
-                "address": "192.168.1.1",
-                "server-id": 1,
-                "clients": [
-                    {
-                        "client-id": 1001,
-                        "public-key": "RSA_PUBLIC_KEY_1"
-                    },
-                    {
-                        "client-id": 1002,
-                        "public-key": "RSA_PUBLIC_KEY_2"
-                    }
-                ]
-            },
-            {
-                "address": "172.30.30.134",
-                "server-id": 2,
-                "clients": [
-                    {
-                        "client-id": 1001,
-                        "public-key": "RSA_PUBLIC_KEY_3"
-                    }
-                ]
-            }
-        ]
-    })";
-
-    // Parse the JSON
-    nlohmann::json data = nlohmann::json::parse(json_str);
-
-    // Create a ClientList object and pass the JSON data
-    ClientList* client_list = new ClientList(data);
-
-    return client_list;
-}
-
 void send_client_list(server* s, websocketpp::connection_hdl hdl){
-    std::string json_string = global_client_list->exportJSON();
+    std::string json_string = global_server_list->exportClientList();
 
     try {
         s->send(hdl, json_string, websocketpp::frame::opcode::text);
@@ -110,6 +68,7 @@ struct connection_data{
     server* server_instance;
     websocketpp::connection_hdl connection_hdl;
     server::timer_ptr timer;
+    int client_id;
 };
 
 // Functions used to hash connection_hdl's
@@ -135,7 +94,6 @@ int on_message(server* s, websocketpp::connection_hdl hdl, message_ptr msg) {
     std::string payload = msg->get_payload();
 
     char buffer[1024];
-    
     // Potential buffer overflow: Copying payload directly into a fixed-size buffer
     strcpy(buffer, payload.c_str()); // This is unsafe if payload length exceeds buffer size
 
@@ -149,22 +107,14 @@ int on_message(server* s, websocketpp::connection_hdl hdl, message_ptr msg) {
         con_data->timer->cancel();
         std::cout << "Cancelling timer" << std::endl;
 
-        // Update client list, this is server 1
-        global_client_list->insertClient(1, data["data"]["public_key"]);
+        // Update client list, this is server 1 (we will manually assign server ids)
+        con_data->client_id = global_server_list->insertClient(data["data"]["public_key"]);
 
-        // Update client list
-        // Send out client update to other servers (can worry about later)
+        // Send out client update to other servers
     }else if(data["type"] == "client_list_request"){
         send_client_list(s, hdl);
     }
-
-    /*try {
-        s->send(hdl, buffer, msg->get_opcode());
-        std::cout << "Sent echo message" << std::endl;
-    } catch (const websocketpp::exception & e) {
-        std::cout << "Echo failed because: " << e.what() << std::endl;
-        return -1;
-    }*/
+    
     return 0;
 }
 
@@ -181,21 +131,30 @@ std::string getClientIP(server* s, websocketpp::connection_hdl hdl){
 
     // Generate substring
     std::string IP = remote_endpoint.substr(start, end-start);
-    
-    return IP;
 
     // If we need to use port
-    /*start = remote_endpoint.find_last_of(":");
+    start = remote_endpoint.find_last_of(":");
 
     std::string port = remote_endpoint.substr(start,remote_endpoint.size()-start);
 
     std::string IPPort = IP.append(port);
 
-    return IPPort;*/
+    return IPPort;
+}
+
+void on_close(server* s, websocketpp::connection_hdl hdl){
+    std::cout << "Connection closed from: " << getClientIP(s, hdl) << std::endl;
+
+    // Grab ID and remove from connection map
+    auto con_data = connection_map[hdl];
+    global_server_list->removeClient(con_data->client_id);
+
+    // Send out client_lists
+    // Send out client_update
 }
 
 void on_open(server* s, websocketpp::connection_hdl hdl){
-    std::cout << "Connection initiated" << std::endl;
+    std::cout << "Connection initiated from: " << getClientIP(s, hdl) << std::endl;
 
     // Create shared connection_data structure and fill in
     auto con_data = std::make_shared<connection_data>();
@@ -206,14 +165,15 @@ void on_open(server* s, websocketpp::connection_hdl hdl){
         if(ec){
             return;
         }
-        // If timer runs out, close connection
+        // If timer runs out, close connection and remove from connection map
         std::cout << "Timer expired, closing connection." << std::endl;
         con_data->server_instance->close(con_data->connection_hdl, websocketpp::close::status::normal, "Hello not received from client.");
+        connection_map.erase(con_data->connection_hdl);
     });
     // Place connection_data structure in map
     connection_map[hdl] = con_data;
 
-    std::cout << "New connection from: " << getClientIP(s, hdl) << std::endl;
+    std::cout << "Connection confirmed from: " << getClientIP(s, hdl) << std::endl;
 }
 
 
@@ -221,7 +181,8 @@ void on_open(server* s, websocketpp::connection_hdl hdl){
 int main(int argc, char * argv[]) {
     server echo_server;
 
-    global_client_list = new ClientList;
+    // Initialise server list as server 1
+    global_server_list = new ServerList(1);
 
     try {
         // Set logging settings        
@@ -236,9 +197,9 @@ int main(int argc, char * argv[]) {
         // Initialize ASIO
         echo_server.init_asio();
 
+        // Set handlers
         echo_server.set_open_handler(bind(&on_open, &echo_server, std::placeholders::_1));
-        
-        // Register our message handler
+        echo_server.set_close_handler(bind(&on_close, &echo_server, std::placeholders::_1));
         echo_server.set_message_handler(bind(&on_message, &echo_server, std::placeholders::_1, std::placeholders::_2));
         
         // Listen on port 9002
@@ -249,6 +210,7 @@ int main(int argc, char * argv[]) {
         
         // Start the ASIO io_service run loop
         echo_server.run();
+
     } catch (const websocketpp::exception & e) {
         std::cout << "WebSocket++ exception: " << e.what() << std::endl;
     } catch (const std::exception & e) {

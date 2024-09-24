@@ -8,6 +8,7 @@ CXXFLAGS = -Wall -std=c++11
 LIBS = -lssl -lcrypto -pthread
 
 CLIENT_FILES=client/client_list.cpp
+SERVER_FILES=server-files/server_list.cpp
 # Targets
 all: client server testClient test-client-list
 
@@ -25,7 +26,7 @@ testClient: testClient.cpp
 	$(CXX) $(CXXFLAGS) -o $@ $^ $(LIBS) $(CLIENT_FILES)
 
 server: server.cpp
-	$(CXX) $(CXXFLAGS) -o $@ $^ $(LIBS) $(CLIENT_FILES) -lz
+	$(CXX) $(CXXFLAGS) -o $@ $^ $(LIBS) $(SERVER_FILES) -lz
 
 # Clean up build artifacts
 clean:
