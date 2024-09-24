@@ -50,8 +50,8 @@
 #include "client/client_list.h"
 
 // Hard coded public key for this client instance
-//const std::string PUBLIC_KEY = "ABCDEF";
-const std::string PUBLIC_KEY = "GHIJKL";
+const std::string PUBLIC_KEY = "ABCDEF";
+//const std::string PUBLIC_KEY = "GHIJKL";
 //const std::string PUBLIC_KEY = "MNOPQR";
 
 //Global pointer for client list
@@ -163,8 +163,8 @@ public:
 
     ~websocket_endpoint() {
         m_endpoint.stop_perpetual();
-        
-        for (con_list::const_iterator it = m_connection_list.begin(); it != m_connection_list.end(); ++it) {
+
+        /*for (con_list::const_iterator it = m_connection_list.begin(); it != m_connection_list.end(); ++it) {
             if (it->second->get_status() != "Open") {
                 // Only close open connections
                 continue;
@@ -178,7 +178,7 @@ public:
                 std::cout << "> Error closing connection " << it->second->get_id() << ": "  
                           << ec.message() << std::endl;
             }
-        }
+        }*/
         
         m_thread->join();
     }

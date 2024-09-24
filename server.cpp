@@ -52,17 +52,6 @@ struct deflate_config : public websocketpp::config::debug_core {
 typedef websocketpp::server<deflate_config> server;
 typedef server::message_ptr message_ptr;
 
-void send_client_list(server* s, websocketpp::connection_hdl hdl){
-    std::string json_string = global_server_list->exportClientList();
-
-    try {
-        s->send(hdl, json_string, websocketpp::frame::opcode::text);
-        std::cout << "Sent client list" << std::endl;
-    } catch (const websocketpp::exception & e) {
-        std::cout << "Failed to send client list because: " << e.what() << std::endl;
-    }
-}
-
 // Data structure to manage connections and their timers
 struct connection_data{
     server* server_instance;
@@ -85,6 +74,53 @@ struct connection_hdl_equal {
 
 // Define connection map
 std::unordered_map<websocketpp::connection_hdl, std::shared_ptr<connection_data>, connection_hdl_hash, connection_hdl_equal> connection_map; 
+
+void send_client_list(server* s, websocketpp::connection_hdl hdl){
+    std::string json_string = global_server_list->exportClientList();
+
+    try {
+        s->send(hdl, json_string, websocketpp::frame::opcode::text);
+        std::cout << "Sent client list to client " << connection_map[hdl]->client_id <<  std::endl;
+    } catch (const websocketpp::exception & e) {
+        std::cout << "Failed to send client list because: " << e.what() << std::endl;
+    }
+}
+
+// EXPERIMENTAL: SERVER-SERVER NOT IMPLEMENTED YET
+void send_client_update_request(server* s, int server_id){
+    nlohmann::json request;
+    request["type"] = "client_update_request";
+
+    // Serialize JSON object
+    std::string json_string = request.dump();
+
+    // Find handle associated with server (for testing pretending specific client is a server, in reality no server id would be specified)
+    websocketpp::connection_hdl hdl;
+    for(const auto& connectPair: connection_map){
+        auto connection = connectPair.second;
+        if(connection->client_id == server_id){
+            hdl = connection->connection_hdl;
+        }
+    }
+
+    try {
+        s->send(hdl, json_string, websocketpp::frame::opcode::text);
+        std::cout << "Sent client update request" << std::endl;
+    } catch (const websocketpp::exception & e) {
+        std::cout << "Failed to send client list because: " << e.what() << std::endl;
+    }
+}
+
+void send_client_update(server* s, websocketpp::connection_hdl hdl){
+    std::string json_string = global_server_list->exportUpdate();
+
+    try {
+        s->send(hdl, json_string, websocketpp::frame::opcode::text);
+        std::cout << "Sent client update" << std::endl;
+    } catch (const websocketpp::exception & e) {
+        std::cout << "Failed to send client list because: " << e.what() << std::endl;
+    }
+}
 
 // Define a callback to handle incoming messages
 int on_message(server* s, websocketpp::connection_hdl hdl, message_ptr msg) {
@@ -110,11 +146,23 @@ int on_message(server* s, websocketpp::connection_hdl hdl, message_ptr msg) {
         // Update client list, this is server 1 (we will manually assign server ids)
         con_data->client_id = global_server_list->insertClient(data["data"]["public_key"]);
 
-        // Send out client update to other servers
+        // Send out client_lists to all other clients
+        for(const auto& connectPair: connection_map){
+            auto connection = connectPair.second;
+            if(connection->client_id != connection_map[hdl]->client_id){
+                send_client_list(connection->server_instance, connection->connection_hdl);
+            }
+        }
+        // Send out client update to other servers  
     }else if(data["type"] == "client_list_request"){
         send_client_list(s, hdl);
+    }else if(data["type"] == "client_update_request"){
+        // May need to change depending on implementation of server-server connection
+        send_client_update(s, hdl);
     }
-    
+
+    std::cout << "\n";
+
     return 0;
 }
 
@@ -142,17 +190,6 @@ std::string getClientIP(server* s, websocketpp::connection_hdl hdl){
     return IPPort;
 }
 
-void on_close(server* s, websocketpp::connection_hdl hdl){
-    std::cout << "Connection closed from: " << getClientIP(s, hdl) << std::endl;
-
-    // Grab ID and remove from connection map
-    auto con_data = connection_map[hdl];
-    global_server_list->removeClient(con_data->client_id);
-
-    // Send out client_lists
-    // Send out client_update
-}
-
 void on_open(server* s, websocketpp::connection_hdl hdl){
     std::cout << "Connection initiated from: " << getClientIP(s, hdl) << std::endl;
 
@@ -173,10 +210,29 @@ void on_open(server* s, websocketpp::connection_hdl hdl){
     // Place connection_data structure in map
     connection_map[hdl] = con_data;
 
-    std::cout << "Connection confirmed from: " << getClientIP(s, hdl) << std::endl;
+    std::cout << "Connection confirmed from: " << getClientIP(s, hdl) << "\n" << std::endl;
 }
 
+void on_close(server* s, websocketpp::connection_hdl hdl){
+    std::cout << "Client " << connection_map[hdl]->client_id << " closing their connection" << std::endl;
 
+    // Grab ID and remove from connection map
+    auto con_data = connection_map[hdl];
+    global_server_list->removeClient(con_data->client_id);
+
+    // Send out client_lists
+    for(const auto& connectPair: connection_map){
+        auto connection = connectPair.second;
+        if(connection->client_id != connection_map[hdl]->client_id){
+            send_client_list(connection->server_instance, connection->connection_hdl);
+        }
+    }
+    // Send out client_update
+
+    std::cout << "Client " << connection_map[hdl]->client_id << " closed their connection" << "\n" << std::endl;
+
+    connection_map.erase(hdl);
+}
 
 int main(int argc, char * argv[]) {
     server echo_server;
@@ -207,7 +263,7 @@ int main(int argc, char * argv[]) {
         
         // Start the server accept loop
         echo_server.start_accept();
-        
+
         // Start the ASIO io_service run loop
         echo_server.run();
 
