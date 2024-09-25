@@ -7,7 +7,7 @@ CXXFLAGS = -Wall -std=c++11
 # Define the libraries
 LIBS = -lssl -lcrypto -pthread
 
-CLIENT_FILES=client/client_list.cpp
+CLIENT_FILES=client/client_list.cpp client/aes_encrypt.cpp
 # Targets
 all: client server test-client test-client-list
 
@@ -17,12 +17,13 @@ test: debug-all server client testClient test.sh test-client-list
 	bash test.sh
 	echo "Running client tests..."
 	./test-client-list
+	./test-client-aes-encrypt
 
 client: client.cpp
 	$(CXX) $(CXXFLAGS) -o $@ $^ $(LIBS)
 
 testClient: testClient.cpp
-	$(CXX) $(CXXFLAGS) -o testClient $^ $(LIBS) $(CLIENT_FILES)
+	$(CXX) $(CXXFLAGS) -o $@ $^ $(CLIENT_FILES) $(LIBS)
 
 server: server.cpp
 	$(CXX) $(CXXFLAGS) -o $@ $^ $(LIBS) -lz
@@ -40,4 +41,6 @@ server-debug: server.cpp
 	$(CXX) $(CXXFLAGS) -g -o $@ $^ $(LIBS) -lz -fno-stack-protector
 
 test-client-list: tests/test_client_list.cpp client/client_list.h client/client_list.cpp
+	$(CXX) $(CXXFLAGS) -g -o $@ $^ $(LIBS)
+test-client-aes-encrypt: tests/test_aes_encrypt.cpp client/aes_encrypt.cpp client/aes_encrypt.h
 	$(CXX) $(CXXFLAGS) -g -o $@ $^ $(LIBS)
