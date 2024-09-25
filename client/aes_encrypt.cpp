@@ -13,8 +13,8 @@ bool aes_gcm_encrypt(const std::vector<unsigned char>& plaintext, const std::vec
         return false;
     }
 
-    // Initialize encryption context with AES-256-GCM
-    if (1 != EVP_EncryptInit_ex(ctx, EVP_aes_256_gcm(), NULL, NULL, NULL)) {
+    // Initialize encryption context with AES-128-GCM
+    if (1 != EVP_EncryptInit_ex(ctx, EVP_aes_128_gcm(), NULL, NULL, NULL)) {
         EVP_CIPHER_CTX_free(ctx);
         return false;
     }
@@ -66,8 +66,8 @@ bool aes_gcm_decrypt(const std::vector<unsigned char>& ciphertext, const std::ve
     EVP_CIPHER_CTX* ctx = EVP_CIPHER_CTX_new();
     if (!ctx) return false;
 
-    // Initialize decryption context with AES-256-GCM
-    if (1 != EVP_DecryptInit_ex(ctx, EVP_aes_256_gcm(), NULL, NULL, NULL)) {
+    // Initialize decryption context with AES-128-GCM
+    if (1 != EVP_DecryptInit_ex(ctx, EVP_aes_128_gcm(), NULL, NULL, NULL)) {
         EVP_CIPHER_CTX_free(ctx);
         return false;
     }
