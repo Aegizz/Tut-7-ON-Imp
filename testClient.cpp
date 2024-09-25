@@ -48,6 +48,8 @@
 
 //Self made client list implementation
 #include "client/client_list.h"
+//Self mage AES GCM Encryption with OpenSSL
+#include "client/aes_encrypt.h"
 
 //Global pointer for client list
 ClientList * global_client_list = nullptr;
