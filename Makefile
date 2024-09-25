@@ -11,7 +11,7 @@ CLIENT_FILES=client/client_list.cpp client/aes_encrypt.cpp
 # Targets
 all: client server test-client test-client-list
 
-test: debug-all server client testClient test.sh test-client-list
+test: debug-all server client testClient test.sh test-client-list test-client-aes-encrypt
 	echo "Running tests..."
 	chmod +x test.sh
 	bash test.sh
