@@ -10,7 +10,7 @@ LIBS = -lssl -lcrypto -pthread
 CLIENT_FILES=client/client_list.cpp
 SERVER_FILES=server-files/server_list.cpp
 # Targets
-all: client server testClient test-client-list
+all: client server server2 testClient testClient2 testClient3 test-client-client_list
 
 test: debug-all server client testClient test.sh test-client-list
 	echo "Running tests..."
@@ -25,7 +25,16 @@ client: client.cpp
 testClient: testClient.cpp
 	$(CXX) $(CXXFLAGS) -o $@ $^ $(LIBS) $(CLIENT_FILES)
 
+testClient2: testClient2.cpp
+	$(CXX) $(CXXFLAGS) -o $@ $^ $(LIBS) $(CLIENT_FILES)
+	
+testClient3: testClient3.cpp
+	$(CXX) $(CXXFLAGS) -o $@ $^ $(LIBS) $(CLIENT_FILES)
+
 server: server.cpp
+	$(CXX) $(CXXFLAGS) -o $@ $^ $(LIBS) $(SERVER_FILES) -lz
+
+server2: server2.cpp
 	$(CXX) $(CXXFLAGS) -o $@ $^ $(LIBS) $(SERVER_FILES) -lz
 
 # Clean up build artifacts

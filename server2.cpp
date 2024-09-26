@@ -298,7 +298,7 @@ void connect_to_server(client* c, std::string const & uri, int retry_attempts = 
 
 // Define a vector to hold the server URIs
 std::vector<std::string> server_uris = {
-    "ws://localhost:9003"
+    "ws://localhost:9002"
 };
 
 int main(int argc, char * argv[]) {
@@ -307,8 +307,8 @@ int main(int argc, char * argv[]) {
     // Create a WebSocket++ client instance
     client ws_client;
 
-    // Initialise server list as server 1
-    global_server_list = new ServerList(1);
+    // Initialise server list as server 2
+    global_server_list = new ServerList(2);
 
     try {
         // Set logging settings        
@@ -356,8 +356,8 @@ int main(int argc, char * argv[]) {
         // Detach the client thread so it runs independently
         client_thread.detach();
         
-        // Listen on port 9002
-        echo_server.listen(9002);
+        // Listen on port 9003
+        echo_server.listen(9003);
         
         // Start the server accept loop
         echo_server.start_accept();
