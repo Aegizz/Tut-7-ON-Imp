@@ -11,7 +11,7 @@ CLIENT_FILES=client/client_list.cpp client/aes_encrypt.cpp
 # Targets
 all: userClient server test-client testClient
 
-test: debug-all server client testClient test.sh test-client-list test-client-aes-encrypt test-client-sha256
+test: debug-all server client testClient test.sh test-client-list test-client-aes-encrypt test-client-sha256 test-client-key-gen
 	echo "Running tests..."
 	chmod +x test.sh
 	bash test.sh
@@ -19,6 +19,7 @@ test: debug-all server client testClient test.sh test-client-list test-client-ae
 	./test-client-list
 	./test-client-aes-encrypt
 	./test-client-sha256
+	./test-client-key-gen
 
 userClient: userClient.cpp
 	$(CXX) $(CXXFLAGS) -o $@ $^ $(LIBS)
@@ -48,4 +49,6 @@ test-client-list: tests/test_client_list.cpp client/client_list.h client/client_
 test-client-aes-encrypt: tests/test_aes_encrypt.cpp client/aes_encrypt.cpp client/aes_encrypt.h
 	$(CXX) $(CXXFLAGS) -g -o $@ $^ $(LIBS)
 test-client-sha256: tests/test_Sha256Hash.cpp client/Sha256Hash.cpp client/Sha256Hash.h
+	$(CXX) $(CXXFLAGS) -g -o $@ $^ $(LIBS)
+test-client-key-gen: tests/test_client_key_gen.cpp
 	$(CXX) $(CXXFLAGS) -g -o $@ $^ $(LIBS)
