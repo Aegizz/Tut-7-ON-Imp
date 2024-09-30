@@ -7,11 +7,11 @@ CXXFLAGS = -Wall -std=c++11
 # Define the libraries
 LIBS = -lssl -lcrypto -pthread
 
-CLIENT_FILES=client/client_list.cpp client/aes_encrypt.cpp
+CLIENT_FILES=client/*.cpp
 # Targets
 all: userClient server test-client testClient
 
-test: debug-all server client testClient test.sh test-client-list test-client-aes-encrypt test-client-sha256 test-client-key-gen
+test: debug-all server client testClient test.sh test-client-list test-client-aes-encrypt test-client-sha256 test-client-key-gen test-base64
 	echo "Running tests..."
 	chmod +x test.sh
 	bash test.sh
@@ -20,6 +20,7 @@ test: debug-all server client testClient test.sh test-client-list test-client-ae
 	./test-client-aes-encrypt
 	./test-client-sha256
 	./test-client-key-gen
+	./test-base64
 
 userClient: userClient.cpp
 	$(CXX) $(CXXFLAGS) -o $@ $^ $(LIBS)
@@ -52,3 +53,5 @@ test-client-sha256: tests/test_Sha256Hash.cpp client/Sha256Hash.cpp client/Sha25
 	$(CXX) $(CXXFLAGS) -g -o $@ $^ $(LIBS)
 test-client-key-gen: tests/test_client_key_gen.cpp
 	$(CXX) $(CXXFLAGS) -g -o $@ $^ $(LIBS)
+test-base64: tests/test_base64.cpp client/base64.cpp
+	$(CXX) $(CXXFLAGSR) -g -o $@ $^ $(LIBS)
