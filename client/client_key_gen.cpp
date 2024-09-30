@@ -5,6 +5,7 @@
 #include <openssl/bio.h>
 #include <openssl/err.h>
 #include <cstdio>
+#include <cstring>
 #include <iostream>
 
 void handleErrors() {
@@ -12,7 +13,7 @@ void handleErrors() {
     abort();
 }
 
-int gen_keys() {
+int key_gen() {
     // 1. Initialize OpenSSL
     OpenSSL_add_all_algorithms();
     ERR_load_crypto_strings();
@@ -73,5 +74,120 @@ int gen_keys() {
 
     //std::cout << "Private key and public key (SPKI format) have been saved successfully." << std::endl;
     
+    return 0;
+}
+
+
+EVP_PKEY* loadPrivateKey(const char* filename) {
+    FILE* keyFile = fopen(filename, "rb");
+    if (!keyFile) {
+        std::cerr << "Unable to open private key file." << std::endl;
+        return nullptr;
+    }
+    EVP_PKEY* pkey = PEM_read_PrivateKey(keyFile, NULL, NULL, NULL);
+    fclose(keyFile);
+    if (!pkey) {
+        std::cerr << "Error reading private key." << std::endl;
+        handleErrors();
+    }
+    return pkey;
+}
+
+// Function to read a PEM-encoded public key from a file
+EVP_PKEY* loadPublicKey(const char* filename) {
+    FILE* keyFile = fopen(filename, "rb");
+    if (!keyFile) {
+        std::cerr << "Unable to open public key file." << std::endl;
+        return nullptr;
+    }
+    EVP_PKEY* pkey = PEM_read_PUBKEY(keyFile, NULL, NULL, NULL);
+    fclose(keyFile);
+    if (!pkey) {
+        std::cerr << "Error reading public key." << std::endl;
+        handleErrors();
+    }
+    return pkey;
+}
+
+// Function to encrypt data using the public key
+int rsaEncrypt(EVP_PKEY* pubKey, const unsigned char* plaintext, size_t plaintext_len, unsigned char** encrypted) {
+    EVP_PKEY_CTX* ctx = EVP_PKEY_CTX_new(pubKey, NULL);
+    if (!ctx) handleErrors();
+
+    if (EVP_PKEY_encrypt_init(ctx) <= 0) handleErrors();
+
+    // Determine buffer length for the encrypted data
+    size_t encrypted_len;
+    if (EVP_PKEY_encrypt(ctx, NULL, &encrypted_len, plaintext, plaintext_len) <= 0) handleErrors();
+
+    *encrypted = (unsigned char*)OPENSSL_malloc(encrypted_len);
+    if (*encrypted == NULL) handleErrors();
+
+    // Encrypt the data
+    if (EVP_PKEY_encrypt(ctx, *encrypted, &encrypted_len, plaintext, plaintext_len) <= 0) handleErrors();
+
+    EVP_PKEY_CTX_free(ctx);
+    return encrypted_len;  // Return length of the encrypted data
+}
+
+// Function to decrypt data using the private key
+int rsaDecrypt(EVP_PKEY* privKey, const unsigned char* encrypted, size_t encrypted_len, unsigned char** decrypted) {
+    EVP_PKEY_CTX* ctx = EVP_PKEY_CTX_new(privKey, NULL);
+    if (!ctx) handleErrors();
+
+    if (EVP_PKEY_decrypt_init(ctx) <= 0) handleErrors();
+
+    // Determine buffer length for the decrypted data
+    size_t decrypted_len;
+    if (EVP_PKEY_decrypt(ctx, NULL, &decrypted_len, encrypted, encrypted_len) <= 0) handleErrors();
+
+    *decrypted = (unsigned char*)OPENSSL_malloc(decrypted_len);
+    if (*decrypted == NULL) handleErrors();
+
+    // Decrypt the data
+    if (EVP_PKEY_decrypt(ctx, *decrypted, &decrypted_len, encrypted, encrypted_len) <= 0) handleErrors();
+
+    EVP_PKEY_CTX_free(ctx);
+    return decrypted_len;  // Return length of the decrypted data
+}
+
+int main() {
+    // Load the public and private keys
+    if(key_gen())
+        return 1;
+    
+    EVP_PKEY* privateKey = loadPrivateKey("private_key.pem");
+    EVP_PKEY* publicKey = loadPublicKey("public_key.pem");
+
+    if (!privateKey || !publicKey) {
+        std::cerr << "Error loading keys." << std::endl;
+        return 1;
+    }
+
+    // Original message
+    const unsigned char* message = (const unsigned char*)"Hello, RSA Encryption!";
+    size_t message_len = strlen((const char*)message);
+
+    // Encrypt the message using the public key
+    unsigned char* encrypted = nullptr;
+    int encrypted_len = rsaEncrypt(publicKey, message, message_len, &encrypted);
+
+    std::cout << "Encrypted message length: " << encrypted_len << std::endl;
+
+    // Decrypt the message using the private key
+    unsigned char* decrypted = nullptr;
+    int decrypted_len = rsaDecrypt(privateKey, encrypted, encrypted_len, &decrypted);
+
+    std::cout << "Decrypted message length: " << decrypted_len << std::endl;
+
+    // Print the decrypted message
+    std::cout << "Decrypted message: " << decrypted << std::endl;
+
+    // Clean up
+    EVP_PKEY_free(privateKey);
+    EVP_PKEY_free(publicKey);
+    OPENSSL_free(encrypted);
+    OPENSSL_free(decrypted);
+
     return 0;
 }
