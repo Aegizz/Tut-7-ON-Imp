@@ -33,7 +33,7 @@ server: server.cpp
 
 # Clean up build artifacts
 clean:
-	rm -f userClient server client-debug server-debug testClient tests/server.log tests/client.log debugClient test-client-sha256 test-client-aes-encrypt test-client-list
+	rm -f userClient server client-debug server-debug testClient tests/server.log tests/client.log debugClient test-client-sha256 test-client-aes-encrypt test-client-list test-base64 test-client-key-gen userClient userClient-debug
 
 debug-all: userClient-debug testClient server-debug
 
