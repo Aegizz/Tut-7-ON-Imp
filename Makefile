@@ -55,3 +55,5 @@ test-client-key-gen: tests/test_client_key_gen.cpp
 	$(CXX) $(CXXFLAGS) -g -o $@ $^ $(LIBS)
 test-base64: tests/test_base64.cpp client/base64.cpp
 	$(CXX) $(CXXFLAGSR) -g -o $@ $^ $(LIBS)
+test-client-signature: client/base64.cpp client/client_key_gen.cpp client/client_signature.cpp tests/test_client_signature.cpp client/Sha256Hash.cpp
+	$(CXX) $(CXXFLAGS) -g -o $@ $^ $(LIBS)
