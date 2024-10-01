@@ -1,19 +1,11 @@
-#include <openssl/evp.h>
-#include <openssl/pem.h>
-#include <openssl/rsa.h>
-#include <openssl/bn.h>  // For BIGNUM
-#include <openssl/bio.h>
-#include <openssl/err.h>
-#include <cstdio>
-#include <cstring>
-#include <iostream>
+#include "client_key_gen.h"
 
-void handleErrors() {
+void Client_Key_Gen::handleErrors() {
     ERR_print_errors_fp(stderr);
     abort();
 }
 
-int key_gen() {
+int Client_Key_Gen::key_gen() {
     // 1. Initialize OpenSSL
     OpenSSL_add_all_algorithms();
     ERR_load_crypto_strings();
@@ -78,7 +70,7 @@ int key_gen() {
 }
 
 
-EVP_PKEY* loadPrivateKey(const char* filename) {
+EVP_PKEY* Client_Key_Gen::loadPrivateKey(const char* filename) {
     FILE* keyFile = fopen(filename, "rb");
     if (!keyFile) {
         std::cerr << "Unable to open private key file." << std::endl;
@@ -94,7 +86,7 @@ EVP_PKEY* loadPrivateKey(const char* filename) {
 }
 
 // Function to read a PEM-encoded public key from a file
-EVP_PKEY* loadPublicKey(const char* filename) {
+EVP_PKEY* Client_Key_Gen::loadPublicKey(const char* filename) {
     FILE* keyFile = fopen(filename, "rb");
     if (!keyFile) {
         std::cerr << "Unable to open public key file." << std::endl;
@@ -110,7 +102,7 @@ EVP_PKEY* loadPublicKey(const char* filename) {
 }
 
 // Function to encrypt data using the public key
-int rsaEncrypt(EVP_PKEY* pubKey, const unsigned char* plaintext, size_t plaintext_len, unsigned char** encrypted) {
+int Client_Key_Gen::rsaEncrypt(EVP_PKEY* pubKey, const unsigned char* plaintext, size_t plaintext_len, unsigned char** encrypted) {
     EVP_PKEY_CTX* ctx = EVP_PKEY_CTX_new(pubKey, NULL);
     if (!ctx) handleErrors();
 
@@ -131,7 +123,7 @@ int rsaEncrypt(EVP_PKEY* pubKey, const unsigned char* plaintext, size_t plaintex
 }
 
 // Function to decrypt data using the private key
-int rsaDecrypt(EVP_PKEY* privKey, const unsigned char* encrypted, size_t encrypted_len, unsigned char** decrypted) {
+int Client_Key_Gen::rsaDecrypt(EVP_PKEY* privKey, const unsigned char* encrypted, size_t encrypted_len, unsigned char** decrypted) {
     EVP_PKEY_CTX* ctx = EVP_PKEY_CTX_new(privKey, NULL);
     if (!ctx) handleErrors();
 

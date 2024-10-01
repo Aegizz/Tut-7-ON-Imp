@@ -1,21 +1,12 @@
-#include "../client/client_key_gen.cpp"
-#include <openssl/evp.h>
-#include <openssl/pem.h>
-#include <openssl/rsa.h>
-#include <openssl/bn.h>  // For BIGNUM
-#include <openssl/bio.h>
-#include <openssl/err.h>
-#include <cstdio>
-#include <cstring>
-#include <iostream>
+#include "../client/client_key_gen.h"
 
 int main() {
     // Load the public and private keys
-    if(key_gen())
+    if(Client_Key_Gen::key_gen())
         return 1;
     
-    EVP_PKEY* privateKey = loadPrivateKey("private_key.pem");
-    EVP_PKEY* publicKey = loadPublicKey("public_key.pem");
+    EVP_PKEY* privateKey = Client_Key_Gen::loadPrivateKey("private_key.pem");
+    EVP_PKEY* publicKey = Client_Key_Gen::loadPublicKey("public_key.pem");
 
     if (!privateKey || !publicKey) {
         std::cerr << "Error loading keys." << std::endl;
@@ -28,13 +19,13 @@ int main() {
 
     // Encrypt the message using the public key
     unsigned char* encrypted = nullptr;
-    int encrypted_len = rsaEncrypt(publicKey, message, message_len, &encrypted);
+    int encrypted_len = Client_Key_Gen::rsaEncrypt(publicKey, message, message_len, &encrypted);
 
     std::cout << "Encrypted message length: " << encrypted_len << std::endl;
 
     // Decrypt the message using the private key
     unsigned char* decrypted = nullptr;
-    int decrypted_len = rsaDecrypt(privateKey, encrypted, encrypted_len, &decrypted);
+    int decrypted_len = Client_Key_Gen::rsaDecrypt(privateKey, encrypted, encrypted_len, &decrypted);
 
     std::cout << "Decrypted message length: " << decrypted_len << std::endl;
 
