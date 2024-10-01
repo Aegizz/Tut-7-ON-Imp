@@ -11,7 +11,7 @@ CLIENT_FILES=client/*.cpp
 # Targets
 all: userClient server test-client testClient
 
-test: debug-all server client testClient test.sh test-client-list test-client-aes-encrypt test-client-sha256 test-client-key-gen test-base64
+test: debug-all server client testClient test.sh test-client-list test-client-aes-encrypt test-client-sha256 test-client-key-gen test-base64 test-client-signature
 	echo "Running tests..."
 	chmod +x test.sh
 	bash test.sh
@@ -21,6 +21,7 @@ test: debug-all server client testClient test.sh test-client-list test-client-ae
 	./test-client-sha256
 	./test-client-key-gen
 	./test-base64
+	./test-client-signature
 
 userClient: userClient.cpp
 	$(CXX) $(CXXFLAGS) -o $@ $^ $(LIBS)

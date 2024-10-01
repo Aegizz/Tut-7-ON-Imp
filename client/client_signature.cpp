@@ -9,7 +9,6 @@ std::string ClientSignature::generateSignature(std::string message, EVP_PKEY *pr
     // Combine the message and counter, then hash the result
     std::string combinedString = message + counter;
     std::string hashed_string = Sha256Hash::hashStringSha256(combinedString);
-    std::cout << "Hashed input: " << hashed_string << std::endl;
     // Prepare the buffer for encryption
     unsigned char *encrypted = nullptr; // Single pointer to hold encrypted data
     const unsigned char *combinedMessage = reinterpret_cast<const unsigned char*>(hashed_string.c_str());
@@ -25,7 +24,6 @@ std::string ClientSignature::generateSignature(std::string message, EVP_PKEY *pr
     // Convert the encrypted data to a std::string
     std::string rsa_string(reinterpret_cast<char*>(encrypted), encrypted_length);
 
-    std::cout << "Encrypted string: " << encrypted << std::endl;
     // Base64 encode the encrypted string to create the signature
     std::string base64signature = Base64::encode(rsa_string);
 
