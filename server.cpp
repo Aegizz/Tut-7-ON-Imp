@@ -20,6 +20,7 @@
 // Hard coded server ID + listen port for this server
 const int ServerID = 1; 
 const int listenPort = 9002;
+const std::string myUri = "127.0.0.1:9002";
 
 //Global pointer for client list
 ServerList * global_server_list = nullptr;
@@ -148,7 +149,7 @@ void send_server_hello(client* c, websocketpp::connection_hdl hdl){
 
     // Format server_hello message
     data["type"] = "server_hello";
-    data["sender"] = "127.0.0.1:9002";
+    data["sender"] = myUri;
     //data["server_id"] = ServerID;
 
     nlohmann::json serverHello;
