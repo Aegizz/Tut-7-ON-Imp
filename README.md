@@ -76,3 +76,5 @@ Alternatively, compile debugClient using ```make test``` which automatically mak
     server-debug Makefile Line 40
 
 ### Vulnerability #2
+ In the gitignore, there is not ignorance of .pem files, the files used for key generation. This will likely lead to a user or users leaking keys at some point.
+ This is a common way that users leak private information on the internet and has potential to cause issues later down the line as commit history cannot be removed.
