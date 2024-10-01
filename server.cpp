@@ -149,7 +149,7 @@ void send_server_hello(client* c, websocketpp::connection_hdl hdl){
     // Format server_hello message
     data["type"] = "server_hello";
     data["sender"] = "127.0.0.1:9003";
-    data["server_id"] = ServerID;
+    //data["server_id"] = ServerID;
 
     nlohmann::json serverHello;
 
@@ -361,7 +361,9 @@ int on_message(server* s, websocketpp::connection_hdl hdl, message_ptr msg) {
         std::cout << "Cancelling server connection timer" << std::endl;
 
         con_data->server_address = data["data"]["sender"];
-        con_data->server_id = data["data"]["server_id"];
+
+        // Need to add error handling in case foreign or invalid server address is entered
+        con_data->server_id = global_server_list->ObtainID(con_data->server_address);
 
         // Check if an existing connection exists
         for(const auto& connectPair: inbound_server_server_map){

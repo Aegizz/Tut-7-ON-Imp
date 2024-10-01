@@ -8,6 +8,15 @@ ServerList::ServerList(int server_id){
     load_mapping_from_file();
 }
 
+int ServerList::ObtainID(std::string address){
+    for(const auto& server: serverAddresses){
+        if(server.second == address){
+            return server.first;
+        }
+    }
+    return -1;
+}
+
 // Saves the known users to a mapping file
 void ServerList::save_mapping_to_file() {
     // Generate mapping file name

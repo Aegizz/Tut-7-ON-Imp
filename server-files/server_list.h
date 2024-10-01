@@ -14,7 +14,7 @@ class ServerList{
         std::unordered_map<int, std::string> knownClients; // Clients that belong to this server
 
         // Temporary way to store server addresses against their ID
-        std::unordered_map<int, std::string> serverAddresses = {{1, "127.0.0.1:9002"}, {2,"127.0.0.1:9003"}};
+        std::unordered_map<int, std::string> serverAddresses = {{1, "127.0.0.1:9002"}, {2, "127.0.0.1:9003"}};
 
         void save_mapping_to_file();
         void load_mapping_from_file();
@@ -23,6 +23,8 @@ class ServerList{
         int clientID=1000;
     public:
         ServerList(int server_id);
+
+        int ObtainID(std::string address);
 
         std::pair<int, std::string> retrieveClient(int server_id, int client_id);
 
