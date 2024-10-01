@@ -1,19 +1,56 @@
 #include "../client/client_signature.h"
 #include "../client/client_key_gen.h"
 #include "../client/base64.h"
+#include <openssl/evp.h>
+#include <iostream>
 
-int main(){
-    if (key_gen()){
+int main() {
+    // Generate RSA keys (public and private)
+    if (key_gen()) {
+        std::cerr << "Key generation failed!" << std::endl;
         return 1;
     }
-    /* Load RSA key pair for generating signature*/
-    EVP_PKEY * key = loadPublicKey("private_key.pem");
 
-    /* Load signature and generate it for testing*/
-    std::string signature = ClientSignature::generateSignature("test",key,"12345");
-    std::cout << signature << std::endl;
-    /*Encode result in base64*/
+    // Load the private key from the file
+    EVP_PKEY *privKey = loadPrivateKey("private_key.pem");
+    if (!privKey) {
+        std::cerr << "Failed to load private key!" << std::endl;
+        return 1;
+    }
 
-    std::string base64signature = Base64::encode(signature);
-    std::cout << base64signature << std::endl;
+    // Load the public key from the file
+    EVP_PKEY *pubKey = loadPublicKey("public_key.pem");
+    if (!pubKey) {
+        std::cerr << "Failed to load public key!" << std::endl;
+        EVP_PKEY_free(privKey);  // Clean up before exiting
+        return 1;
+    }
+
+    std::cout << "Loaded Key" << std::endl;
+
+    // Generate a signature for the message "test" using the private key
+    std::string message = "test";
+    std::string signature = ClientSignature::generateSignature(message, privKey, "12345");
+    if (signature.empty()) {
+        std::cerr << "Failed to generate signature!" << std::endl;
+        EVP_PKEY_free(privKey);
+        EVP_PKEY_free(pubKey);
+        return 1;
+    }
+
+    std::cout << "Generated signature: " << signature << std::endl;
+
+    // Verify the generated signature using the public key
+    bool isValid = ClientSignature::verifySignature(signature, message, pubKey);
+    if (isValid) {
+        std::cout << "Signature verification succeeded!" << std::endl;
+    } else {
+        std::cerr << "Signature verification failed!" << std::endl;
+    }
+
+    // Clean up OpenSSL key structures
+    EVP_PKEY_free(privKey);
+    EVP_PKEY_free(pubKey);
+
+    return 0;
 }
