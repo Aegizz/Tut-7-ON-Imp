@@ -9,15 +9,10 @@
 #include <string>
 
 class ClientSignature{
-    private:
-        EVP_PKEY * private_key;
-        std::string signature;
     public:
         ClientSignature();
-        ClientSignature(std::string message, EVP_PKEY * private_key, std::string counter);
         static std::string generateSignature(std::string message, EVP_PKEY * private_key, std::string counter);
-        std::string getSignature();
-        static std::string decryptSignature(std::string encrypted_message, EVP_PKEY * public_key);
+        static bool decryptSignature(std::string encrypted_message, EVP_PKEY * public_key);
         static bool verifySignature(std::string encrypted_signature, std::string decrypted_message, EVP_PKEY* publicKey);
 };
 

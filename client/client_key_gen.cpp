@@ -142,3 +142,38 @@ int Client_Key_Gen::rsaDecrypt(EVP_PKEY* privKey, const unsigned char* encrypted
     EVP_PKEY_CTX_free(ctx);
     return decrypted_len;  // Return length of the decrypted data
 }
+// Function to sign data using the private key
+int Client_Key_Gen::rsaSign(EVP_PKEY* privKey, const unsigned char* data, size_t data_len, unsigned char** signature) {
+    EVP_PKEY_CTX* ctx = EVP_PKEY_CTX_new(privKey, NULL);
+    if (!ctx) handleErrors();
+
+    // Initialize signing context
+    if (EVP_PKEY_sign_init(ctx) <= 0) handleErrors();
+
+    // Determine the buffer length for the signature
+    size_t signature_len;
+    if (EVP_PKEY_sign(ctx, NULL, &signature_len, data, data_len) <= 0) handleErrors();
+
+    *signature = (unsigned char*)OPENSSL_malloc(signature_len);
+    if (*signature == NULL) handleErrors();
+
+    // Sign the data
+    if (EVP_PKEY_sign(ctx, *signature, &signature_len, data, data_len) <= 0) handleErrors();
+
+    EVP_PKEY_CTX_free(ctx);
+    return signature_len;  // Return length of the signature
+}
+// Function to verify the signature using the public key
+int Client_Key_Gen::rsaVerify(EVP_PKEY* pubKey, const unsigned char* data, size_t data_len, const unsigned char* signature, size_t signature_len) {
+    EVP_PKEY_CTX* ctx = EVP_PKEY_CTX_new(pubKey, NULL);
+    if (!ctx) handleErrors();
+
+    // Initialize verification context
+    if (EVP_PKEY_verify_init(ctx) <= 0) handleErrors();
+
+    // Verify the signature
+    int result = EVP_PKEY_verify(ctx, signature, signature_len, data, data_len);
+    
+    EVP_PKEY_CTX_free(ctx);
+    return result;  // Returns 1 for success, 0 for failure
+}
