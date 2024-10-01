@@ -9,9 +9,12 @@
 class ServerList{
     private:
     // Idea being that each server maps to another map, this ensure that we can access each server from their ID and each client from their server ID.
-        std::unordered_map<int, std::unordered_map<int, std::string>> servers;
-        std::unordered_map<int, std::string> currentClients;
-        std::unordered_map<int, std::string> knownClients;
+        std::unordered_map<int, std::unordered_map<int, std::string>> servers; // Servers stored against their ID, map of clients stored against their IDs
+        std::unordered_map<int, std::string> currentClients; // Clients currently connected to THIS server
+        std::unordered_map<int, std::string> knownClients; // Clients that belong to this server
+
+        // Temporary way to store server addresses against their ID
+        std::unordered_map<int, std::string> serverAddresses = {{1, "127.0.0.1:9002"}, {2,"127.0.0.1:9003"}};
 
         void save_mapping_to_file();
         void load_mapping_from_file();
@@ -25,6 +28,8 @@ class ServerList{
 
         int insertClient(std::string public_key);
         void removeClient(int client_id);
+        void insertServer(int server_id, std::string update);
+        void removeServer(int server_id);
 
         std::string exportUpdate();
         std::string exportClientList();

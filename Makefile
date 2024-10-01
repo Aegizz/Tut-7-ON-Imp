@@ -22,24 +22,21 @@ test: debug-all server client testClient test.sh test-client-list
 client: client.cpp
 	$(CXX) $(CXXFLAGS) -o $@ $^ $(LIBS)
 
+# For testing 
 testClient: testClient.cpp
 	$(CXX) $(CXXFLAGS) -o $@ $^ $(LIBS) $(CLIENT_FILES)
-
 testClient2: testClient2.cpp
 	$(CXX) $(CXXFLAGS) -o $@ $^ $(LIBS) $(CLIENT_FILES)
-	
 testClient3: testClient3.cpp
 	$(CXX) $(CXXFLAGS) -o $@ $^ $(LIBS) $(CLIENT_FILES)
-
 server: server.cpp
 	$(CXX) $(CXXFLAGS) -o $@ $^ $(LIBS) $(SERVER_FILES) -lz
-
 server2: server2.cpp
 	$(CXX) $(CXXFLAGS) -o $@ $^ $(LIBS) $(SERVER_FILES) -lz
 
 # Clean up build artifacts
 clean:
-	rm -f client server client-debug server-debug testClient tests/server.log tests/client.log debugClient
+	rm -f client-debug server-debug server server2 testClient testClient2 testClient3 tests/server.log tests/client.log debugClient
 
 debug-all: client-debug server-debug
 

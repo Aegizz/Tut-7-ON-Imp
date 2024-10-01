@@ -17,6 +17,10 @@
 //Self made client list implementation
 #include "server-files/server_list.h"
 
+// Hard coded server ID + listen port for this server
+const int ServerID = 2; 
+const int listenPort = 9003;
+
 //Global pointer for client list
 ServerList * global_server_list = nullptr;
 
@@ -67,9 +71,12 @@ typedef websocketpp::client<websocketpp::config::asio_client> client;
 // Data structure to manage connections and their timers
 struct connection_data{
     server* server_instance;
+    client* client_instance;
     websocketpp::connection_hdl connection_hdl;
     server::timer_ptr timer;
+    std::string server_address;
     int client_id;
+    int server_id;
 };
 
 // Functions used to hash connection_hdl's
@@ -86,112 +93,23 @@ struct connection_hdl_equal {
 
 // Define connection map
 std::unordered_map<websocketpp::connection_hdl, std::shared_ptr<connection_data>, connection_hdl_hash, connection_hdl_equal> connection_map; 
+std::unordered_map<websocketpp::connection_hdl, std::shared_ptr<connection_data>, connection_hdl_hash, connection_hdl_equal> client_server_map;
 
-void send_client_list(server* s, websocketpp::connection_hdl hdl){
-    std::string json_string = global_server_list->exportClientList();
+// Map for connections made from other servers -> this server
+std::unordered_map<websocketpp::connection_hdl, std::shared_ptr<connection_data>, connection_hdl_hash, connection_hdl_equal> inbound_server_server_map;
 
-    try {
-        s->send(hdl, json_string, websocketpp::frame::opcode::text);
-        std::cout << "Sent client list to client " << connection_map[hdl]->client_id <<  std::endl;
-    } catch (const websocketpp::exception & e) {
-        std::cout << "Failed to send client list because: " << e.what() << std::endl;
-    }
-}
+// Map for connections made from this server -> other servers
+std::unordered_map<websocketpp::connection_hdl, std::shared_ptr<connection_data>, connection_hdl_hash, connection_hdl_equal> outbound_server_server_map;
 
-// EXPERIMENTAL: SERVER-SERVER NOT IMPLEMENTED YET
-void send_client_update_request(server* s, int server_id){
-    nlohmann::json request;
-    request["type"] = "client_update_request";
-
-    // Serialize JSON object
-    std::string json_string = request.dump();
-
-    // Find handle associated with server (for testing pretending specific client is a server, in reality no server id would be specified)
-    websocketpp::connection_hdl hdl;
-    for(const auto& connectPair: connection_map){
-        auto connection = connectPair.second;
-        if(connection->client_id == server_id){
-            hdl = connection->connection_hdl;
-        }
-    }
-
-    try {
-        s->send(hdl, json_string, websocketpp::frame::opcode::text);
-        std::cout << "Sent client update request" << std::endl;
-    } catch (const websocketpp::exception & e) {
-        std::cout << "Failed to send client list because: " << e.what() << std::endl;
-    }
-}
-
-void send_client_update(server* s, websocketpp::connection_hdl hdl){
-    std::string json_string = global_server_list->exportUpdate();
-
-    try {
-        s->send(hdl, json_string, websocketpp::frame::opcode::text);
-        std::cout << "Sent client update" << std::endl;
-    } catch (const websocketpp::exception & e) {
-        std::cout << "Failed to send client list because: " << e.what() << std::endl;
-    }
-}
-
-// Define a callback to handle incoming messages
-int on_message(server* s, websocketpp::connection_hdl hdl, message_ptr msg) {
-    std::cout << "Received message: " << msg->get_payload() << std::endl;
-
-    // Vulnerable code: the payload without validation
-    std::string payload = msg->get_payload();
-
-    char buffer[1024];
-    // Potential buffer overflow: Copying payload directly into a fixed-size buffer
-    strcpy(buffer, payload.c_str()); // This is unsafe if payload length exceeds buffer size
-
-    // Deserialize JSON message
-    nlohmann::json data = nlohmann::json::parse(payload);
-
-    auto con_data = connection_map[hdl];
-    if(data["data"]["type"] == "hello"){
-        
-        // Cancel connection timer
-        con_data->timer->cancel();
-        std::cout << "Cancelling timer" << std::endl;
-
-        // Update client list, this is server 1 (we will manually assign server ids)
-        con_data->client_id = global_server_list->insertClient(data["data"]["public_key"]);
-
-        // Send out client_lists to all other clients
-        for(const auto& connectPair: connection_map){
-            auto connection = connectPair.second;
-            if(connection->client_id != connection_map[hdl]->client_id){
-                send_client_list(connection->server_instance, connection->connection_hdl);
-            }
-        }
-        // Send out client update to other servers  
-    }else if(data["type"] == "client_list_request"){
-        send_client_list(s, hdl);
-    }else if(data["type"] == "client_update_request"){
-        // May need to change depending on implementation of server-server connection
-        send_client_update(s, hdl);
-    }
-
-    std::cout << "\n";
-
-    return 0;
-}
-
-std::string getIP(server* s, websocketpp::connection_hdl hdl, client* c = nullptr){
+// Find IP address + port number of connected client
+std::string getIP(server* s, websocketpp::connection_hdl hdl){
     // Get the remote endpoint (IP address and port)
     std::string remote_endpoint;
 
     // Get the connection pointer
-    if(s == nullptr && c != nullptr){
-        client::connection_ptr con = c->get_con_from_hdl(hdl);
-        // Get the URI
-        return con->get_uri()->str();
-    }else{
-        server::connection_ptr con = s->get_con_from_hdl(hdl);
-        // Get the remote endpoint (IP address and port)
-        remote_endpoint = con->get_remote_endpoint();
-    }
+    server::connection_ptr con = s->get_con_from_hdl(hdl);
+    // Get the remote endpoint (IP address and port)
+    remote_endpoint = con->get_remote_endpoint();
 
     // Handle error case when connections have been closed
     if(remote_endpoint == "Unknown"){
@@ -215,8 +133,107 @@ std::string getIP(server* s, websocketpp::connection_hdl hdl, client* c = nullpt
     return IPPort;
 }
 
+// Check if outbound connection is open
+bool is_connection_open(client* c, websocketpp::connection_hdl hdl){
+    client::connection_ptr con = c->get_con_from_hdl(hdl);
+
+    if(con->get_state() == websocketpp::session::state::open){
+        return true;
+    }
+    return false;
+}
+
+void send_server_hello(client* c, websocketpp::connection_hdl hdl){
+    nlohmann::json data;
+
+    // Format server_hello message
+    data["type"] = "server_hello";
+    data["sender"] = "127.0.0.1:9003";
+    data["server_id"] = ServerID;
+
+    nlohmann::json serverHello;
+
+    serverHello["data"] = data;
+
+    // Serialize JSON object
+    std::string json_string = serverHello.dump();
+
+    // Send the message via the connection
+    if(!is_connection_open(c, hdl)){
+        return;
+    }
+    websocketpp::lib::error_code ec;
+    c->send(hdl, json_string, websocketpp::frame::opcode::text, ec);
+
+    if (ec) {
+        std::cout << "> Error sending server hello message: " << ec.message() << std::endl;
+    } else {
+        std::cout << "> Server hello sent" << "\n" << std::endl;
+    }
+}
+
+// Send client update request to specified connection
+void send_client_update_request(client* c, websocketpp::connection_hdl hdl){
+    nlohmann::json request;
+    request["type"] = "client_update_request";
+
+    // Serialize JSON object
+    std::string json_string = request.dump();
+
+    if(!is_connection_open(c, hdl)){
+        return;
+    }
+
+    try {
+        c->send(hdl, json_string, websocketpp::frame::opcode::text);
+        std::cout << "Sent client update request to " << outbound_server_server_map[hdl]->server_id << std::endl;
+    } catch (const websocketpp::exception & e) {
+        std::cout << "Failed to send update request to " << outbound_server_server_map[hdl]->server_id << " because: " << e.what() << std::endl;
+    }
+}
+
+// Send client update to specified connection
+void send_client_update(client* c, websocketpp::connection_hdl hdl){
+    std::string json_string = global_server_list->exportUpdate();
+
+    if(!is_connection_open(c, hdl)){
+        return;
+    }
+
+    try {
+        c->send(hdl, json_string, websocketpp::frame::opcode::text);
+        std::cout << "Sent client update to " << outbound_server_server_map[hdl]->server_id << std::endl;
+    } catch (const websocketpp::exception & e) {
+        std::cout << "Failed to send client update to " << outbound_server_server_map[hdl]->server_id << " because: " << e.what() << std::endl;
+    }
+}
+
+// Send client updates to all servers but the one specified (if specified)
+void broadcast_client_updates(int server_id_nosend = 0){
+    // Broadcast client_updates
+    for(const auto& connectPair: outbound_server_server_map){
+        auto connection = connectPair.second;
+        if(connection->server_id != server_id_nosend){
+            send_client_update(connection->client_instance, connection->connection_hdl);
+        }
+    }
+}
+
+// Send client list to specified connection
+void send_client_list(server* s, websocketpp::connection_hdl hdl){
+    std::string json_string = global_server_list->exportClientList();
+
+    try {
+        s->send(hdl, json_string, websocketpp::frame::opcode::text);
+        std::cout << "Sent client list to client " << client_server_map[hdl]->client_id <<  std::endl;
+    } catch (const websocketpp::exception & e) {
+        std::cout << "Failed to send client list because: " << e.what() << std::endl;
+    }
+}
+
+// Handle incoming connections
 void on_open(server* s, websocketpp::connection_hdl hdl){
-    std::cout << "\nConnection initiated from: " << getIP(s, hdl); << std::endl;
+    std::cout << "\nConnection initiated from: " << getIP(s, hdl) << std::endl;
 
     // Create shared connection_data structure and fill in
     auto con_data = std::make_shared<connection_data>();
@@ -236,29 +253,184 @@ void on_open(server* s, websocketpp::connection_hdl hdl){
     connection_map[hdl] = con_data;
 }
 
+// Handle closing connections
 void on_close(server* s, websocketpp::connection_hdl hdl){
-    std::cout << "\nClient " << connection_map[hdl]->client_id << " closing their connection" << std::endl;
+    // Create iterators to check if the connection being closed is a client or inbound server connection
+    auto it_client = client_server_map.find(hdl);
+    auto it_server = inbound_server_server_map.find(hdl);
 
-    // Grab ID and remove from connection map
-    auto con_data = connection_map[hdl];
-    global_server_list->removeClient(con_data->client_id);
+    // If the connection being closed is a client connection
+    if (it_client != client_server_map.end()) {
+        // Client connection
+        std::cout << "\nClient " << client_server_map[hdl]->client_id << " closing their connection" << std::endl;
+        global_server_list->removeClient(client_server_map[hdl]->client_id);
 
-    // Send out client_lists
-    for(const auto& connectPair: connection_map){
-        auto connection = connectPair.second;
-        if(connection->client_id != connection_map[hdl]->client_id){
+        // Send out client_lists to everyone but the closing connection
+        for(const auto& connectPair: client_server_map){
+            auto connection = connectPair.second;
+            if(connection->client_id != client_server_map[hdl]->client_id){
+                send_client_list(connection->server_instance, connection->connection_hdl);
+            }
+        }
+
+        // Erase from client server map
+        if(client_server_map.find(hdl) != client_server_map.end()){
+            client_server_map.erase(hdl);
+        }
+
+        broadcast_client_updates();
+
+    // If the connection being closed is an inbound server connection
+    } else if (it_server != inbound_server_server_map.end()) {
+        // Server connection
+        std::cout << "\nServer " << inbound_server_server_map[hdl]->server_id << " closing inbound connection" << std::endl;
+        global_server_list->removeServer(inbound_server_server_map[hdl]->server_id);
+
+        // Close outbound connection
+        for(const auto& connectPair: outbound_server_server_map){
+            auto connection = connectPair.second;
+            if(connection->server_id == inbound_server_server_map[hdl]->server_id){
+                if(is_connection_open(connection->client_instance, connection->connection_hdl)){
+                    connection->client_instance->close(connection->connection_hdl, websocketpp::close::status::normal, "Closing both connections");
+                }
+            }
+        }
+
+        // Erase from inbound connection map
+        if(inbound_server_server_map.find(hdl) != inbound_server_server_map.end()){
+            inbound_server_server_map.erase(hdl);
+        }
+
+        // Send out client_lists to all clients
+        for(const auto& connectPair: client_server_map){
+            auto connection = connectPair.second;
             send_client_list(connection->server_instance, connection->connection_hdl);
         }
     }
-    // Send out client_update
-
-    std::cout << "Client " << connection_map[hdl]->client_id << " closed their connection" << "\n" << std::endl;
-
-    connection_map.erase(hdl);
 }
 
-// Define a function that will handle the connection retry logic
-void connect_to_server(client* c, std::string const & uri, int retry_attempts = 0) {
+// Handle messages received by server
+int on_message(server* s, websocketpp::connection_hdl hdl, message_ptr msg) {
+    std::cout << "Received message: " << msg->get_payload() << std::endl;
+
+    // Vulnerable code: the payload without validation
+    std::string payload = msg->get_payload();
+
+    char buffer[1024];
+    // Potential buffer overflow: Copying payload directly into a fixed-size buffer
+    strcpy(buffer, payload.c_str()); // This is unsafe if payload length exceeds buffer size
+
+    // Deserialize JSON message
+    nlohmann::json data = nlohmann::json::parse(payload);
+
+    std::shared_ptr<connection_data> con_data;
+
+    // Use handle to check if connection has been confirmed or not
+    if(connection_map.find(hdl) != connection_map.end()){
+        con_data = connection_map[hdl];
+    }else if(inbound_server_server_map.find(hdl) != inbound_server_server_map.end()){
+        con_data = inbound_server_server_map[hdl];
+    }
+
+    if(data["data"]["type"] == "hello"){
+        // Cancel connection timer
+        con_data->timer->cancel();
+        std::cout << "Cancelling client connection timer" << std::endl;
+
+        // Update client list
+        con_data->client_id = global_server_list->insertClient(data["data"]["public_key"]);
+
+        // Move to client server map
+        client_server_map[hdl] = con_data;
+        if(connection_map.find(hdl) != connection_map.end()){
+            connection_map.erase(hdl);
+        }
+
+        // Send out client_lists to all other clients
+        for(const auto& connectPair: client_server_map){
+            auto connection = connectPair.second;
+            if(connection->client_id != con_data->client_id){
+                send_client_list(connection->server_instance, connection->connection_hdl);
+            }
+        }
+
+        broadcast_client_updates();
+    }else if(data["data"]["type"] == "server_hello"){
+        // Cancel connection timer
+        con_data->timer->cancel();
+        std::cout << "Cancelling server connection timer" << std::endl;
+
+        con_data->server_address = data["data"]["sender"];
+        con_data->server_id = data["data"]["server_id"];
+
+        // Check if an existing connection exists
+        for(const auto& connectPair: inbound_server_server_map){
+            auto connection = connectPair.second;
+            if(connection->server_id == con_data->server_id){
+                s->close(hdl, websocketpp::close::status::policy_violation, "Connection to this server already exists.");
+                if(connection_map.find(hdl) != connection_map.end()){
+                    connection_map.erase(hdl);
+                }
+                return -1;
+            }
+        }
+
+        // Add connection data to map
+        inbound_server_server_map[hdl] = con_data;
+
+        // Erase from temporary connection map
+        if(connection_map.find(hdl) != connection_map.end()){
+            connection_map.erase(hdl);
+        }
+
+        // Broadcast client updates to all servers except connecting server
+        broadcast_client_updates(con_data->server_id);
+
+        // NOT SURE WHETHER TO IMPLEMENT
+        /*
+        // Check if an outbound connection has been established for the connecting server
+        for(const auto& connectPair: outbound_server_server_map){
+            auto connection = connectPair.second;
+            // Hard coded as 1 because this is server 1
+            if(connection->server_id == con_data->server_id){
+                return 0;
+            }
+        }
+        connect_to_server(con_data->client_instance, con_data->server_address, con_data->server_id);
+        */
+
+    }else if(data["type"] == "client_list_request"){
+        // Send client list to requesting client
+        send_client_list(s, hdl);
+    }else if(data["type"] == "client_update_request"){
+        // Find requesting server's outbound connection and send client update on that
+        for(const auto& connectPair: outbound_server_server_map){
+            auto connection = connectPair.second;
+            
+            if(connection->server_id == con_data->server_id){
+                send_client_update(connection->client_instance, connection->connection_hdl);
+            }
+        }
+    }else if(data["type"] == "client_update"){
+        // Process client update
+        global_server_list->insertServer(con_data->server_id, payload);
+
+        // Send out client_lists to all clients
+        for(const auto& connectPair: client_server_map){
+            auto connection = connectPair.second;
+            send_client_list(connection->server_instance, connection->connection_hdl);
+        }
+    }
+
+    std::cout << "\n";
+
+    return 0;
+}
+
+
+
+// Define a function that will handle the client connections retry logic
+void connect_to_server(client* c, std::string const & uri, int server_id, int retry_attempts = 0) {
     websocketpp::lib::error_code ec;
     client::connection_ptr con = c->get_connection(uri, ec);
 
@@ -268,26 +440,47 @@ void connect_to_server(client* c, std::string const & uri, int retry_attempts = 
     }
 
     // Set fail handler to retry if connection fails
-    con->set_fail_handler([c, uri, retry_attempts](websocketpp::connection_hdl hdl) {
-        std::cout << "Connection to " << uri << " failed, retrying in 5 seconds..." << std::endl;
+    con->set_fail_handler([c, uri, server_id, retry_attempts](websocketpp::connection_hdl hdl) {
+        std::cout << "Connection to " << uri << " failed, retrying in 500ms..." << std::endl;
 
-        // Retry after 5 seconds
-        std::this_thread::sleep_for(std::chrono::seconds(1));
-        if (retry_attempts < 100) {  // Example retry limit of 10
-            connect_to_server(c, uri, retry_attempts + 1);
+        // Retry after 500ms
+        std::this_thread::sleep_for(std::chrono::milliseconds(500));
+        if (retry_attempts < 1000) { 
+            connect_to_server(c, uri, server_id, retry_attempts + 1);
         } else {
             std::cout << "Exceeded retry limit. Giving up on connecting to " << uri << std::endl;
         }
     });
 
     // Set open handler when connection succeeds
-    con->set_open_handler([c](websocketpp::connection_hdl hdl) {
-        std::cout << "\nSuccessfully connected to " << getIP(nullptr, hdl, c) << std::endl;
+    con->set_open_handler([c, uri, server_id](websocketpp::connection_hdl hdl) {
+        std::cout << "\nSuccessfully connected to " << uri << std::endl;
+
+        send_server_hello(c, hdl);
+        
+        auto con_data = std::make_shared<connection_data>();
+        con_data->client_instance = c;
+        con_data->connection_hdl = hdl;
+        //con_data->server_address = IP;
+
+        // EXPERIMENTAL PARAMETER
+        con_data->server_id = server_id;
+
+        // Add connection data to outbound connection map
+        outbound_server_server_map[hdl] = con_data;
+
+        // Has to be here otherwise a segmentation fault occurs
+        send_client_update_request(c, hdl);
     });
 
-    // Set message handler for received messages
-    con->set_message_handler([](websocketpp::connection_hdl hdl, client::message_ptr msg) {
-        std::cout << "Received message: " << msg->get_payload() << std::endl;
+    // Handler for when another server closes connection
+    con->set_close_handler([](websocketpp::connection_hdl hdl) {
+        std::cout << "\nServer " << outbound_server_server_map[hdl]->server_id << " closing outbound connection" << std::endl;
+
+        // Erase connection from outbound connection map
+        if(outbound_server_server_map.find(hdl) != outbound_server_server_map.end()){
+            outbound_server_server_map.erase(hdl);
+        }
     });
 
     // Try to connect to the server
@@ -296,19 +489,19 @@ void connect_to_server(client* c, std::string const & uri, int retry_attempts = 
 
 
 
-// Define a vector to hold the server URIs
-std::vector<std::string> server_uris = {
-    "ws://localhost:9002"
-};
+// Define a map to hold server uris against their IDs
+// Different for each server file
+std::unordered_map<int, std::string> server_uris = {{1, "ws://127.0.0.1:9002"}};
 
 int main(int argc, char * argv[]) {
-    server echo_server;
-
     // Create a WebSocket++ client instance
+    // Global so server can initiate a connection to another server at any point
     client ws_client;
 
+    server echo_server;
+
     // Initialise server list as server 2
-    global_server_list = new ServerList(2);
+    global_server_list = new ServerList(ServerID);
 
     try {
         // Set logging settings        
@@ -343,10 +536,9 @@ int main(int argc, char * argv[]) {
             ws_client.init_asio();
 
             // Loop through the server URIs and attempt connections
-            for(int i=0; i<(int)server_uris.size(); i++){
-                std::string uri = server_uris.at(i);
-                
-                connect_to_server(&ws_client, uri);
+            for(const auto& uri: server_uris){
+                connect_to_server(&ws_client, uri.second, uri.first);
+
             }
 
             // Start the client io_service run loop
@@ -357,7 +549,7 @@ int main(int argc, char * argv[]) {
         client_thread.detach();
         
         // Listen on port 9003
-        echo_server.listen(9003);
+        echo_server.listen(listenPort);
         
         // Start the server accept loop
         echo_server.start_accept();

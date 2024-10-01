@@ -116,6 +116,7 @@ public:
             // Print the received message
             std::cout << "> Message received: " << payload << std::endl;
         }
+        std::cout << "\n";
     }
 
     websocketpp::connection_hdl get_hdl() const {
@@ -363,7 +364,7 @@ void send_client_list_request(websocket_endpoint* endpoint, int id){
     if (ec) {
         std::cout << "> Error sending client list request message: " << ec.message() << std::endl;
     } else {
-        std::cout << "> Client list request sent" << std::endl;
+        std::cout << "> Client list request sent" << "\n" << std::endl;
     }
 }
 

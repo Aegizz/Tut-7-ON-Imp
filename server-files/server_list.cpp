@@ -1,6 +1,6 @@
 #include "server_list.h"
 
-// Initialise server list
+// Initialise server list with inputted server id and load from mapping file
 ServerList::ServerList(int server_id){
     // Set my server id
     my_server_id = server_id;
@@ -8,6 +8,7 @@ ServerList::ServerList(int server_id){
     load_mapping_from_file();
 }
 
+// Saves the known users to a mapping file
 void ServerList::save_mapping_to_file() {
     // Generate mapping file name
     std::string filename = "server-files/server_mapping";
@@ -20,6 +21,7 @@ void ServerList::save_mapping_to_file() {
     file << j_map.dump(4);
 }
 
+// Reads the known users for this server from a mapping file
 void ServerList::load_mapping_from_file() {
     // Generate mapping file name
     std::string filename = "server-files/server_mapping";
@@ -50,6 +52,7 @@ void ServerList::load_mapping_from_file() {
     clientID = largestID;
 }
 
+// Retrieves a client's public key using its server and client ids
 std::pair<int, std::string> ServerList::retrieveClient(int server_id, int client_id) {
     // Check if the server exists
     if (servers.find(server_id) != servers.end()) {
@@ -65,6 +68,7 @@ std::pair<int, std::string> ServerList::retrieveClient(int server_id, int client
     }
 }
 
+// Inserts a client to the list when a new connection is established
 int ServerList::insertClient(std::string public_key){
     // Check list of known clients to see if client's public key matches one stored 
     for(const auto& client: knownClients){
@@ -90,6 +94,7 @@ int ServerList::insertClient(std::string public_key){
     return clientID;
 }
 
+// Removes a client from the list when the connection is dropped
 void ServerList::removeClient(int client_id){
     // Remove client from maps
     servers[my_server_id].erase(client_id);
@@ -97,6 +102,31 @@ void ServerList::removeClient(int client_id){
     currentClients.erase(client_id);
 }
 
+// Removes a server from the list
+void ServerList::removeServer(int server_id){
+    servers.erase(server_id);
+}
+
+// Inserts or replaces a server in the list using a client update
+void ServerList::insertServer(int server_id, std::string update){
+
+    // Convert string to JSON object
+    nlohmann::json updatedServerJSON = nlohmann::json::parse(update);
+
+    nlohmann::json clientsArray = updatedServerJSON["clients"];
+
+    std::unordered_map<int, std::string> updatedServer;
+
+    for(const auto& client: clientsArray){
+        updatedServer[client["client_id"]] = client["public_key"];
+    }
+
+    // Store map
+    servers[server_id] = updatedServer;
+}
+
+// Creates a JSON client list of current connected network
+// Meant to be used for client_list
 std::string ServerList::exportClientList(){
     // Create client list JSON object
     nlohmann::json clientList;
@@ -112,7 +142,8 @@ std::string ServerList::exportClientList(){
         nlohmann::json serverJSON;
 
         // Set fields
-        serverJSON["address"] = "<Address of server>";
+        // Temporary way to find server addresses using ID
+        serverJSON["address"] = serverAddresses[server.first];
 
         // Modified this to be a given number as it needs to be a number for the client to store.
         serverJSON["server-id"] = server.first;
@@ -147,6 +178,8 @@ std::string ServerList::exportClientList(){
     return json_string;
 }
 
+// Creates a JSON list of clients currently connected to servers
+// Meant to be used for client_update
 std::string ServerList::exportUpdate(){
     // Create client list JSON object
     nlohmann::json clientUpdate;
