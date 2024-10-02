@@ -8,11 +8,11 @@ CXXFLAGS = -Wall -std=c++11
 LIBS = -lssl -lcrypto -pthread
 
 CLIENT_FILES=client/*.cpp
-SERVER_FILES=server-files/server_list.cpp
+SERVER_FILES=server-files/*.cpp
 # Targets
 all: userClient server server2 testClient testClient2 testClient3 test-client
 
-test: debug-all server client testClient test.sh test-client-list test-client-aes-encrypt test-client-sha256 test-client-key-gen test-base64
+test: debug-all server server2 client testClient test.sh test-client-list test-client-aes-encrypt test-client-sha256 test-client-key-gen test-base64
 	echo "Running tests..."
 	chmod +x test.sh
 	bash test.sh
@@ -48,7 +48,7 @@ userClient-debug: userClient.cpp
 	$(CXX) $(CXXFLAGS) -g -o $@ $^ $(LIBS) -lz -fno-stack-protector
 
 server-debug: server.cpp
-	$(CXX) $(CXXFLAGS) -g -o $@ $^ $(LIBS) -lz -fno-stack-protector
+	$(CXX) $(CXXFLAGS) -g -o $@ $^ $(LIBS) $(SERVER_FILES) -lz -fno-stack-protector
 
 test-client: test-client-list test-client-aes-encrypt test-client-sha256
 
