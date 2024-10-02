@@ -8,7 +8,7 @@ CXXFLAGS = -Wall -std=c++11
 LIBS = -lssl -lcrypto -pthread
 
 CLIENT_FILES=client/*.cpp
-SERVER_FILES=server-files/server_list.cpp
+SERVER_FILES=server-files/*.cpp
 # Targets
 all: userClient server server2 testClient testClient2 testClient3 test-client
 
@@ -33,9 +33,9 @@ testClient2: testClient2.cpp
 	$(CXX) $(CXXFLAGS) -o $@ $^ $(LIBS) $(CLIENT_FILES)
 testClient3: testClient3.cpp
 	$(CXX) $(CXXFLAGS) -o $@ $^ $(LIBS) $(CLIENT_FILES)
-server: server.cpp server-files/*.cpp
+server: server.cpp
 	$(CXX) $(CXXFLAGS) -o $@ $^ $(LIBS) $(SERVER_FILES) -lz
-server2: server2.cpp server-files/*.cpp
+server2: server2.cpp
 	$(CXX) $(CXXFLAGS) -o $@ $^ $(LIBS) $(SERVER_FILES) -lz
 
 # Clean up build artifacts
@@ -47,8 +47,8 @@ debug-all: userClient-debug testClient server-debug
 userClient-debug: userClient.cpp
 	$(CXX) $(CXXFLAGS) -g -o $@ $^ $(LIBS) -lz -fno-stack-protector
 
-server-debug: server.cpp server-files/*.cpp
-	$(CXX) $(CXXFLAGS) -g -o $@ $^ $(LIBS) -lz -fno-stack-protector
+server-debug: server.cpp
+	$(CXX) $(CXXFLAGS) -g -o $@ $^ $(LIBS) $(SERVER_FILES) -lz -fno-stack-protector
 
 test-client: test-client-list test-client-aes-encrypt test-client-sha256
 
