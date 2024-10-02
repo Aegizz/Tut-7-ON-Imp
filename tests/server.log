@@ -1,24 +1,25 @@
-[2024-10-02 13:21:34] [devel] endpoint constructor
-[2024-10-02 13:21:34] [devel] server constructor
+[2024-10-02 14:36:21] [devel] endpoint constructor
+[2024-10-02 14:36:21] [devel] server constructor
 Starting client thread...
 
 
-Connection initiated from: 127.0.0.1:45996
-Received message: {"data":{"sender":"127.0.0.1:9003","type":"server_hello"}}
-Cancelling server connection timer
-
-Received message: {"type":"client_update_request"}
-
+Connection initiated from: 127.0.0.1:47108
 
 Successfully connected to ws://127.0.0.1:9003
 > Server hello sent
 
+Received message: {"data":{"sender":"127.0.0.1:9003","type":"server_hello"}}
 Sent client update request to 2
+Cancelling server connection timer
+
+Received message: {"type":"client_update_request"}
+Sent client update to 2
+
 Received message: {"clients":[],"type":"client_update"}
 
 
-Connection initiated from: 127.0.0.1:46008
-Received message: {"data":{"public_key":"ABCDEF","time-to-die":"2024-10-02T03:52:36Z","type":"hello"}}
+Connection initiated from: 127.0.0.1:47112
+Received message: {"data":{"public_key":"ABCDEF","time-to-die":"2024-10-02T05:07:23Z","type":"hello"}}
 Cancelling client connection timer
 Sent client update to 2
 
@@ -28,3 +29,7 @@ Sent client list to client 1001
 
 Client 1001 closing their connection
 Sent client update to 2
+
+Server 2 closing outbound connection
+
+Server 2 closing inbound connection
