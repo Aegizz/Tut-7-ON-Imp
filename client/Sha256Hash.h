@@ -16,7 +16,7 @@ class Sha256Hash{
     public:
         Sha256Hash();
         Sha256Hash(std::string input);
-        std::string hashStringSha256(const std::string &input);
+        static std::string hashStringSha256(const std::string &input);
         std::string getHash();
 };
 

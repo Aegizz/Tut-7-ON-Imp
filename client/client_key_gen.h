@@ -17,4 +17,6 @@ class Client_Key_Gen{
         static EVP_PKEY * loadPublicKey(const char* filename);
         static int rsaEncrypt(EVP_PKEY* pubKey, const unsigned char* plaintext, size_t plaintext_len, unsigned char** encrypted);
         static int rsaDecrypt(EVP_PKEY* privKey, const unsigned char* encrypted, size_t encrypted_len, unsigned char** decrypted);
+        static int rsaSign(EVP_PKEY* privKey, const unsigned char* data, size_t data_len, unsigned char** signature);
+        static int rsaVerify(EVP_PKEY* pubKey, const unsigned char* data, size_t data_len, const unsigned char* signature, size_t signature_len);
 };
