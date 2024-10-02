@@ -78,3 +78,5 @@ Alternatively, compile debugClient using ```make test``` which automatically mak
 ### Vulnerability #2
  In the gitignore, there is not ignorance of .pem files, the files used for key generation. This will likely lead to a user or users leaking keys at some point.
  This is a common way that users leak private information on the internet and has potential to cause issues later down the line as commit history cannot be removed.
+### Vulnerability #3
+ Oops! We forgot to discard messages from users where the signature does not match, the message will still be forwarded provided it can be decoded and will identify the user based on their client-id and server-id.

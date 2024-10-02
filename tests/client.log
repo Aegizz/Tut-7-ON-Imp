@@ -1,7 +1,0 @@
-> Created connection with id 0
-> Hello message sent
-> Client list request sent
-
-Client list received: {"servers":[{"address":"127.0.0.1:9002","clients":[{"client-id":1001,"public-key":"ABCDEF"}],"server-id":1},{"address":"127.0.0.1:9003","clients":[],"server-id":2}],"type":"client_list"}
-
-close code: 1000 (Normal close), close reason: Reached end of run

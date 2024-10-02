@@ -1,3 +1,6 @@
+#ifndef CLIENT_KEY_GEN_H
+#define CLIENT_KEY_GEN_H
+
 #include <openssl/evp.h>
 #include <openssl/pem.h>
 #include <openssl/rsa.h>
@@ -20,3 +23,4 @@ class Client_Key_Gen{
         static int rsaSign(EVP_PKEY* privKey, const unsigned char* data, size_t data_len, unsigned char** signature);
         static int rsaVerify(EVP_PKEY* pubKey, const unsigned char* data, size_t data_len, const unsigned char* signature, size_t signature_len);
 };
+#endif
