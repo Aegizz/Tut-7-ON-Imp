@@ -449,7 +449,7 @@ void connect_to_server(client* c, std::string const & uri, int server_id, int re
 
         // Retry after 500ms
         std::this_thread::sleep_for(std::chrono::milliseconds(500));
-        if (retry_attempts < 1000) { 
+        if (retry_attempts < 10) { 
             connect_to_server(c, uri, server_id, retry_attempts + 1);
         } else {
             std::cout << "Exceeded retry limit. Giving up on connecting to " << uri << std::endl;

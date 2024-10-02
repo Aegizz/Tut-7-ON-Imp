@@ -19,4 +19,5 @@ bool aes_gcm_encrypt(const std::vector<unsigned char>& plaintext, const std::vec
 bool aes_gcm_decrypt(const std::vector<unsigned char>& ciphertext, const std::vector<unsigned char>& key,
                      const std::vector<unsigned char>& iv, const std::vector<unsigned char>& tag, std::vector<unsigned char>& decrypted_text);
 
+
 #endif
