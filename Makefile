@@ -47,7 +47,7 @@ debug-all: userClient-debug testClient server-debug
 userClient-debug: userClient.cpp
 	$(CXX) $(CXXFLAGS) -g -o $@ $^ $(LIBS) -lz -fno-stack-protector
 
-server-debug: server.cpp
+server-debug: server.cpp server-files/*
 	$(CXX) $(CXXFLAGS) -g -o $@ $^ $(LIBS) -lz -fno-stack-protector
 
 test-client: test-client-list test-client-aes-encrypt test-client-sha256
