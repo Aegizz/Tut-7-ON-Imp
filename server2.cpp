@@ -18,9 +18,9 @@
 #include "server-files/server_list.h"
 
 // Hard coded server ID + listen port for this server
-const int ServerID = 1; 
-const int listenPort = 9002;
-const std::string myUri = "127.0.0.1:9002";
+const int ServerID = 2; 
+const int listenPort = 9003;
+const std::string myUri = "127.0.0.1:9003";
 
 //Global pointer for client list
 ServerList * global_server_list = nullptr;
@@ -80,7 +80,7 @@ struct connection_data{
     int server_id;
 };
 
-// Functions used to hash connection_hdls
+// Functions used to hash connection_hdl's
 struct connection_hdl_hash {
     std::size_t operator()(websocketpp::connection_hdl hdl) const {
         return std::hash<uintptr_t>()(reinterpret_cast<uintptr_t>(hdl.lock().get()));
@@ -363,7 +363,7 @@ int on_message(server* s, websocketpp::connection_hdl hdl, message_ptr msg) {
 
         con_data->server_address = data["data"]["sender"];
         //con_data->server_id = data["data"]["server_id"];
-
+        
         // Need to add error handling in case foreign or invalid server address is entered
         con_data->server_id = global_server_list->ObtainID(con_data->server_address);
 
@@ -495,7 +495,7 @@ void connect_to_server(client* c, std::string const & uri, int server_id, int re
 
 // Define a map to hold server uris against their IDs
 // Different for each server file
-std::unordered_map<int, std::string> server_uris = {{2, "ws://127.0.0.1:9003"}};
+std::unordered_map<int, std::string> server_uris = {{1, "ws://127.0.0.1:9002"}};
 
 int main(int argc, char * argv[]) {
     // Create a WebSocket++ client instance
@@ -504,7 +504,7 @@ int main(int argc, char * argv[]) {
 
     server echo_server;
 
-    // Initialise server list as server 1
+    // Initialise server list as server 2
     global_server_list = new ServerList(ServerID);
 
     try {
@@ -552,7 +552,7 @@ int main(int argc, char * argv[]) {
         // Detach the client thread so it runs independently
         client_thread.detach();
         
-        // Listen on port 9002
+        // Listen on port 9003
         echo_server.listen(listenPort);
         
         // Start the server accept loop

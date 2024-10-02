@@ -1,5 +1,5 @@
- [devel] endpoint constructor
- [devel] server constructor
+[2024-10-02 13:21:34] [devel] endpoint constructor
+[2024-10-02 13:21:34] [devel] server constructor
 Starting client thread...
 
 
@@ -18,7 +18,7 @@ Received message: {"clients":[],"type":"client_update"}
 
 
 Connection initiated from: 127.0.0.1:46008
-Received message: {"data":{"public_key":"ABCDEF","time-to-die":"<time-to-die>","type":"hello"}}
+Received message: {"data":{"public_key":"ABCDEF","time-to-die":"2024-10-02T03:52:36Z","type":"hello"}}
 Cancelling client connection timer
 Sent client update to 2
 
