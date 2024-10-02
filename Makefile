@@ -12,7 +12,7 @@ SERVER_FILES=server-files/*.cpp
 # Targets
 all: userClient server server2 testClient testClient2 testClient3 test-client
 
-test: debug-all server client testClient test.sh test-client-list test-client-aes-encrypt test-client-sha256 test-client-key-gen test-base64
+test: debug-all server server2 client testClient test.sh test-client-list test-client-aes-encrypt test-client-sha256 test-client-key-gen test-base64
 	echo "Running tests..."
 	chmod +x test.sh
 	bash test.sh

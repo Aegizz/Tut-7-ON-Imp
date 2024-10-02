@@ -3,8 +3,9 @@ set -e
 
 # Start the server in the background, redirecting output to a log file
 ./server > tests/server.log 2>&1 &
+./server2 > tests/server2.log 2>&1 &
 SERVER_PID=$!
-
+SERVER2_PID=$!
 # Wait a moment to ensure the server starts properly
 sleep 2
 
@@ -78,4 +79,5 @@ fi
 
 # Terminate the server process
 kill $SERVER_PID
+kill $SERVER2_PID
 exit 0
