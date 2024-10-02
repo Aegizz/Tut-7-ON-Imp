@@ -105,10 +105,8 @@ std::string SignedData::decryptSignedMessage(std::string message, EVP_PKEY * pri
                 
 
                     // Create vectors to hold the key, ciphertext, iv, and tag
-                    std::cout << "Key: " << decrypted_key << std::endl;
                     std::vector<unsigned char> key = hexToBytes(decrypted_key); // Convert decrypted key to vector
                     std::string iv_str = Base64::decode(data["iv"].get<std::string>());
-                    std::cout << "iv: "<< iv_str << std::endl;
 
                     std::vector<unsigned char> iv = hexToBytes(iv_str);
 
@@ -122,8 +120,7 @@ std::string SignedData::decryptSignedMessage(std::string message, EVP_PKEY * pri
                         std::string tag_str = std::string(chat_str.end() - 32,chat_str.end());
                         // Convert the decoded string to a vector of unsigned char
 
-                        std::cout << "Encrypted chat message: " << message_str << std::endl;
-                        std::cout << "Tag: " << tag_str << std::endl;
+
                         //Convert tag and ciphertext to bytes from hex
                         std::vector<unsigned char> ciphertext = hexToBytes(chat_str);
 

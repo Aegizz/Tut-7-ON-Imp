@@ -31,7 +31,6 @@ class DataMessage{
                 std::cerr << "Error generating random key." << std::endl;
                 return "";
             }
-            std::cout << "Key: " << bytesToHex(key) << std::endl;
             std::vector<unsigned char> char_text(text.begin(), text.end());
             std::vector<unsigned char> encrypted_text, iv(AES_GCM_IV_SIZE), tag(AES_GCM_TAG_SIZE);
 
@@ -42,12 +41,9 @@ class DataMessage{
             }
 
             std::string tagHex = bytesToHex(tag);
-            std::cout << "Tag: " << tagHex << std::endl;
             std::string encrypted_string = bytesToHex(encrypted_text);
-            std::cout << "Encrypted chat message: " << encrypted_string << std::endl;
 
             data["chat"] = Base64::encode(encrypted_string + tagHex);
-            std::cout << "iv: "<< bytesToHex(iv) << std::endl;
             data["iv"] = Base64::encode(bytesToHex(iv));
 
             std::string base64Key = bytesToHex(key);
@@ -67,7 +63,6 @@ class DataMessage{
                     return "";
                 }
             }
-            std::cout << "Returning created output as string" << std::endl;
             return data.dump();
 
 
