@@ -33,9 +33,9 @@ testClient2: testClient2.cpp
 	$(CXX) $(CXXFLAGS) -o $@ $^ $(LIBS) $(CLIENT_FILES)
 testClient3: testClient3.cpp
 	$(CXX) $(CXXFLAGS) -o $@ $^ $(LIBS) $(CLIENT_FILES)
-server: server.cpp
+server: server.cpp server-files/*
 	$(CXX) $(CXXFLAGS) -o $@ $^ $(LIBS) $(SERVER_FILES) -lz
-server2: server2.cpp
+server2: server2.cpp server-files/*
 	$(CXX) $(CXXFLAGS) -o $@ $^ $(LIBS) $(SERVER_FILES) -lz
 
 # Clean up build artifacts
