@@ -50,7 +50,7 @@ class DataMessage{
             std::cout << "iv: "<< bytesToHex(iv) << std::endl;
             data["iv"] = Base64::encode(bytesToHex(iv));
 
-            std::string base64Key = Base64::encode(bytesToHex(key));
+            std::string base64Key = bytesToHex(key);
             const unsigned char * key_encoded = reinterpret_cast<const unsigned char *>(base64Key.c_str());
             // Encrypt the symmetric key with each public key
             for (EVP_PKEY* public_key : public_keys) {
