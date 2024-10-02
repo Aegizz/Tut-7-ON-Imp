@@ -8,6 +8,17 @@
 #include "base64.h"
 #include <nlohmann/json.hpp>
 
+
+std::string bytesToHex(const std::vector<unsigned char>& data) {
+    std::ostringstream oss;
+    for (unsigned char byte : data) {
+        oss << std::setw(2) << std::setfill('0') << std::hex << static_cast<int>(byte);
+    }
+    return oss.str();
+}
+
+
+
 class DataMessage{
     public:
         static std::string generateDataMessage(std::string text, std::vector<EVP_PKEY*> public_keys, std::vector<std::string> server_addresses){
@@ -31,10 +42,8 @@ class DataMessage{
             } else {
                 std::cout << "Encryption successful!" << std::endl;
             }
-            std::cout << "Adding IV" << std::endl;
-            data["iv"] = std::string(iv.begin(), iv.end());
+            data["iv"] = bytesToHex(iv);
 
-            std::cout << "Adding symmetric keys" << std::endl;
 
             // Encrypt the symmetric key with each public key
             for (EVP_PKEY* public_key : public_keys) {
@@ -42,7 +51,7 @@ class DataMessage{
                 size_t symm_key_len = 0;  // Initialize the length
 
                 // Check if encryption is successful
-                if (Client_Key_Gen::rsaEncrypt(public_key, key.data(), key.size(), &symm_key)) {
+                if ((symm_key_len = Client_Key_Gen::rsaEncrypt(public_key, key.data(), key.size(), &symm_key))) {
                     std::string symm_key_string(reinterpret_cast<char*>(symm_key), symm_key_len);
                     data["symm_keys"].push_back(Base64::encode(symm_key_string));
                     OPENSSL_free(symm_key); // Free the allocated memory
@@ -51,7 +60,7 @@ class DataMessage{
                     return "";
                 }
             }
-
+            std::cout << "Returning created output as string" << std::endl;
             return data.dump();
 
 

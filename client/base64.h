@@ -1,3 +1,5 @@
+#ifndef BASE64_H
+#define BASE64_H
 #include <iostream>
 #include <string>
 #include <vector>
@@ -12,3 +14,4 @@ public:
 };
 
 
+#endif

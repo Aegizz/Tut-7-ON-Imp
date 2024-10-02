@@ -7,7 +7,7 @@
 #include <nlohmann/json.hpp>
 #include "client_signature.h"
 #include "client_key_gen.h"
-
+#include "base64.h"
 class SignedData{
     public:
         void static sendSignedMessage(std::string data, EVP_PKEY * private_key, websocket_endpoint* endpoint, int id, int counter);
