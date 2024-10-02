@@ -33,9 +33,9 @@ testClient2: testClient2.cpp
 	$(CXX) $(CXXFLAGS) -o $@ $^ $(LIBS) $(CLIENT_FILES)
 testClient3: testClient3.cpp
 	$(CXX) $(CXXFLAGS) -o $@ $^ $(LIBS) $(CLIENT_FILES)
-server: server.cpp server-files/*
+server: server.cpp server-files/*.cpp
 	$(CXX) $(CXXFLAGS) -o $@ $^ $(LIBS) $(SERVER_FILES) -lz
-server2: server2.cpp server-files/*
+server2: server2.cpp server-files/*.cpp
 	$(CXX) $(CXXFLAGS) -o $@ $^ $(LIBS) $(SERVER_FILES) -lz
 
 # Clean up build artifacts
@@ -47,7 +47,7 @@ debug-all: userClient-debug testClient server-debug
 userClient-debug: userClient.cpp
 	$(CXX) $(CXXFLAGS) -g -o $@ $^ $(LIBS) -lz -fno-stack-protector
 
-server-debug: server.cpp server-files/*
+server-debug: server.cpp server-files/*.cpp
 	$(CXX) $(CXXFLAGS) -g -o $@ $^ $(LIBS) -lz -fno-stack-protector
 
 test-client: test-client-list test-client-aes-encrypt test-client-sha256
