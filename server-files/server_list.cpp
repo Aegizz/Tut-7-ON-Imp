@@ -8,6 +8,7 @@ ServerList::ServerList(int server_id){
     load_mapping_from_file();
 }
 
+// Obtain a server ID from the map using a provided server address
 int ServerList::ObtainID(std::string address){
     for(const auto& server: serverAddresses){
         if(server.second == address){
@@ -15,6 +16,18 @@ int ServerList::ObtainID(std::string address){
         }
     }
     return -1;
+}
+
+// Obtain the uris of the other servers from the map
+std::unordered_map<int, std::string> ServerList::getUris(){
+    std::unordered_map<int, std::string> mapToReturn = serverAddresses;
+
+    for(const auto& address: mapToReturn){
+        std::string uri = "ws://" + address.second;
+        mapToReturn[address.first] = uri;
+    }
+    mapToReturn.erase(my_server_id);
+    return mapToReturn;
 }
 
 // Saves the known users to a mapping file
