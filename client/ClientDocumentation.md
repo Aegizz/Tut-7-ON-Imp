@@ -26,7 +26,9 @@
   Generate a chat message
 
   ```cpp
-    /*Function to take a user message and a vector array of chat participants and convert it to a json string for encrypting in DataMessage*/
+    /*
+        Function to take a user message and a vector array of chat participants and convert it to a json string for encrypting in DataMessage
+    */
     std::string ChatMessage::generateChatMessage(std::string plaintext_message, std::vector<std::string> chat_participants);
   ```
 
@@ -42,5 +44,5 @@
     */
     static std::string DataMessage::generateDataMessage(std::string text, std::vector<EVP_PKEY*> public_keys, std::vector<std::string> server_addresses);
 
-    
+
   ``
