@@ -1,7 +1,7 @@
 #include "aes_encrypt.h"
 
 
-bool aes_gcm_encrypt(const std::vector<unsigned char>& plaintext, const std::vector<unsigned char>& key,
+bool AESGCM::aes_gcm_encrypt(const std::vector<unsigned char>& plaintext, const std::vector<unsigned char>& key,
                      std::vector<unsigned char>& ciphertext, std::vector<unsigned char>& iv, std::vector<unsigned char>& tag) {
     EVP_CIPHER_CTX* ctx = EVP_CIPHER_CTX_new();
     if (!ctx) return false;
@@ -61,7 +61,7 @@ bool aes_gcm_encrypt(const std::vector<unsigned char>& plaintext, const std::vec
     return true;
 }
 
-bool aes_gcm_decrypt(const std::vector<unsigned char>& ciphertext, const std::vector<unsigned char>& key,
+bool AESGCM::aes_gcm_decrypt(const std::vector<unsigned char>& ciphertext, const std::vector<unsigned char>& key,
                      const std::vector<unsigned char>& iv, const std::vector<unsigned char>& tag, std::vector<unsigned char>& decrypted_text) {
     EVP_CIPHER_CTX* ctx = EVP_CIPHER_CTX_new();
     if (!ctx) return false;

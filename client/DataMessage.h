@@ -8,7 +8,7 @@
 #include "base64.h"
 #include <nlohmann/json.hpp>
 
-
+/* Converts bytes to hex to be passed to base64 encoding */
 std::string bytesToHex(const std::vector<unsigned char>& data) {
     std::ostringstream oss;
     for (unsigned char byte : data) {
@@ -21,6 +21,10 @@ std::string bytesToHex(const std::vector<unsigned char>& data) {
 
 class DataMessage{
     public:
+        /* 
+            Used for creating the data in a chat message, currently missing client-info and time-to-die
+            Returns the resultant string to be provided to the websocket or to be signed in signed_data function.
+        */
         static std::string generateDataMessage(std::string text, std::vector<EVP_PKEY*> public_keys, std::vector<std::string> server_addresses){
             nlohmann::json data;
             data["type"] = "chat";
@@ -35,7 +39,7 @@ class DataMessage{
             std::vector<unsigned char> encrypted_text, iv(AES_GCM_IV_SIZE), tag(AES_GCM_TAG_SIZE);
 
             // Encrypt the plaintext
-            if (!aes_gcm_encrypt(char_text, key, encrypted_text, iv, tag)) {
+            if (!AESGCM::aes_gcm_encrypt(char_text, key, encrypted_text, iv, tag)) {
                 std::cerr << "Encryption failed" << std::endl;
                 return "";
             }

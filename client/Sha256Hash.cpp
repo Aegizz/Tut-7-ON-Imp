@@ -1,14 +1,5 @@
 #include "Sha256Hash.h"
 
-Sha256Hash::Sha256Hash(){
-    input_string = "";
-    hash = hashStringSha256(input_string);
-};
-
-Sha256Hash::Sha256Hash(std::string input){
-    input_string = input;
-    hash = hashStringSha256(input);
-}
 
 std::string Sha256Hash::hashStringSha256(const std::string &input){
     unsigned char hash[SHA256_DIGEST_LENGTH];
@@ -22,8 +13,4 @@ std::string Sha256Hash::hashStringSha256(const std::string &input){
         ss << std::hex << std::setw(2) << std::setfill('0') << (int)hash[i];
     }
     return ss.str();
-}
-
-std::string Sha256Hash::getHash(){
-    return hash;
 }
