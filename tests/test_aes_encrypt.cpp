@@ -18,7 +18,7 @@ int main() {
     std::vector<unsigned char> ciphertext, iv, tag, decrypted_text;
 
     // Encrypt the plaintext
-    if (aes_gcm_encrypt(plaintext, key, ciphertext, iv, tag)) {
+    if (AESGCM::aes_gcm_encrypt(plaintext, key, ciphertext, iv, tag)) {
         std::cout << "Encryption successful!" << std::endl;
     } else {
         std::cerr << "Encryption failed!" << std::endl;
@@ -33,7 +33,7 @@ int main() {
     std::cout << std::endl;
 
     // Decrypt the ciphertext
-    if (aes_gcm_decrypt(ciphertext, key, iv, tag, decrypted_text)) {
+    if (AESGCM::aes_gcm_decrypt(ciphertext, key, iv, tag, decrypted_text)) {
         std::string decrypted_str(decrypted_text.begin(), decrypted_text.end());
         std::cout << "Decryption successful!\nDecrypted text: " << decrypted_str << std::endl;
     } else {

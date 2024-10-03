@@ -1,5 +1,8 @@
 #include "signed_data.h"
 
+/*
+    Converts hex To Bytes from the base64 encoding to be passed to the decryption function.
+*/
 std::vector<unsigned char> hexToBytes(const std::string& hex) {
     std::vector<unsigned char> bytes;
     size_t length = hex.length();
@@ -46,9 +49,7 @@ void SignedData::sendSignedMessage(std::string data, EVP_PKEY * private_key, web
     }
 }
 
-/*Function to decrypt a signed messsage's content, does not verify the reciever or check counter
-  Ensure the entire message is provided.
-*/
+
 std::string SignedData::decryptSignedMessage(std::string message, EVP_PKEY * private_key) {
     // Parse the JSON message
     nlohmann::json message_json = nlohmann::json::parse(message);
@@ -133,7 +134,7 @@ std::string SignedData::decryptSignedMessage(std::string message, EVP_PKEY * pri
                         std::vector<unsigned char> actual_ciphertext = hexToBytes(message_str);
                         // Decrypt the message
                         std::vector<unsigned char> decrypted_text;
-                        if (!aes_gcm_decrypt(actual_ciphertext, key, iv, tag, decrypted_text)) {
+                        if (!AESGCM::aes_gcm_decrypt(actual_ciphertext, key, iv, tag, decrypted_text)) {
                             std::cerr << "\nDecryption failed!: AES" << std::endl;
                             return "";
                         }
