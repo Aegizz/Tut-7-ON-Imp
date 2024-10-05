@@ -8,6 +8,7 @@
 
 class HelloMessage{
     public:
+        /* Used for generating server hello messages to server public key to a server to be sent to clients*/
         static std::string generateHelloMessage(EVP_PKEY * publicKey){
             nlohmann::json data;
             data["type"] = "hello";

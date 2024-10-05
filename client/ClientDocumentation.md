@@ -21,6 +21,15 @@
 
 ```
 
+### Sending a client hello
+
+  This message is sent when first connection to a server to establish your public key.
+  ```cpp
+            /* Used for generating server hello messages to server public key to a server to be sent to clients*/
+          std::string generateHelloMessage(EVP_PKEY * publicKey);
+  ```
+
+
 ### Generating a chat message 
 
   Generate a chat message
