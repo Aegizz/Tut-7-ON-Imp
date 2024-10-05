@@ -47,7 +47,7 @@ server3: server3.cpp
 
 # Clean up build artifacts
 clean:
-	rm -f userClient server server2 server3 client-debug server-debug testClient testClient2 testClient3 tests/server.log tests/client.log debugClient test-client-sha256 test-client-aes-encrypt test-client-list test-base64 test-client-key-gen test-client-signature test-client-chat-message test-client-data-message test-client-signed-data userClient userClient-debug
+	rm -f userClient server server2 server3 client-debug server-debug testClient testClient2 testClient3 tests/server.log tests/client.log debugClient test-client-sha256 test-client-aes-encrypt test-client-list test-base64 test-client-key-gen test-client-signature test-client-chat-message test-client-data-message test-client-signed-data userClient userClient-debug test-chat-message test-hello-message test-data-message
 
 debug-all: userClient-debug testClient server-debug
 
