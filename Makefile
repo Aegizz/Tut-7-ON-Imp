@@ -73,15 +73,15 @@ test-client-signature: client/base64.cpp client/client_key_gen.cpp client/client
 	$(CXX) $(CXXFLAGS) -g -o $@ $^ $(LIBS)
 test-client-signed-data: client/*.cpp tests/test_signed_data.cpp
 	$(CXX) $(CXXFLAGS) -g -o $@ $^ $(LIBS)
-test-data-message: client/aes_encrypt.cpp client/client_key_gen.cpp client/base64.cpp tests/test_data_message.cpp
+test-data-message: client/aes_encrypt.cpp client/client_key_gen.cpp client/base64.cpp tests/test_data_message.cpp client/hexToBytes.cpp
 	$(CXX) $(CXXFLAGS) -g -o $@ $^ $(LIBS)
-test-chat-message: client/aes_encrypt.cpp client/client_key_gen.cpp client/base64.cpp tests/test_chat_message.cpp
+test-chat-message: client/aes_encrypt.cpp client/client_key_gen.cpp client/base64.cpp tests/test_chat_message.cpp client/hexToBytes.cpp
 	$(CXX) $(CXXFLAGS) -g -o $@ $^ $(LIBS)
-test-hello-message: client/client_key_gen.cpp tests/test_hello_message.cpp
+test-hello-message: client/client_key_gen.cpp tests/test_hello_message.cpp client/hexToBytes.cpp
 	$(CXX) $(CXXFLAGS) -g -o $@ $^ $(LIBS)
-test-fingerprint: tests/test_fingerprint.cpp client/client_key_gen.cpp client/base64.cpp client/Sha256Hash.cpp
+test-fingerprint: tests/test_fingerprint.cpp client/client_key_gen.cpp client/base64.cpp client/Sha256Hash.cpp client/hexToBytes.cpp
 	$(CXX) $(CXXFLAGS) -g -o $@ $^ $(LIBS)
-test-public-chat-message: tests/test_public_chat_message.cpp client/client_key_gen.cpp client/base64.cpp client/Sha256Hash.cpp
+test-public-chat-message: tests/test_public_chat_message.cpp client/client_key_gen.cpp client/base64.cpp client/Sha256Hash.cpp client/hexToBytes.cpp
 	$(CXX) $(CXXFLAGS) -g -o $@ $^ $(LIBS)
 test-message-generator: tests/test_message_generator.cpp
 	$(CXX) $(CXXFLAGS) -g -o $@ $^ $(LIBS) $(CLIENT_FILES)
