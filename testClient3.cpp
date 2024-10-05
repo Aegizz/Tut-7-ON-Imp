@@ -160,7 +160,7 @@ int main() {
     std::string input;
     websocket_endpoint endpoint;
 
-    int initId = endpoint.connect("ws://localhost:9002", global_client_list);
+    int initId = endpoint.connect("ws://localhost:9004", global_client_list);
     //int initId = endpoint.connect("ws://172.30.30.134:9002");
     if (initId != -1) {
         std::cout << "> Created connection with id " << initId << std::endl;

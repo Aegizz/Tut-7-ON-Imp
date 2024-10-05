@@ -3,13 +3,13 @@
 
 #include <string>
 #include <vector>
+#include <sstream>
 #include "aes_encrypt.h"
 #include "client_key_gen.h"
 #include "base64.h"
 #include <string>
 #include <vector>
 #include <iostream>
-#include <sstream>
 #include <nlohmann/json.hpp>
 
 /* Converts bytes to hex to be passed to base64 encoding */
@@ -21,6 +21,17 @@ std::string bytesToHex(const std::vector<unsigned char>& data) {
     return oss.str();
 }
 
+/* Converts hex to bytes when decoding from base64 
+   A function in signed_data.cpp causes issues with test_signed_data.cpp if this function is called hexToBytes*/
+std::string hexToBytesString(const std::string& hex) {
+    std::string bytes;
+    for (size_t i = 0; i < hex.length(); i += 2) {
+        std::string byteString = hex.substr(i, 2);  // Take two characters (1 byte)
+        unsigned char byte = (unsigned char) strtol(byteString.c_str(), nullptr, 16);  // Convert hex to byte
+        bytes.push_back(byte);
+    }
+    return bytes;
+}
 
 class DataMessage{
     public:
@@ -38,6 +49,7 @@ class DataMessage{
                 std::cerr << "Error generating random key." << std::endl;
                 return "";
             }
+
             std::vector<unsigned char> char_text(text.begin(), text.end());
             std::vector<unsigned char> encrypted_text, iv(AES_GCM_IV_SIZE), tag(AES_GCM_TAG_SIZE);
 
@@ -54,6 +66,7 @@ class DataMessage{
             data["iv"] = Base64::encode(bytesToHex(iv));
 
             std::string base64Key = bytesToHex(key);
+
             const unsigned char * key_encoded = reinterpret_cast<const unsigned char *>(base64Key.c_str());
             // Encrypt the symmetric key with each public key
             for (EVP_PKEY* public_key : public_keys) {

@@ -14,7 +14,7 @@ class ChatMessage{
             for (int i = 0; i < chat_participants.size(); i++){
                 json_chat["participants"].push_back(chat_participants[i]);
             }
-            //coulld use datamessage function here to add signed_data information
+            //could use datamessage function here to add signed_data information
             return json_chat.dump();
         }
 };
