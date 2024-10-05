@@ -10,7 +10,7 @@ LIBS = -lssl -lcrypto -pthread
 CLIENT_FILES=client/*.cpp
 SERVER_FILES=server-files/*.cpp
 # Targets
-all: userClient server server2 testClient testClient2 testClient3 test-client
+all: userClient server server2 server3 testClient testClient2 testClient3 test-client
 
 test: debug-all server server2 client testClient test.sh test-client-list test-client-aes-encrypt test-client-sha256 test-client-key-gen test-base64 test-client-signature test-client-signed-data
 	echo "Running tests..."
@@ -35,14 +35,21 @@ testClient2: testClient2.cpp
 	$(CXX) $(CXXFLAGS) -o $@ $^ $(LIBS) $(CLIENT_FILES)
 testClient3: testClient3.cpp
 	$(CXX) $(CXXFLAGS) -o $@ $^ $(LIBS) $(CLIENT_FILES)
+
+testClients: testClient testClient2 testClient3
+servers: server server2 server3
+
+
 server: server.cpp
 	$(CXX) $(CXXFLAGS) -o $@ $^ $(LIBS) $(SERVER_FILES) -lz
 server2: server2.cpp
 	$(CXX) $(CXXFLAGS) -o $@ $^ $(LIBS) $(SERVER_FILES) -lz
+server3: server3.cpp
+	$(CXX) $(CXXFLAGS) -o $@ $^ $(LIBS) $(SERVER_FILES) -lz
 
 # Clean up build artifacts
 clean:
-	rm -f userClient server server2 client-debug server-debug testClient testClient2 testClient3 tests/server.log tests/client.log debugClient test-client-sha256 test-client-aes-encrypt test-client-list test-base64 test-client-key-gen userClient userClient-debug
+	rm -f userClient server server2 server3 client-debug server-debug testClient testClient2 testClient3 tests/server.log tests/client.log debugClient test-client-sha256 test-client-aes-encrypt test-client-list test-base64 test-client-key-gen userClient userClient-debug
 
 debug-all: userClient-debug testClient server-debug
 
