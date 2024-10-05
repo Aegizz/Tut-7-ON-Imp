@@ -18,6 +18,7 @@
 #include "server-files/server_list.h"
 #include "server-files/server_utilities.h"
 #include "server-files/server_key_gen.h"
+#include "server-files/server_signature.h"
 
 // Hard coded server ID + listen port for this server
 const int ServerID = 1; 
@@ -182,7 +183,19 @@ int on_message(server* s, websocketpp::connection_hdl hdl, message_ptr msg) {
         //con_data->server_id = data["data"]["server_id"];
 
         // Need to add error handling in case foreign or invalid server address is entered
+        std::string server_signature = data["signature"];
+
         con_data->server_id = global_server_list->ObtainID(con_data->server_address);
+
+        EVP_PKEY* serverPKey = global_server_list->getPKey(con_data->server_id);
+
+        if(!ServerSignature::verifySignature(server_signature, data["data"], serverPKey)){
+            s->close(hdl, websocketpp::close::status::policy_violation, "Server signature could not be verified.");
+            if(connection_map.find(hdl) != connection_map.end()){
+                connection_map.erase(hdl);
+            }
+            return -1;
+        }
 
         // Check if an existing connection exists
         for(const auto& connectPair: inbound_server_server_map){

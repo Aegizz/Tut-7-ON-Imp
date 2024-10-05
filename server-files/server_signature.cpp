@@ -1,4 +1,5 @@
 #include "server_signature.h"
+#include "server_list.h"
 
 /*Generates a signature from a message based on a client's private key. Will concatenate counter for you does not need to be included*/
 std::string ServerSignature::generateSignature(std::string message, EVP_PKEY *private_key, std::string counter) {

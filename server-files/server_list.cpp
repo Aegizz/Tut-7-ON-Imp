@@ -1,11 +1,37 @@
 #include "server_list.h"
 
+void handleErrors() {
+    ERR_print_errors_fp(stderr);
+    abort();
+}
+
 // Initialise server list with inputted server id and load from mapping file
 ServerList::ServerList(int server_id){
     // Set my server id
     my_server_id = server_id;
 
     load_mapping_from_file();
+}
+
+EVP_PKEY* ServerList::getPKey(int server_id){
+    std::unordered_map<int, std::string>::const_iterator found_server = knownServers.find(server_id);
+    if(found_server == knownServers.end()){
+        std::cout << "Unknown Server" << std::endl;
+        return NULL;
+    }
+    
+    BIO* bio = BIO_new_mem_buf(found_server->second.data(), -1);  // Create a BIO for the key string
+    if (!bio) handleErrors();
+
+    EVP_PKEY* serverPKey = PEM_read_bio_PUBKEY(bio, NULL, NULL, NULL);  // Read PEM public key
+    BIO_free(bio);  // Free the BIO after use
+
+    if (!serverPKey) {
+        std::cerr << "Error loading public key from string." << std::endl;
+        handleErrors();
+    }
+    
+    return serverPKey;
 }
 
 // Obtain a server ID from the map using a provided server address
@@ -44,7 +70,7 @@ void ServerList::save_mapping_to_file() {
 }
 
 // Reads the known users for this server from a mapping file
-void ServerList::load_mapping_from_file() {
+void ServerList::load_mapping_from_file(){
     // Generate mapping file name
     std::string filename = "server-files/server_mapping";
     filename.append(std::to_string(my_server_id));
@@ -58,11 +84,11 @@ void ServerList::load_mapping_from_file() {
     }
 
     // Parse file to JSON object
-    nlohmann::json j_map;
-    file >> j_map;
+    nlohmann::json j_client_map;
+    file >> j_client_map;
 
     // Convert JSON object to map and store
-    knownClients = j_map.get<std::unordered_map<int, std::string>>();
+    knownClients = j_client_map.get<std::unordered_map<int, std::string>>();
 
     // Find and set last ID used so new clients get correct ID
     int largestID=0;
@@ -72,6 +98,18 @@ void ServerList::load_mapping_from_file() {
         }
     }
     clientID = largestID;
+
+    // Server Map file loading
+    filename = "server-files/neighbourhood_mapping.json";
+
+    std::ifstream file(filename);
+    if(!file)
+        return;
+
+    nlohmann::json j_server_map;
+    file >> j_server_map;
+
+    knownServers = j_server_map.get<std::unordered_map<int, std::string>>();
 }
 
 // Retrieves a client's public key using its server and client ids
