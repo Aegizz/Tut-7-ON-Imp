@@ -2,23 +2,28 @@
  [devel] server constructor
 Starting client thread...
 
+Connection to ws://127.0.0.1:9004 failed, retrying in 500ms...
+Connection to ws://127.0.0.1:9004 failed, retrying in 500ms...
 
-Connection initiated from: 127.0.0.1:47108
+Connection initiated from: 127.0.0.1:39416
 
 Successfully connected to ws://127.0.0.1:9003
 > Server hello sent
 
-Received message: {"data":{"sender":"127.0.0.1:9003","type":"server_hello"}}
 Sent client update request to 2
+Connection to ws://127.0.0.1:9004 failed, retrying in 500ms...
+Received message: {"data":{"sender":"127.0.0.1:9003","type":"server_hello"}}
 Cancelling server connection timer
 
 Received message: {"type":"client_update_request"}
 Sent client update to 2
 
 Received message: {"clients":[],"type":"client_update"}
+Connection to ws://127.0.0.1:9004 failed, retrying in 500ms...
 
+Connection to ws://127.0.0.1:9004 failed, retrying in 500ms...
 
-Connection initiated from: 127.0.0.1:47112
+Connection initiated from: 127.0.0.1:39422
 Received message: {"data":{"public_key":"ABCDEF","time-to-die":"<time-to-die>","type":"hello"}}
 Cancelling client connection timer
 Sent client update to 2
@@ -26,6 +31,13 @@ Sent client update to 2
 Received message: {"type":"client_list_request"}
 Sent client list to client 1001
 
+Connection to ws://127.0.0.1:9004 failed, retrying in 500ms...
+Connection to ws://127.0.0.1:9004 failed, retrying in 500ms...
+Connection to ws://127.0.0.1:9004 failed, retrying in 500ms...
+Connection to ws://127.0.0.1:9004 failed, retrying in 500ms...
+Connection to ws://127.0.0.1:9004 failed, retrying in 500ms...
+Connection to ws://127.0.0.1:9004 failed, retrying in 500ms...
+Exceeded retry limit. Giving up on connecting to ws://127.0.0.1:9004
 
 Client 1001 closing their connection
 Sent client update to 2
