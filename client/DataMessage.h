@@ -7,6 +7,9 @@
 #include "aes_encrypt.h"
 #include "client_key_gen.h"
 #include "base64.h"
+#include <string>
+#include <vector>
+#include <iostream>
 #include <nlohmann/json.hpp>
 
 /* Converts bytes to hex to be passed to base64 encoding */

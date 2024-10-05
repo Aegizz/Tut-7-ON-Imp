@@ -1,13 +1,8 @@
 # Implementation of Olaf-Neighbourhood Protocol for Tutorial 7
 
-- Code server in C++
-- Code client in C++
+Use the makefile for compiling.
 
-We need to come to some consensus on what parameters to use.
-
-Use a makefile for compiling.
-
-Feel free to modify this code to implement your vulnerabilties. As far as I am aware we will need to code the frontend of our applications and agree on some methodology of communication.
+Run these commands to be able to use the websocketpp and nlohmann JSON C++ libraries.
 
 ```bash
 sudo apt-get install libboost-all-dev && sudo apt-get install libssl-dev && sudo apt-get install zlib1g-dev
@@ -38,35 +33,35 @@ cmake ..
 
 sudo make install
 ```
-# Running the client-server
 
-To compile the client-server use the following commands
-
-```bash
-
-make client
-
-./client
-
-make server
-
-./server
-
-```
-
-To establish connection between client and server, run in client ```connect ws://localhost:9002```
-
-Alternatively, compile debugClient using ```make test``` which automatically makes a connection (make sure server is running before debugClient)
+# Running Clients and Servers
+- Currently there exists server, server2 and server3.
+  
+    - server runs on ws://localhost:9002, server1 runs on ws://localhost:9003 and server3 runs on ws://localhost:9004
+  
+    - To compile servers, run ```make servers```
+  
+- Currently there exists testClient, testClient2 and testClient3 as well as userClient (which takes input from stdin)
+  
+    - testClient connects to server, testClient2 connects to server2 and testClient3 connects to server3
+  
+    - To compile test clients, run ```make testClients```
+  
+    - To compile userClient, run ```make userClient```
+  
 
 # Current Implemented Features
-- Client <-> Server communication with multiple clients able to connect
-- Client sends hello message when connecting with public key (not implemented RSA yet)
+- Client <-> Server communication with multiple clients able to connect to a server
+- Server <-> Server communication with multiple clients and servers able to connect to each server
+- Client sends hello message when connecting with public key (implemented but not integrated RSA yet) (signed data not integrated yet)
 - Client sends client list request
 - Client generates UTC timestamp in ISO 8601 format for TTD in broadcasted packets
-    - TTD not implemented
-- Client can send message to server (no encryption yet)
-- Server can process hello message from client
+    - TTD not implemented yet
+- Server can process hello message from client (signed data not integrated yet)
+- Server can process server_hello message from server (signed data not integrated yet)
 - Server can send client list to client
+- Server can request client update from server
+- Server can send client update to server
 
 # Vulnerable Code
 
