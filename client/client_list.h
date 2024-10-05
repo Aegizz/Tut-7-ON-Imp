@@ -5,6 +5,9 @@
 #include <utility> //For pair
 #include <nlohmann/json.hpp> // For JSON library
 #include <iostream>
+
+/* For implementing later on when introducing fingerprints, create a struct that points to both the public_key and SHA256(Public Key)*/
+
 class ClientList{
     private:
     // Idea being that each server maps to another map, this ensure that we can access each server from their ID and each client from their server ID.
