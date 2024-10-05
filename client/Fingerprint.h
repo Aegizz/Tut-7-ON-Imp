@@ -9,6 +9,7 @@
 
 class Fingerprint{
     public:
+        /* Used to create a fingerprint used in public chat hello messages */
         static std::string generateFingerprint(EVP_PKEY * publicKey){
             BIO * bio = BIO_new(BIO_s_mem());
             if (!PEM_write_bio_PUBKEY(bio, publicKey)){
