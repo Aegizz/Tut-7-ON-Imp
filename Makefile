@@ -83,3 +83,5 @@ test-fingerprint: tests/test_fingerprint.cpp client/client_key_gen.cpp client/ba
 	$(CXX) $(CXXFLAGS) -g -o $@ $^ $(LIBS)
 test-public-chat-message: tests/test_public_chat_message.cpp client/client_key_gen.cpp client/base64.cpp client/Sha256Hash.cpp
 	$(CXX) $(CXXFLAGS) -g -o $@ $^ $(LIBS)
+test-message-generator: tests/test_message_generator.cpp
+	$(CXX) $(CXXFLAGS) -g -o $@ $^ $(LIBS) $(CLIENT_FILES)

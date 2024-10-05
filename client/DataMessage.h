@@ -38,6 +38,8 @@ class DataMessage{
         /* 
             Used for creating the data in a chat message, currently missing client-info and time-to-die
             Returns the resultant string to be provided to the websocket or to be signed in signed_data function.
+
+            Need to add client and server id will ask around
         */
         static std::string generateDataMessage(std::string text, std::vector<EVP_PKEY*> public_keys, std::vector<std::string> server_addresses){
             nlohmann::json data;
