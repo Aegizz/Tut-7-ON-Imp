@@ -51,7 +51,7 @@
 
 //Self made client list implementation
 #include "client/client_list.h"
-//Self mage AES GCM Encryption with OpenSSL
+//Self made AES GCM Encryption with OpenSSL
 #include "client/aes_encrypt.h"
 
 // Hard coded public key for this client instance

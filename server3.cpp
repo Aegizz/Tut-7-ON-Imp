@@ -18,6 +18,7 @@
 #include "server-files/server_list.h"
 #include "server-files/server_utilities.h"
 #include "server-files/server_key_gen.h"
+#include "server-files/server_signature.h"
 
 // Hard coded server ID + listen port for this server
 const int ServerID = 3; 
@@ -186,14 +187,19 @@ int on_message(server* s, websocketpp::connection_hdl hdl, message_ptr msg) {
 
         con_data->server_id = global_server_list->ObtainID(con_data->server_address);
 
+        // Obtain Public server's public key from mapping
         EVP_PKEY* serverPKey = global_server_list->getPKey(con_data->server_id);
 
-        if(!ServerSignature::verifySignature(server_signature, data["data"], serverPKey)){
+        // Verify signature and close connection if invalid
+        if(!ServerSignature::verifySignature(server_signature, data["data"].dump() + "12345", serverPKey)){
+            std::cout << "Invalid signature for server " << con_data->server_id << std::endl;
             s->close(hdl, websocketpp::close::status::policy_violation, "Server signature could not be verified.");
             if(connection_map.find(hdl) != connection_map.end()){
                 connection_map.erase(hdl);
             }
             return -1;
+        }else{
+            std::cout << "Verified signature of server " << con_data->server_id << std::endl;
         }
 
         // Check if an existing connection exists
@@ -245,7 +251,7 @@ int on_message(server* s, websocketpp::connection_hdl hdl, message_ptr msg) {
                     // Initialize ASIO for the client
                     ws_client.init_asio();
 
-                    serverUtilities->connect_to_server(&ws_client, server_uri, serverID, &outbound_server_server_map);
+                    serverUtilities->connect_to_server(&ws_client, server_uri, serverID, privKey, 12345, &outbound_server_server_map);
 
                     ws_client.run();
 
@@ -341,7 +347,7 @@ int main(int argc, char * argv[]) {
 
             // Loop through the server URIs and attempt connections
             for(const auto& uri: server_uris){
-                serverUtilities->connect_to_server(&ws_client, uri.second, uri.first, &outbound_server_server_map);
+                serverUtilities->connect_to_server(&ws_client, uri.second, uri.first, privKey, 12345, &outbound_server_server_map);
                 
             }
 
@@ -363,9 +369,15 @@ int main(int argc, char * argv[]) {
 
     } catch (const websocketpp::exception & e) {
         std::cout << "WebSocket++ exception: " << e.what() << std::endl;
+        EVP_PKEY_free(privKey);
+        EVP_PKEY_free(pubKey);
     } catch (const std::exception & e) {
         std::cout << "Standard exception: " << e.what() << std::endl;
+        EVP_PKEY_free(privKey);
+        EVP_PKEY_free(pubKey);
     } catch (...) {
         std::cout << "Unknown exception" << std::endl;
+        EVP_PKEY_free(privKey);
+        EVP_PKEY_free(pubKey);
     }
 }

@@ -13,6 +13,7 @@ ServerList::ServerList(int server_id){
     load_mapping_from_file();
 }
 
+// Function to obtain server's public key from neighbourhood mapping
 EVP_PKEY* ServerList::getPKey(int server_id){
     std::unordered_map<int, std::string>::const_iterator found_server = knownServers.find(server_id);
     if(found_server == knownServers.end()){
@@ -21,16 +22,17 @@ EVP_PKEY* ServerList::getPKey(int server_id){
     }
     
     BIO* bio = BIO_new_mem_buf(found_server->second.data(), -1);  // Create a BIO for the key string
-    if (!bio) handleErrors();
+    //BIO* bio = BIO_new_mem_buf(found_server->second.data(), -1);  // Create a BIO for the key string
+    if (!bio) ::handleErrors(); // Must be fully qualified call to avoid compiler errors
 
     EVP_PKEY* serverPKey = PEM_read_bio_PUBKEY(bio, NULL, NULL, NULL);  // Read PEM public key
     BIO_free(bio);  // Free the BIO after use
 
     if (!serverPKey) {
         std::cerr << "Error loading public key from string." << std::endl;
-        handleErrors();
+        ::handleErrors(); // Must be fully qualified call to avoid compiler errors
     }
-    
+
     return serverPKey;
 }
 
@@ -77,15 +79,15 @@ void ServerList::load_mapping_from_file(){
     filename.append(".json");
 
     // Load the map from file name
-    std::ifstream file(filename);
+    std::ifstream clientMapFile(filename);
     // Check if file exists
-    if(!file){
+    if(!clientMapFile){
         return;
     }
 
     // Parse file to JSON object
     nlohmann::json j_client_map;
-    file >> j_client_map;
+    clientMapFile >> j_client_map;
 
     // Convert JSON object to map and store
     knownClients = j_client_map.get<std::unordered_map<int, std::string>>();
@@ -102,12 +104,12 @@ void ServerList::load_mapping_from_file(){
     // Server Map file loading
     filename = "server-files/neighbourhood_mapping.json";
 
-    std::ifstream file(filename);
-    if(!file)
+    std::ifstream neighbourhoodFile(filename);
+    if(!neighbourhoodFile)
         return;
 
     nlohmann::json j_server_map;
-    file >> j_server_map;
+    neighbourhoodFile >> j_server_map;
 
     knownServers = j_server_map.get<std::unordered_map<int, std::string>>();
 }

@@ -31,6 +31,9 @@
 #include <websocketpp/config/asio_no_tls_client.hpp>
 #include <websocketpp/client.hpp>
 
+#include "client/websocket_endpoint.h"
+#include "client/websocket_metadata.h"
+
 #include <websocketpp/common/thread.hpp>
 #include <websocketpp/common/memory.hpp>
 
@@ -48,9 +51,9 @@
 
 //Self made client list implementation
 #include "client/client_list.h"
-#include "client/websocket_endpoint.h"
-#include "client/websocket_metadata.h"
-#include "client/client.h"
+//Self made AES GCM Encryption with OpenSSL
+#include "client/aes_encrypt.h"
+
 // Hard coded public key for this client instance
 //const std::string PUBLIC_KEY = "ABCDEF";
 //const std::string PUBLIC_KEY = "GHIJKL";

@@ -241,9 +241,18 @@ void ServerUtilities::connect_to_server(client* c, std::string const & uri, int 
             outbound_server_server_map->erase(hdl);
         }
 
-        // Attempt to reconnect
-        std::cout << "Trying to reconnect to server " << server_id << std::endl;
-        connect_to_server(c, uri, server_id, private_key, counter, outbound_server_server_map);
+        // Get connection pointer from the connection handle
+        client::connection_ptr con = c->get_con_from_hdl(hdl);
+
+        // Extract the close reason and close code
+        if(con->get_remote_close_reason() != "Server signature could not be verified."){
+            // Attempt to reconnect
+            std::cout << "Trying to reconnect to server " << server_id << std::endl;
+            connect_to_server(c, uri, server_id, private_key, counter, outbound_server_server_map);
+        }else{
+            std::cout << "Invalid signature sent in hello" << std::endl;
+            return;
+        }
     });
 
     // Try to connect to the server
