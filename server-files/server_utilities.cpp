@@ -46,8 +46,31 @@ bool ServerUtilities::is_connection_open(client* c, websocketpp::connection_hdl 
     return false;
 }
 
+/*
+    Converts hex To Bytes from the base64 encoding to be passed to the decryption function.
+*/
+std::vector<unsigned char> hexToBytes(const std::string& hex) {
+    std::vector<unsigned char> bytes;
+    size_t length = hex.length();
+
+    // Ensure the length of hex string is even
+    if (length % 2 != 0) {
+        throw std::invalid_argument("Hex string must have an even length.");
+    }
+
+    for (size_t i = 0; i < length; i += 2) {
+        std::string byteString = hex.substr(i, 2); // Get two characters
+        unsigned char byte = static_cast<unsigned char>(strtol(byteString.c_str(), nullptr, 16));
+        bytes.push_back(byte);
+    }
+    
+    return bytes;
+}
+
 // Send server hello message
-int ServerUtilities::send_server_hello(client* c, websocketpp::connection_hdl hdl){
+int ServerUtilities::send_server_hello(client* c, websocketpp::connection_hdl hdl, EVP_PKEY* private_key, int counter){
+    nlohmann::json signedMessage;
+
     nlohmann::json data;
 
     // Format server_hello message
@@ -55,24 +78,27 @@ int ServerUtilities::send_server_hello(client* c, websocketpp::connection_hdl hd
     data["sender"] = myUri;
     //data["server_id"] = ServerID;
 
-    nlohmann::json serverHello;
+    // Should this be passed in as a string or a JSON object?
+    std::string data_string = data.dump();
 
-    serverHello["data"] = data;
+    signedMessage["type"] = "signed_data";
+    signedMessage["data"] = data;
+    signedMessage["counter"] = counter;
+    signedMessage["signature"] = ServerSignature::generateSignature(data_string, private_key, std::to_string(counter));
 
-    // Serialize JSON object
-    std::string json_string = serverHello.dump();
+    std::string message_string = signedMessage.dump();
 
     // Send the message via the connection
     if(!is_connection_open(c, hdl)){
         std::cout << "Connection is not open to send server hello" << std::endl;
-        return -1;
+        return 1;
     }
     websocketpp::lib::error_code ec;
-    c->send(hdl, json_string, websocketpp::frame::opcode::text, ec);
+    c->send(hdl, message_string, websocketpp::frame::opcode::text, ec);
 
     if (ec) {
         std::cout << "> Error sending server hello message: " << ec.message() << std::endl;
-        return -1;
+        return 1;
     } else {
         std::cout << "> Server hello sent" << "\n" << std::endl;
         return 0;
@@ -158,7 +184,7 @@ void ServerUtilities::broadcast_client_lists(std::unordered_map<websocketpp::con
 }
 
 // Define a function that will handle the client connections retry logic
-void ServerUtilities::connect_to_server(client* c, std::string const & uri, int server_id, std::unordered_map<websocketpp::connection_hdl, std::shared_ptr<connection_data>, connection_hdl_hash, connection_hdl_equal>* outbound_server_server_map, int retry_attempts) {
+void ServerUtilities::connect_to_server(client* c, std::string const & uri, int server_id, EVP_PKEY* private_key, int counter, std::unordered_map<websocketpp::connection_hdl, std::shared_ptr<connection_data>, connection_hdl_hash, connection_hdl_equal>* outbound_server_server_map, int retry_attempts) {
     for(const auto& connection: *outbound_server_server_map){
         if(connection.second->server_id == server_id){
             std::cout << "Outbound connection already exists to server " << server_id << std::endl;
@@ -175,23 +201,23 @@ void ServerUtilities::connect_to_server(client* c, std::string const & uri, int 
     }
 
     // Set fail handler to retry if connection fails
-    con->set_fail_handler([this, c, uri, server_id, outbound_server_server_map, retry_attempts](websocketpp::connection_hdl hdl) {
+    con->set_fail_handler([this, c, uri, server_id, private_key, counter, outbound_server_server_map, retry_attempts](websocketpp::connection_hdl hdl) {
         std::cout << "Connection to " << uri << " failed, retrying in 500ms..." << std::endl;
 
         // Retry after 500ms
         std::this_thread::sleep_for(std::chrono::milliseconds(500));
         if (retry_attempts < 10) { 
-            connect_to_server(c, uri, server_id, outbound_server_server_map, retry_attempts + 1);
+            connect_to_server(c, uri, server_id, private_key, counter, outbound_server_server_map, retry_attempts + 1);
         } else {
             std::cout << "Exceeded retry limit. Giving up on connecting to " << uri << std::endl;
         }
     });
 
     // Set open handler when connection succeeds
-    con->set_open_handler([this, c, uri, server_id, outbound_server_server_map](websocketpp::connection_hdl hdl) {
+    con->set_open_handler([this, c, uri, server_id, private_key, counter, outbound_server_server_map](websocketpp::connection_hdl hdl) {
         std::cout << "\nSuccessfully connected to " << uri << std::endl;
 
-        send_server_hello(c, hdl);
+        send_server_hello(c, hdl, private_key, counter);
         
         auto con_data = std::make_shared<connection_data>();
         con_data->client_instance = c;
@@ -207,7 +233,7 @@ void ServerUtilities::connect_to_server(client* c, std::string const & uri, int 
     });
 
     // Handler for when another server closes connection
-    con->set_close_handler([this, c, uri, server_id, outbound_server_server_map](websocketpp::connection_hdl hdl) {
+    con->set_close_handler([this, c, uri, server_id, private_key, counter, outbound_server_server_map](websocketpp::connection_hdl hdl) {
         std::cout << "\nServer " << server_id << " closing outbound connection" << std::endl;
 
         // Erase connection from outbound connection map
@@ -217,7 +243,7 @@ void ServerUtilities::connect_to_server(client* c, std::string const & uri, int 
 
         // Attempt to reconnect
         std::cout << "Trying to reconnect to server " << server_id << std::endl;
-        connect_to_server(c, uri, server_id, outbound_server_server_map);
+        connect_to_server(c, uri, server_id, private_key, counter, outbound_server_server_map);
     });
 
     // Try to connect to the server

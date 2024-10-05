@@ -233,7 +233,7 @@ int on_message(server* s, websocketpp::connection_hdl hdl, message_ptr msg) {
                     // Initialize ASIO for the client
                     ws_client.init_asio();
 
-                    serverUtilities->connect_to_server(&ws_client, server_uri, serverID, &outbound_server_server_map);
+                    serverUtilities->connect_to_server(&ws_client, server_uri, serverID, privKey, 12345, &outbound_server_server_map);
 
                     ws_client.run();
 
@@ -329,7 +329,7 @@ int main(int argc, char * argv[]) {
 
             // Loop through the server URIs and attempt connections
             for(const auto& uri: server_uris){
-                serverUtilities->connect_to_server(&ws_client, uri.second, uri.first, &outbound_server_server_map);
+                serverUtilities->connect_to_server(&ws_client, uri.second, uri.first, privKey, 12345, &outbound_server_server_map);
                 
             }
 

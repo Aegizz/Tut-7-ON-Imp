@@ -8,7 +8,7 @@ CXXFLAGS = -Wall -std=c++11
 LIBS = -lssl -lcrypto -pthread
 
 CLIENT_FILES=client/*.cpp
-SERVER_FILES=server-files/*.cpp
+SERVER_FILES=server-files/*.cpp client/Sha256Hash.cpp client/base64.cpp
 # Targets
 all: userClient server server2 server3 testClient testClient2 testClient3 test-client
 

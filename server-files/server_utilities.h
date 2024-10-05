@@ -14,6 +14,9 @@
 #include <websocketpp/config/asio_no_tls_client.hpp>
 #include <websocketpp/client.hpp>
 
+#include "server_signature.h"
+#include "server_key_gen.h"
+
 struct deflate_config : public websocketpp::config::debug_core {
     typedef deflate_config type;
     typedef debug_core base;
@@ -90,13 +93,13 @@ class ServerUtilities{
         std::string getIP(server* s, websocketpp::connection_hdl hdl);
 
         bool is_connection_open(client* c, websocketpp::connection_hdl hdl);
-        int send_server_hello(client* c, websocketpp::connection_hdl hdl);
+        int send_server_hello(client* c, websocketpp::connection_hdl hdl, EVP_PKEY* private_key, int counter);
         int send_client_update_request(client* c, websocketpp::connection_hdl hdl, std::unordered_map<websocketpp::connection_hdl, std::shared_ptr<connection_data>, connection_hdl_hash, connection_hdl_equal> outbound_server_server_map);
         int send_client_update(client* c, websocketpp::connection_hdl hdl, std::unordered_map<websocketpp::connection_hdl, std::shared_ptr<connection_data>, connection_hdl_hash, connection_hdl_equal> outbound_server_server_map, ServerList* global_server_list);
         void broadcast_client_updates(std::unordered_map<websocketpp::connection_hdl, std::shared_ptr<connection_data>, connection_hdl_hash, connection_hdl_equal> outbound_server_server_map, ServerList* global_server_list, int server_id_nosend = 0);
         int send_client_list(server* s, websocketpp::connection_hdl hdl, std::unordered_map<websocketpp::connection_hdl, std::shared_ptr<connection_data>, connection_hdl_hash, connection_hdl_equal> client_server_map, ServerList* global_server_list);
         void broadcast_client_lists(std::unordered_map<websocketpp::connection_hdl, std::shared_ptr<connection_data>, connection_hdl_hash, connection_hdl_equal> client_server_map, ServerList* global_server_list, int client_id_nosend = 0);
-        void connect_to_server(client* c, std::string const & uri, int server_id, std::unordered_map<websocketpp::connection_hdl, std::shared_ptr<connection_data>, connection_hdl_hash, connection_hdl_equal>* outbound_server_server_map, int retry_attempts = 0);
+        void connect_to_server(client* c, std::string const & uri, int server_id, EVP_PKEY* private_key, int counter, std::unordered_map<websocketpp::connection_hdl, std::shared_ptr<connection_data>, connection_hdl_hash, connection_hdl_equal>* outbound_server_server_map, int retry_attempts = 0);
 
 };
 

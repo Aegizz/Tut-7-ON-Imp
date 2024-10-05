@@ -192,7 +192,7 @@ int main() {
 
         send_client_list_request(&endpoint, initId);
         
-        sleep(60);
+        sleep(5);
         
         int close_code = websocketpp::close::status::normal;
         endpoint.close(initId, close_code, "Reached end of run");

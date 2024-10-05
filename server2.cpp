@@ -14,7 +14,7 @@
 #include <functional>
 #include <vector>
 
-//Self made client list implementation
+//Include server files
 #include "server-files/server_list.h"
 #include "server-files/server_utilities.h"
 #include "server-files/server_key_gen.h"
@@ -233,7 +233,7 @@ int on_message(server* s, websocketpp::connection_hdl hdl, message_ptr msg) {
                     // Initialize ASIO for the client
                     ws_client.init_asio();
 
-                    serverUtilities->connect_to_server(&ws_client, server_uri, serverID, &outbound_server_server_map);
+                    serverUtilities->connect_to_server(&ws_client, server_uri, serverID, privKey, 12345, &outbound_server_server_map);
 
                     ws_client.run();
 
@@ -329,7 +329,7 @@ int main(int argc, char * argv[]) {
 
             // Loop through the server URIs and attempt connections
             for(const auto& uri: server_uris){
-                serverUtilities->connect_to_server(&ws_client, uri.second, uri.first, &outbound_server_server_map);
+                serverUtilities->connect_to_server(&ws_client, uri.second, uri.first, privKey, 12345, &outbound_server_server_map);
                 
             }
 
@@ -351,9 +351,15 @@ int main(int argc, char * argv[]) {
 
     } catch (const websocketpp::exception & e) {
         std::cout << "WebSocket++ exception: " << e.what() << std::endl;
+        EVP_PKEY_free(privKey);
+        EVP_PKEY_free(pubKey);
     } catch (const std::exception & e) {
         std::cout << "Standard exception: " << e.what() << std::endl;
+        EVP_PKEY_free(privKey);
+        EVP_PKEY_free(pubKey);
     } catch (...) {
         std::cout << "Unknown exception" << std::endl;
+        EVP_PKEY_free(privKey);
+        EVP_PKEY_free(pubKey);
     }
 }
