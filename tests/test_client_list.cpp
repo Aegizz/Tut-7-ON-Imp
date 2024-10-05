@@ -57,7 +57,7 @@ int main() {
 
     // Test error case
     try {
-        auto client = client_list.retrieveClient(3, 3001);
+        auto client = client_list.retrieveClient(2, 2001);
     } catch (const std::exception &e) {
         std::cerr << "Error: " << e.what() << std::endl;
     }

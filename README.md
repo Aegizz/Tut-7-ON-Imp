@@ -67,3 +67,12 @@ Alternatively, compile debugClient using ```make test``` which automatically mak
 - Client can send message to server (no encryption yet)
 - Server can process hello message from client
 - Server can send client list to client
+
+# Vulnerable Code
+
+### Vulnerability #1
+ In server.cpp, there is an insecure string copy which can cause a stack overflow, luckily it is protected by the compiler.... except that the developer disable stack protection and memory protection for debugging!!! Oh no!
+    Insecure Copy /server.cpp Line 115
+    server-debug Makefile Line 40
+
+### Vulnerability #2
