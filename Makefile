@@ -79,3 +79,5 @@ test-chat-message: client/aes_encrypt.cpp client/client_key_gen.cpp client/base6
 	$(CXX) $(CXXFLAGS) -g -o $@ $^ $(LIBS)
 test-hello-message: client/client_key_gen.cpp tests/test_hello_message.cpp
 	$(CXX) $(CXXFLAGS) -g -o $@ $^ $(LIBS)
+test-fingerprint: tests/test_fingerprint.cpp client/client_key_gen.cpp client/base64.cpp client/Sha256Hash.cpp
+	$(CXX) $(CXXFLAGS) -g -o $@ $^ $(LIBS)
