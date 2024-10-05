@@ -57,7 +57,7 @@ userClient-debug: userClient.cpp
 server-debug: server.cpp
 	$(CXX) $(CXXFLAGS) -g -o $@ $^ $(LIBS) $(SERVER_FILES) -lz -fno-stack-protector
 
-test-client: test-client-list test-client-aes-encrypt test-client-sha256 test-base64 test-client-key-gen test-client-signature test-client-signed-data test-client-chat-message test-client-data-message
+test-client: test-client-list test-client-aes-encrypt test-client-sha256 test-base64 test-client-key-gen test-client-signature test-client-signed-data test-client-chat-message test-client-data-message test-client-hello-messsage
 
 test-client-list: tests/test_client_list.cpp client/client_list.h client/client_list.cpp
 	$(CXX) $(CXXFLAGS) -g -o $@ $^ $(LIBS)
@@ -72,4 +72,6 @@ test-base64: tests/test_base64.cpp client/base64.cpp
 test-client-signature: client/base64.cpp client/client_key_gen.cpp client/client_signature.cpp tests/test_client_signature.cpp client/Sha256Hash.cpp
 	$(CXX) $(CXXFLAGS) -g -o $@ $^ $(LIBS)
 test-client-signed-data: client/*.cpp tests/test_signed_data.cpp
+	$(CXX) $(CXXFLAGS) -g -o $@ $^ $(LIBS)
+test-client-hello-message: client/client_key_gen.cpp tests/test_client_hello_message.cpp
 	$(CXX) $(CXXFLAGS) -g -o $@ $^ $(LIBS)
