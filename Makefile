@@ -12,7 +12,7 @@ SERVER_FILES=server-files/*.cpp
 # Targets
 all: userClient server server2 testClient testClient2 testClient3 test-client
 
-test: debug-all server server2 client testClient test.sh test-client-list test-client-aes-encrypt test-client-sha256 test-client-key-gen test-base64 test-client-signature test-client-signed-data
+test: debug-all server server2 client testClient test.sh test-client-list test-client-aes-encrypt test-client-sha256 test-client-key-gen test-base64 test-client-signature test-client-signed-data test-client-hello-message
 	echo "Running tests..."
 	chmod +x test.sh
 	bash test.sh
@@ -24,6 +24,7 @@ test: debug-all server server2 client testClient test.sh test-client-list test-c
 	./test-base64
 	./test-client-signature
 	./test-client-signed-data
+	./test-client-hello-message
 
 userClient: userClient.cpp
 	$(CXX) $(CXXFLAGS) -o $@ $^ $(LIBS)
@@ -67,4 +68,6 @@ test-base64: tests/test_base64.cpp client/base64.cpp
 test-client-signature: client/base64.cpp client/client_key_gen.cpp client/client_signature.cpp tests/test_client_signature.cpp client/Sha256Hash.cpp
 	$(CXX) $(CXXFLAGS) -g -o $@ $^ $(LIBS)
 test-client-signed-data: client/*.cpp tests/test_signed_data.cpp
+	$(CXX) $(CXXFLAGS) -g -o $@ $^ $(LIBS)
+test-client-hello-message: client/client_key_gen.cpp tests/test_client_hello_message.cpp
 	$(CXX) $(CXXFLAGS) -g -o $@ $^ $(LIBS)
