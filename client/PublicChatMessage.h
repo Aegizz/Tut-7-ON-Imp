@@ -7,6 +7,11 @@
 #include <nlohmann/json.hpp>
 class PublicChatMessage{
     public:
+        /* 
+            Used for generating public chat messages for sending a public chat message,
+            returns the simple json formatted string
+            feel like this is vulnerable to someone resending a request as afaik this is not to be signed?
+        */
         static std::string generatePublicChatMessage(std::string message, EVP_PKEY * publicKey){
             nlohmann::json data;
             data["type"] = "public_chat";

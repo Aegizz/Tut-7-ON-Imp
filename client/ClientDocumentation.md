@@ -10,23 +10,23 @@
     /* 
         Will send a signed message over the specified endpoint and id 
     */
-    void static sendSignedMessage(std::string data, EVP_PKEY * private_key, websocket_endpoint* endpoint, int id, int counter);
+    void SignedData::sendSignedMessage(std::string data, EVP_PKEY * private_key, websocket_endpoint* endpoint, int id, int counter);
     /* 
         Iterates over a signed message and attempts to decrypt the aes key with it's own private key
         Returns the decrypted message.
         Function to decrypt a signed messsage's content, does not verify the reciever or check counter
         Ensure the entire message is provided.
     */
-    std::string static decryptSignedMessage(std::string data, EVP_PKEY * private_key);
+    std::string SignedData::decryptSignedMessage(std::string data, EVP_PKEY * private_key);
 
 ```
 
-### Sending a client hello
+### Generate a client hello
 
   This message is sent when first connection to a server to establish your public key.
   ```cpp
             /* Used for generating server hello messages to server public key to a server to be sent to clients*/
-          std::string generateHelloMessage(EVP_PKEY * publicKey);
+          std::string HelloMessage::generateHelloMessage(EVP_PKEY * publicKey);
   ```
 
 
@@ -51,7 +51,28 @@
         Used for creating the data in a chat message, currently missing client-info and time-to-die
         Returns the resultant string to be provided to the websocket or to be signed in signed_data function.
     */
-    static std::string DataMessage::generateDataMessage(std::string text, std::vector<EVP_PKEY*> public_keys, std::vector<std::string> server_addresses);
+    std::string DataMessage::generateDataMessage(std::string text, std::vector<EVP_PKEY*> public_keys, std::vector<std::string> server_addresses);
+  ```
 
+### Generate a fingerprint
 
-  ``
+  Generate a fingerprint using your public key.
+  
+  ```cpp
+  /*
+    Used to create a fingerprint used in public chat hello messages
+  */
+  std::string Fingerprint::generateFingerprint(EVP_PKEY * publicKey)
+
+  ```
+### Generate a Public Chat Message
+  
+  Generate a Public Chat Message for sending public messages
+  ```cpp
+    /* 
+      Used for generating public chat messages for sending a public chat message,
+      returns the simple json formatted string
+      feel like this is vulnerable to someone resending a request as afaik this is not to be signed?
+    */
+    std::string PublicChatMessage::generatePublicChatMessage(std::string message, EVP_PKEY * publicKey);
+  ```
