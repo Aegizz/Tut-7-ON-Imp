@@ -1,5 +1,6 @@
 #include "../client/DataMessage.h"
 #include "../client/client_key_gen.h"
+#include "hexToBytes.h"
 #include <iostream>
 
 int numRecipients=5;
