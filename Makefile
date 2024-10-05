@@ -73,5 +73,7 @@ test-client-signature: client/base64.cpp client/client_key_gen.cpp client/client
 	$(CXX) $(CXXFLAGS) -g -o $@ $^ $(LIBS)
 test-client-signed-data: client/*.cpp tests/test_signed_data.cpp
 	$(CXX) $(CXXFLAGS) -g -o $@ $^ $(LIBS)
+test-client-data-message: client/aes_encrypt.cpp client/client_key_gen.cpp client/base64.cpp tests/test_client_data_message.cpp
+	$(CXX) $(CXXFLAGS) -g -o $@ $^ $(LIBS)
 test-client-hello-message: client/client_key_gen.cpp tests/test_client_hello_message.cpp
 	$(CXX) $(CXXFLAGS) -g -o $@ $^ $(LIBS)
