@@ -19,11 +19,11 @@
 #include "server-files/server_utilities.h"
 
 // Hard coded server ID + listen port for this server
-const int ServerID = 1; 
-const int listenPort = 9002;
-const std::string myAddress = "127.0.0.1:9002";
+const int ServerID = 3; 
+const int listenPort = 9004;
+const std::string myAddress = "127.0.0.1:9004";
 
-// Initialise global server list pointer as server 1
+// Initialise global server list pointer as server 3
 ServerList* global_server_list = new ServerList(ServerID);
 
 ServerUtilities* serverUtilities = new ServerUtilities(myAddress);

@@ -31,9 +31,6 @@
 #include <websocketpp/config/asio_no_tls_client.hpp>
 #include <websocketpp/client.hpp>
 
-#include "client/websocket_endpoint.h"
-#include "client/websocket_metadata.h"
-
 #include <websocketpp/common/thread.hpp>
 #include <websocketpp/common/memory.hpp>
 
@@ -51,28 +48,16 @@
 
 //Self made client list implementation
 #include "client/client_list.h"
-//Self mage AES GCM Encryption with OpenSSL
-#include "client/aes_encrypt.h"
-
+#include "client/websocket_endpoint.h"
+#include "client/websocket_metadata.h"
+#include "client/client.h"
 // Hard coded public key for this client instance
-const std::string PUBLIC_KEY = "ABCDEF";
-//const std::string PUBLIC_KEY = "GHIJKL";
+//const std::string PUBLIC_KEY = "ABCDEF";
+const std::string PUBLIC_KEY = "GHIJKL";
 //const std::string PUBLIC_KEY = "MNOPQR";
 
 //Global pointer for client list
 ClientList * global_client_list = nullptr;
-
-
-
-
-std::ostream & operator<< (std::ostream & out, connection_metadata const & data) {
-    out << "> URI: " << data.m_uri << "\n"
-        << "> Status: " << data.m_status << "\n"
-        << "> Remote Server: " << (data.m_server.empty() ? "None Specified" : data.m_server) << "\n"
-        << "> Error/close reason: " << (data.m_error_reason.empty() ? "N/A" : data.m_error_reason);
-
-    return out;
-}
 
 
 void send_message(client& c, websocketpp::connection_hdl hdl, const std::string& message) {
@@ -175,7 +160,7 @@ int main() {
     std::string input;
     websocket_endpoint endpoint;
 
-    int initId = endpoint.connect("ws://localhost:9002", global_client_list);
+    int initId = endpoint.connect("ws://localhost:9004", global_client_list);
     //int initId = endpoint.connect("ws://172.30.30.134:9002");
     if (initId != -1) {
         std::cout << "> Created connection with id " << initId << std::endl;
@@ -186,7 +171,7 @@ int main() {
         while(metadata->get_status() == "Connecting"){
             metadata = endpoint.get_metadata(initId);
         }
-        
+
         // Send server intialization messages
         send_hello_message(&endpoint, initId);
 

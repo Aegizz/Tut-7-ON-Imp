@@ -7,11 +7,12 @@ CXXFLAGS = -Wall -std=c++11
 # Define the libraries
 LIBS = -lssl -lcrypto -pthread
 
-CLIENT_FILES=client/client_list.cpp client/aes_encrypt.cpp
+CLIENT_FILES=client/*.cpp
+SERVER_FILES=server-files/*.cpp
 # Targets
-all: userClient server test-client testClient
+all: userClient server server2 server3 testClient testClient2 testClient3 test-client
 
-test: debug-all server client testClient test.sh test-client-list test-client-aes-encrypt test-client-sha256 test-client-key-gen
+test: debug-all server server2 client testClient test.sh test-client-list test-client-aes-encrypt test-client-sha256 test-client-key-gen test-base64 test-client-signature test-client-signed-data
 	echo "Running tests..."
 	chmod +x test.sh
 	bash test.sh
@@ -20,19 +21,35 @@ test: debug-all server client testClient test.sh test-client-list test-client-ae
 	./test-client-aes-encrypt
 	./test-client-sha256
 	./test-client-key-gen
+	./test-base64
+	./test-client-signature
+	./test-client-signed-data
 
 userClient: userClient.cpp
 	$(CXX) $(CXXFLAGS) -o $@ $^ $(LIBS)
 
+# For testing 
 testClient: testClient.cpp
 	$(CXX) $(CXXFLAGS) -o $@ $^ $(CLIENT_FILES) $(LIBS)
+testClient2: testClient2.cpp
+	$(CXX) $(CXXFLAGS) -o $@ $^ $(LIBS) $(CLIENT_FILES)
+testClient3: testClient3.cpp
+	$(CXX) $(CXXFLAGS) -o $@ $^ $(LIBS) $(CLIENT_FILES)
+
+testClients: testClient testClient2 testClient3
+servers: server server2 server3
+
 
 server: server.cpp
-	$(CXX) $(CXXFLAGS) -o $@ $^ $(LIBS) -lz
+	$(CXX) $(CXXFLAGS) -o $@ $^ $(LIBS) $(SERVER_FILES) -lz
+server2: server2.cpp
+	$(CXX) $(CXXFLAGS) -o $@ $^ $(LIBS) $(SERVER_FILES) -lz
+server3: server3.cpp
+	$(CXX) $(CXXFLAGS) -o $@ $^ $(LIBS) $(SERVER_FILES) -lz
 
 # Clean up build artifacts
 clean:
-	rm -f userClient server client-debug server-debug testClient tests/server.log tests/client.log debugClient test-client-sha256 test-client-aes-encrypt test-client-list
+	rm -f userClient server server2 server3 client-debug server-debug testClient testClient2 testClient3 tests/server.log tests/client.log debugClient test-client-sha256 test-client-aes-encrypt test-client-list test-base64 test-client-key-gen userClient userClient-debug
 
 debug-all: userClient-debug testClient server-debug
 
@@ -40,7 +57,7 @@ userClient-debug: userClient.cpp
 	$(CXX) $(CXXFLAGS) -g -o $@ $^ $(LIBS) -lz -fno-stack-protector
 
 server-debug: server.cpp
-	$(CXX) $(CXXFLAGS) -g -o $@ $^ $(LIBS) -lz -fno-stack-protector
+	$(CXX) $(CXXFLAGS) -g -o $@ $^ $(LIBS) $(SERVER_FILES) -lz -fno-stack-protector
 
 test-client: test-client-list test-client-aes-encrypt test-client-sha256
 
@@ -50,5 +67,11 @@ test-client-aes-encrypt: tests/test_aes_encrypt.cpp client/aes_encrypt.cpp clien
 	$(CXX) $(CXXFLAGS) -g -o $@ $^ $(LIBS)
 test-client-sha256: tests/test_Sha256Hash.cpp client/Sha256Hash.cpp client/Sha256Hash.h
 	$(CXX) $(CXXFLAGS) -g -o $@ $^ $(LIBS)
-test-client-key-gen: tests/test_client_key_gen.cpp
+test-client-key-gen: tests/test_client_key_gen.cpp client/client_key_gen.h client/client_key_gen.cpp
+	$(CXX) $(CXXFLAGS) -g -o $@ $^ $(LIBS)
+test-base64: tests/test_base64.cpp client/base64.cpp
+	$(CXX) $(CXXFLAGSR) -g -o $@ $^ $(LIBS)
+test-client-signature: client/base64.cpp client/client_key_gen.cpp client/client_signature.cpp tests/test_client_signature.cpp client/Sha256Hash.cpp
+	$(CXX) $(CXXFLAGS) -g -o $@ $^ $(LIBS)
+test-client-signed-data: client/*.cpp tests/test_signed_data.cpp
 	$(CXX) $(CXXFLAGS) -g -o $@ $^ $(LIBS)

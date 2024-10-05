@@ -1,5 +1,29 @@
  [devel] endpoint constructor
  [devel] server constructor
-Received message: {"client-info":"<client-id>-<server-id>","public_key":"<Exported RSA public key>","time-to-die":"<time-to-die>","type":"hello"}
+Starting client thread...
+
+
+Successfully connected to ws://127.0.0.1:9003
+> Server hello sent
+
+Sent client update request to 2
+
+Connection initiated from: 127.0.0.1:52784
+Received message: {"data":{"sender":"127.0.0.1:9003","type":"server_hello"}}
+Cancelling server connection timer
+
+Received message: {"type":"client_update_request"}
+Sent client update to 2
+
+
+Connection initiated from: 127.0.0.1:52794
+Received message: {"data":{"public_key":"ABCDEF","time-to-die":"<time-to-die>","type":"hello"}}
+Cancelling client connection timer
+Sent client update to 2
+
 Received message: {"type":"client_list_request"}
-Sent client list
+Sent client list to client 1001
+
+
+Client 1001 closing their connection
+Sent client update to 2

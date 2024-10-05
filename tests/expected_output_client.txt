@@ -1,11 +1,7 @@
 > Created connection with id 0
 > Hello message sent
 > Client list request sent
-Client list received: {"servers":[{"address":"<Address of server>","clients":[{"client-id":0,"public-key":"<Exported RSA public key of client>"},{"client-id":1,"public-key":"<Exported RSA public key of client>"}],"server-id":0}],"type":"client_list"}
-Server ID: 0
-  Client ID: 0
-  Public Key: <Exported RSA public key of client>
-  Client ID: 1
-  Public Key: <Exported RSA public key of client>
-> Closing connection 0
-> Error closing connection 0: invalid state
+
+Client list received: {"servers":[{"address":"127.0.0.1:9002","clients":[{"client-id":1001,"public-key":"ABCDEF"}],"server-id":1},{"address":"127.0.0.1:9003","clients":[],"server-id":2}],"type":"client_list"}
+
+close code: 1000 (Normal close), close reason: Reached end of run

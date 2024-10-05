@@ -3,11 +3,11 @@
 
 
 int main(){
-    Sha256Hash * test_hash;
+    std::string test_hash;
 
-    test_hash = new Sha256Hash("test");
-    if (test_hash->getHash() != "9f86d081884c7d659a2feaa0c55ad015a3bf4f1b2b0b822cd15d6c15b0f00a08"){
-        std::cout << test_hash->getHash() << std::endl;
+    test_hash = Sha256Hash::hashStringSha256("test");
+    if (test_hash != "9f86d081884c7d659a2feaa0c55ad015a3bf4f1b2b0b822cd15d6c15b0f00a08"){
+        std::cout << test_hash << std::endl;
 
         std::cout << "Hash does not match, run into some error";
         std::cerr << "Hash does not match, run into some error";

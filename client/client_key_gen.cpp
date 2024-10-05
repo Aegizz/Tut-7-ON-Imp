@@ -1,19 +1,11 @@
-#include <openssl/evp.h>
-#include <openssl/pem.h>
-#include <openssl/rsa.h>
-#include <openssl/bn.h>  // For BIGNUM
-#include <openssl/bio.h>
-#include <openssl/err.h>
-#include <cstdio>
-#include <cstring>
-#include <iostream>
+#include "client_key_gen.h"
 
-void handleErrors() {
+void Client_Key_Gen::handleErrors() {
     ERR_print_errors_fp(stderr);
     abort();
 }
 
-int key_gen() {
+int Client_Key_Gen::key_gen() {
     // 1. Initialize OpenSSL
     OpenSSL_add_all_algorithms();
     ERR_load_crypto_strings();
@@ -78,7 +70,7 @@ int key_gen() {
 }
 
 
-EVP_PKEY* loadPrivateKey(const char* filename) {
+EVP_PKEY* Client_Key_Gen::loadPrivateKey(const char* filename) {
     FILE* keyFile = fopen(filename, "rb");
     if (!keyFile) {
         std::cerr << "Unable to open private key file." << std::endl;
@@ -94,7 +86,7 @@ EVP_PKEY* loadPrivateKey(const char* filename) {
 }
 
 // Function to read a PEM-encoded public key from a file
-EVP_PKEY* loadPublicKey(const char* filename) {
+EVP_PKEY* Client_Key_Gen::loadPublicKey(const char* filename) {
     FILE* keyFile = fopen(filename, "rb");
     if (!keyFile) {
         std::cerr << "Unable to open public key file." << std::endl;
@@ -110,7 +102,7 @@ EVP_PKEY* loadPublicKey(const char* filename) {
 }
 
 // Function to encrypt data using the public key
-int rsaEncrypt(EVP_PKEY* pubKey, const unsigned char* plaintext, size_t plaintext_len, unsigned char** encrypted) {
+int Client_Key_Gen::rsaEncrypt(EVP_PKEY* pubKey, const unsigned char* plaintext, size_t plaintext_len, unsigned char** encrypted) {
     EVP_PKEY_CTX* ctx = EVP_PKEY_CTX_new(pubKey, NULL);
     if (!ctx) handleErrors();
 
@@ -131,7 +123,7 @@ int rsaEncrypt(EVP_PKEY* pubKey, const unsigned char* plaintext, size_t plaintex
 }
 
 // Function to decrypt data using the private key
-int rsaDecrypt(EVP_PKEY* privKey, const unsigned char* encrypted, size_t encrypted_len, unsigned char** decrypted) {
+int Client_Key_Gen::rsaDecrypt(EVP_PKEY* privKey, const unsigned char* encrypted, size_t encrypted_len, unsigned char** decrypted) {
     EVP_PKEY_CTX* ctx = EVP_PKEY_CTX_new(privKey, NULL);
     if (!ctx) handleErrors();
 
@@ -149,4 +141,39 @@ int rsaDecrypt(EVP_PKEY* privKey, const unsigned char* encrypted, size_t encrypt
 
     EVP_PKEY_CTX_free(ctx);
     return decrypted_len;  // Return length of the decrypted data
+}
+// Function to sign data using the private key
+int Client_Key_Gen::rsaSign(EVP_PKEY* privKey, const unsigned char* data, size_t data_len, unsigned char** signature) {
+    EVP_PKEY_CTX* ctx = EVP_PKEY_CTX_new(privKey, NULL);
+    if (!ctx) handleErrors();
+
+    // Initialize signing context
+    if (EVP_PKEY_sign_init(ctx) <= 0) handleErrors();
+
+    // Determine the buffer length for the signature
+    size_t signature_len;
+    if (EVP_PKEY_sign(ctx, NULL, &signature_len, data, data_len) <= 0) handleErrors();
+
+    *signature = (unsigned char*)OPENSSL_malloc(signature_len);
+    if (*signature == NULL) handleErrors();
+
+    // Sign the data
+    if (EVP_PKEY_sign(ctx, *signature, &signature_len, data, data_len) <= 0) handleErrors();
+
+    EVP_PKEY_CTX_free(ctx);
+    return signature_len;  // Return length of the signature
+}
+// Function to verify the signature using the public key
+int Client_Key_Gen::rsaVerify(EVP_PKEY* pubKey, const unsigned char* data, size_t data_len, const unsigned char* signature, size_t signature_len) {
+    EVP_PKEY_CTX* ctx = EVP_PKEY_CTX_new(pubKey, NULL);
+    if (!ctx) handleErrors();
+
+    // Initialize verification context
+    if (EVP_PKEY_verify_init(ctx) <= 0) handleErrors();
+
+    // Verify the signature
+    int result = EVP_PKEY_verify(ctx, signature, signature_len, data, data_len);
+    
+    EVP_PKEY_CTX_free(ctx);
+    return result;  // Returns 1 for success, 0 for failure
 }
