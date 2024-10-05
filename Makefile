@@ -39,11 +39,11 @@ testClient2: testClient2.cpp
 testClient3: testClient3.cpp
 	$(CXX) $(CXXFLAGS) -o $@ $^ $(LIBS) $(CLIENT_FILES)
 server: server.cpp
-	$(CXX) $(CXXFLAGS) -o $@ $^ $(LIBS) $(SERVER_FILES) -lz
+	$(CXX) $(CXXFLAGS) -o $@ $^ $(SERVER_FILES) $(LIBS) -lz
 server2: server2.cpp
-	$(CXX) $(CXXFLAGS) -o $@ $^ $(LIBS) $(SERVER_FILES) -lz
+	$(CXX) $(CXXFLAGS) -o $@ $^ $(SERVER_FILES) $(LIBS) -lz
 server3: server3.cpp
-	$(CXX) $(CXXFLAGS) -o $@ $^ $(LIBS) $(SERVER_FILES) -lz
+	$(CXX) $(CXXFLAGS) -o $@ $^ $(SERVER_FILES) $(LIBS) -lz
 
 # Clean up build artifacts
 clean:

@@ -29,7 +29,7 @@ int Server_Key_Gen::key_gen(int server_id) {
     if (EVP_PKEY_keygen(ctx, &pkey) <= 0) handleErrors();
 
     // 4. Write the private key to private_key.pem (PEM format)
-    std::string privFilename = "private_key_server" + std::to_string(server_id) + ".pem";
+    std::string privFilename = "server-files/private_key_server" + std::to_string(server_id) + ".pem";
     FILE *private_key_file = fopen(privFilename.c_str(), "wb");
     if (!private_key_file) {
         std::cerr << "Unable to open private_key.pem for writing\n";
@@ -44,7 +44,7 @@ int Server_Key_Gen::key_gen(int server_id) {
     fclose(private_key_file);
 
     // 5. Write the public key to public_key.pem (SPKI format, PEM)
-    std::string pubFilename = "public_key_server" + std::to_string(server_id) + ".pem";
+    std::string pubFilename = "server-files/public_key_server" + std::to_string(server_id) + ".pem";
     FILE *public_key_file = fopen(pubFilename.c_str(), "wb");
     if (!public_key_file) {
         std::cerr << "Unable to open public_key.pem for writing\n";

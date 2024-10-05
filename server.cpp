@@ -25,13 +25,12 @@ const int listenPort = 9002;
 const std::string myAddress = "127.0.0.1:9002";
 
 // Create key file names
-std::string privFileName;
-std::string pubFileName;
+std::string privFileName = "server-files/private_key_server" + std::to_string(ServerID) + ".pem";
+std::string pubFileName = "server-files/public_key_server" + std::to_string(ServerID) + ".pem";
 
 // Load private keys
 EVP_PKEY* privKey;
 EVP_PKEY* pubKey;
-
 
 // Initialise global server list pointer as server 1
 ServerList* global_server_list = new ServerList(ServerID);
@@ -277,14 +276,9 @@ int on_message(server* s, websocketpp::connection_hdl hdl, message_ptr msg) {
 
 
 int main(int argc, char * argv[]) {
-    // Create key file names
-    privFileName = "server-files/private_key_server" + std::to_string(ServerID) + ".pem";
-    pubFileName = "server-files/public_key_server" + std::to_string(ServerID) + ".pem";
-
     // Load private keys
     privKey = Server_Key_Gen::loadPrivateKey(privFileName.c_str());
     pubKey = Server_Key_Gen::loadPublicKey(pubFileName.c_str());
-
 
     // If keys files don't exist, create keys and load from newly created files
     if(privKey == nullptr || pubKey == nullptr){
@@ -357,9 +351,15 @@ int main(int argc, char * argv[]) {
 
     } catch (const websocketpp::exception & e) {
         std::cout << "WebSocket++ exception: " << e.what() << std::endl;
+        EVP_PKEY_free(privKey);
+        EVP_PKEY_free(pubKey);
     } catch (const std::exception & e) {
         std::cout << "Standard exception: " << e.what() << std::endl;
+        EVP_PKEY_free(privKey);
+        EVP_PKEY_free(pubKey);
     } catch (...) {
         std::cout << "Unknown exception" << std::endl;
+        EVP_PKEY_free(privKey);
+        EVP_PKEY_free(pubKey);
     }
 }
