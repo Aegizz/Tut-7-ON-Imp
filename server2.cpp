@@ -189,8 +189,11 @@ int on_message(server* s, websocketpp::connection_hdl hdl, message_ptr msg) {
         // Obtain Public server's public key from mapping
         EVP_PKEY* serverPKey = global_server_list->getPKey(con_data->server_id);
 
+        // Extract counter
+        int counter = data["counter"];
+
         // Verify signature and close connection if invalid
-        if(!ServerSignature::verifySignature(server_signature, data["data"].dump() + "12345", serverPKey)){
+        if(!ServerSignature::verifySignature(server_signature, data["data"].dump() + std::to_string(counter), serverPKey)){
             std::cout << "Invalid signature for server " << con_data->server_id << std::endl;
             s->close(hdl, websocketpp::close::status::policy_violation, "Server signature could not be verified.");
             if(connection_map.find(hdl) != connection_map.end()){
