@@ -15,7 +15,7 @@ all: userClient server server2 server3 testClient testClient2 testClient3 test-c
 test: debug-all server server2 client testClient test.sh test-client-list test-client-aes-encrypt test-client-sha256 test-client-key-gen test-base64 test-client-signature test-client-signed-data test-hello-message test-chat-message test-data-message
 	echo "Running tests..."
 	chmod +x test.sh
-# bash test.sh
+	bash test.sh
 	echo "Running client tests..."
 	./test-client-list
 	./test-client-aes-encrypt
