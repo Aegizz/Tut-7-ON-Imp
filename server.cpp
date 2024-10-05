@@ -14,14 +14,24 @@
 #include <functional>
 #include <vector>
 
-//Self made client list implementation
+//Include server files
 #include "server-files/server_list.h"
 #include "server-files/server_utilities.h"
+#include "server-files/server_key_gen.h"
 
 // Hard coded server ID + listen port for this server
 const int ServerID = 1; 
 const int listenPort = 9002;
 const std::string myAddress = "127.0.0.1:9002";
+
+// Create key file names
+std::string privFileName;
+std::string pubFileName;
+
+// Load private keys
+EVP_PKEY* privKey;
+EVP_PKEY* pubKey;
+
 
 // Initialise global server list pointer as server 1
 ServerList* global_server_list = new ServerList(ServerID);
@@ -267,6 +277,25 @@ int on_message(server* s, websocketpp::connection_hdl hdl, message_ptr msg) {
 
 
 int main(int argc, char * argv[]) {
+    // Create key file names
+    privFileName = "server-files/private_key_server" + std::to_string(ServerID) + ".pem";
+    pubFileName = "server-files/public_key_server" + std::to_string(ServerID) + ".pem";
+
+    // Load private keys
+    privKey = Server_Key_Gen::loadPrivateKey(privFileName.c_str());
+    pubKey = Server_Key_Gen::loadPublicKey(pubFileName.c_str());
+
+
+    // If keys files don't exist, create keys and load from newly created files
+    if(privKey == nullptr || pubKey == nullptr){
+        if(Server_Key_Gen::key_gen(ServerID)){
+            privKey = Server_Key_Gen::loadPrivateKey(privFileName.c_str());
+            pubKey = Server_Key_Gen::loadPublicKey(pubFileName.c_str());
+
+            return 1;
+        }
+    }
+
     // Create a WebSocket++ client instance
     client ws_client;
 
