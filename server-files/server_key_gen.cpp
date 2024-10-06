@@ -1,23 +1,11 @@
-#include "client_key_gen.h"
+#include "server_key_gen.h"
 
-void Client_Key_Gen::handleErrors() {
+void Server_Key_Gen::handleErrors() {
     ERR_print_errors_fp(stderr);
     abort();
 }
 
-int Client_Key_Gen::key_gen(int client_id, const std::string& directory) {
-    std::string privFilename = "client/private_key" + std::to_string(client_id) + ".pem";
-    std::string pubFilename = "client/public_key" + std::to_string(client_id) + ".pem";
-    // Append directory if provided
-    if (!directory.empty()) {
-        // Erase client directory
-        privFilename.erase(0,7); 
-        pubFilename.erase(0,7);
-        // Append new directory
-        privFilename = directory + "/" + privFilename;
-        pubFilename = directory + "/" + pubFilename;
-    }
-
+int Server_Key_Gen::key_gen(int server_id) {
     // 1. Initialize OpenSSL
     OpenSSL_add_all_algorithms();
     ERR_load_crypto_strings();
@@ -41,6 +29,7 @@ int Client_Key_Gen::key_gen(int client_id, const std::string& directory) {
     if (EVP_PKEY_keygen(ctx, &pkey) <= 0) handleErrors();
 
     // 4. Write the private key to private_key.pem (PEM format)
+    std::string privFilename = "server-files/private_key_server" + std::to_string(server_id) + ".pem";
     FILE *private_key_file = fopen(privFilename.c_str(), "wb");
     if (!private_key_file) {
         std::cerr << "Unable to open private_key.pem for writing\n";
@@ -55,6 +44,7 @@ int Client_Key_Gen::key_gen(int client_id, const std::string& directory) {
     fclose(private_key_file);
 
     // 5. Write the public key to public_key.pem (SPKI format, PEM)
+    std::string pubFilename = "server-files/public_key_server" + std::to_string(server_id) + ".pem";
     FILE *public_key_file = fopen(pubFilename.c_str(), "wb");
     if (!public_key_file) {
         std::cerr << "Unable to open public_key.pem for writing\n";
@@ -82,7 +72,7 @@ int Client_Key_Gen::key_gen(int client_id, const std::string& directory) {
 }
 
 
-EVP_PKEY* Client_Key_Gen::loadPrivateKey(const char* filename) {
+EVP_PKEY* Server_Key_Gen::loadPrivateKey(const char* filename) {
     FILE* keyFile = fopen(filename, "rb");
     if (!keyFile) {
         std::cerr << "Unable to open private key file." << std::endl;
@@ -98,7 +88,7 @@ EVP_PKEY* Client_Key_Gen::loadPrivateKey(const char* filename) {
 }
 
 // Function to read a PEM-encoded public key from a file
-EVP_PKEY* Client_Key_Gen::loadPublicKey(const char* filename) {
+EVP_PKEY* Server_Key_Gen::loadPublicKey(const char* filename) {
     FILE* keyFile = fopen(filename, "rb");
     if (!keyFile) {
         std::cerr << "Unable to open public key file." << std::endl;
@@ -114,7 +104,7 @@ EVP_PKEY* Client_Key_Gen::loadPublicKey(const char* filename) {
 }
 
 // Function to encrypt data using the public key
-int Client_Key_Gen::rsaEncrypt(EVP_PKEY* pubKey, const unsigned char* plaintext, size_t plaintext_len, unsigned char** encrypted) {
+int Server_Key_Gen::rsaEncrypt(EVP_PKEY* pubKey, const unsigned char* plaintext, size_t plaintext_len, unsigned char** encrypted) {
     EVP_PKEY_CTX* ctx = EVP_PKEY_CTX_new(pubKey, NULL);
     if (!ctx) handleErrors();
 
@@ -135,7 +125,7 @@ int Client_Key_Gen::rsaEncrypt(EVP_PKEY* pubKey, const unsigned char* plaintext,
 }
 
 // Function to decrypt data using the private key
-int Client_Key_Gen::rsaDecrypt(EVP_PKEY* privKey, const unsigned char* encrypted, size_t encrypted_len, unsigned char** decrypted) {
+int Server_Key_Gen::rsaDecrypt(EVP_PKEY* privKey, const unsigned char* encrypted, size_t encrypted_len, unsigned char** decrypted) {
     EVP_PKEY_CTX* ctx = EVP_PKEY_CTX_new(privKey, NULL);
     if (!ctx) handleErrors();
 
@@ -155,7 +145,7 @@ int Client_Key_Gen::rsaDecrypt(EVP_PKEY* privKey, const unsigned char* encrypted
     return decrypted_len;  // Return length of the decrypted data
 }
 // Function to sign data using the private key
-int Client_Key_Gen::rsaSign(EVP_PKEY* privKey, const unsigned char* data, size_t data_len, unsigned char** signature) {
+int Server_Key_Gen::rsaSign(EVP_PKEY* privKey, const unsigned char* data, size_t data_len, unsigned char** signature) {
     EVP_PKEY_CTX* ctx = EVP_PKEY_CTX_new(privKey, NULL);
     if (!ctx) handleErrors();
 
@@ -176,7 +166,7 @@ int Client_Key_Gen::rsaSign(EVP_PKEY* privKey, const unsigned char* data, size_t
     return signature_len;  // Return length of the signature
 }
 // Function to verify the signature using the public key
-int Client_Key_Gen::rsaVerify(EVP_PKEY* pubKey, const unsigned char* data, size_t data_len, const unsigned char* signature, size_t signature_len) {
+int Server_Key_Gen::rsaVerify(EVP_PKEY* pubKey, const unsigned char* data, size_t data_len, const unsigned char* signature, size_t signature_len) {
     EVP_PKEY_CTX* ctx = EVP_PKEY_CTX_new(pubKey, NULL);
     if (!ctx) handleErrors();
 
@@ -188,4 +178,21 @@ int Client_Key_Gen::rsaVerify(EVP_PKEY* pubKey, const unsigned char* data, size_
     
     EVP_PKEY_CTX_free(ctx);
     return result;  // Returns 1 for success, 0 for failure
+}
+
+// Helper function to convert EVP_PKEY* to a PEM string
+EVP_PKEY* Server_Key_Gen::stringToPEM(std::string pKey) {
+    BIO* bio = BIO_new_mem_buf(pKey.data(), -1);  // Create a BIO for the key string
+    //BIO* bio = BIO_new_mem_buf(found_server->second.data(), -1);  // Create a BIO for the key string
+    if (!bio) Server_Key_Gen::handleErrors(); // Must be fully qualified call to avoid compiler errors
+
+    EVP_PKEY* serverPKey = PEM_read_bio_PUBKEY(bio, NULL, NULL, NULL);  // Read PEM public key
+    BIO_free(bio);  // Free the BIO after use
+
+    if (!serverPKey) {
+        std::cerr << "Error loading public key from string." << std::endl;
+        Server_Key_Gen::handleErrors(); // Must be fully qualified call to avoid compiler errors
+    }
+
+    return serverPKey;
 }

@@ -6,12 +6,16 @@
 #include <nlohmann/json.hpp> // For JSON library
 #include <iostream>
 #include <fstream>
+
+#include "server_key_gen.h"
+
 class ServerList{
     private:
     // Idea being that each server maps to another map, this ensure that we can access each server from their ID and each client from their server ID.
         std::unordered_map<int, std::unordered_map<int, std::string>> servers; // Servers stored against their ID, map of clients stored against their IDs
         std::unordered_map<int, std::string> currentClients; // Clients currently connected to THIS server
         std::unordered_map<int, std::string> knownClients; // Clients that belong to this server
+        std::unordered_map<int, std::string> knownServers; // List of Serves with their Public Keys
 
         // Temporary way to store server addresses against their ID
         std::unordered_map<int, std::string> serverAddresses = {{1, "127.0.0.1:9002"}, {2, "127.0.0.1:9003"}, {3, "127.0.0.1:9004"}};
@@ -24,6 +28,7 @@ class ServerList{
     public:
         ServerList(int server_id);
 
+        EVP_PKEY* getPKey(int server_id);
         int ObtainID(std::string address);
         std::unordered_map<int, std::string> getUris();
 

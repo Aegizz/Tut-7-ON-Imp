@@ -3,7 +3,7 @@
 #include "../client/hexToBytes.h"
 #include <iostream>
 
-int numRecipients=5;
+int numRecipients=2;
 
 int main(){
     // Initialise vectors for test script
@@ -12,22 +12,24 @@ int main(){
     std::vector<std::string> server_addresses = {"127.0.0.1:9002","127.0.0.1:9003","127.0.0.1:9004"};
 
     // Generate RSA keys for recipients of data message
-    for(int i=0; i<numRecipients; i++){
+    for(int i=1; i<=numRecipients; i++){
         // Generate RSA keys (public and private)
-        if (Client_Key_Gen::key_gen()) {
+        if (Client_Key_Gen::key_gen(i, "tests")) {
             std::cerr << "Key generation failed!" << std::endl;
             return 1;
         }
 
         // Load the public key from the file
-        EVP_PKEY *pubKey = Client_Key_Gen::loadPublicKey("public_key.pem");
+        std::string filename = "tests/public_key" + std::to_string(i) + ".pem";
+        EVP_PKEY *pubKey = Client_Key_Gen::loadPublicKey(filename.c_str());
         if (!pubKey) {
             std::cerr << "Failed to load public key!" << std::endl;
             return 1;
         }
 
         // Load the private key from the file
-        EVP_PKEY *privKey = Client_Key_Gen::loadPrivateKey("private_key.pem");
+        filename = "tests/private_key" + std::to_string(i) + ".pem";
+        EVP_PKEY *privKey = Client_Key_Gen::loadPrivateKey(filename.c_str());
         if (!privKey) {
             std::cerr << "Failed to load private key!" << std::endl;
             return 1;
