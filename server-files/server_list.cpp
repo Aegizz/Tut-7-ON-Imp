@@ -1,10 +1,5 @@
 #include "server_list.h"
 
-void handleErrors() {
-    ERR_print_errors_fp(stderr);
-    abort();
-}
-
 // Initialise server list with inputted server id and load from mapping file
 ServerList::ServerList(int server_id){
     // Set my server id
@@ -20,20 +15,8 @@ EVP_PKEY* ServerList::getPKey(int server_id){
         std::cout << "Unknown Server" << std::endl;
         return NULL;
     }
-    
-    BIO* bio = BIO_new_mem_buf(found_server->second.data(), -1);  // Create a BIO for the key string
-    //BIO* bio = BIO_new_mem_buf(found_server->second.data(), -1);  // Create a BIO for the key string
-    if (!bio) ::handleErrors(); // Must be fully qualified call to avoid compiler errors
 
-    EVP_PKEY* serverPKey = PEM_read_bio_PUBKEY(bio, NULL, NULL, NULL);  // Read PEM public key
-    BIO_free(bio);  // Free the BIO after use
-
-    if (!serverPKey) {
-        std::cerr << "Error loading public key from string." << std::endl;
-        ::handleErrors(); // Must be fully qualified call to avoid compiler errors
-    }
-
-    return serverPKey;
+    return Server_Key_Gen::stringToPEM(found_server->second);
 }
 
 // Obtain a server ID from the map using a provided server address
@@ -73,8 +56,22 @@ void ServerList::save_mapping_to_file() {
 
 // Reads the known users for this server from a mapping file
 void ServerList::load_mapping_from_file(){
+    // Server Map file loading
+    std::string filename = "server-files/neighbourhood_mapping.json";
+
+    std::ifstream neighbourhoodFile(filename);
+    if(!neighbourhoodFile){
+        std::cout << "Unable to load neighbourhood mapping file" << std::endl;
+        return;
+    }
+
+    nlohmann::json j_server_map;
+    neighbourhoodFile >> j_server_map;
+
+    knownServers = j_server_map.get<std::unordered_map<int, std::string>>();
+
     // Generate mapping file name
-    std::string filename = "server-files/server_mapping";
+    filename = "server-files/server_mapping";
     filename.append(std::to_string(my_server_id));
     filename.append(".json");
 
@@ -82,6 +79,7 @@ void ServerList::load_mapping_from_file(){
     std::ifstream clientMapFile(filename);
     // Check if file exists
     if(!clientMapFile){
+        std::cout << "Server mapping file does not exist" << std::endl;
         return;
     }
 
@@ -100,18 +98,6 @@ void ServerList::load_mapping_from_file(){
         }
     }
     clientID = largestID;
-
-    // Server Map file loading
-    filename = "server-files/neighbourhood_mapping.json";
-
-    std::ifstream neighbourhoodFile(filename);
-    if(!neighbourhoodFile)
-        return;
-
-    nlohmann::json j_server_map;
-    neighbourhoodFile >> j_server_map;
-
-    knownServers = j_server_map.get<std::unordered_map<int, std::string>>();
 }
 
 // Retrieves a client's public key using its server and client ids

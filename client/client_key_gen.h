@@ -15,7 +15,7 @@
 class Client_Key_Gen{
     public:
         static void handleErrors();
-        static int key_gen();
+        static int key_gen(int client_id, const std::string& directory="");
         static EVP_PKEY * loadPrivateKey(const char* filename);
         static EVP_PKEY * loadPublicKey(const char* filename);
         static int rsaEncrypt(EVP_PKEY* pubKey, const unsigned char* plaintext, size_t plaintext_len, unsigned char** encrypted);

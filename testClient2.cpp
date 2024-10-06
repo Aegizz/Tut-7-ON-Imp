@@ -49,15 +49,20 @@
 #include <ctime> 
 
 
-//Self made client list implementation
-#include "client/client_list.h"
-//Self made AES GCM Encryption with OpenSSL
-#include "client/aes_encrypt.h"
+#include "client/client_list.h" // Self made client list implementation
+#include "client/aes_encrypt.h" // AES GCM Encryption with OpenSSL
+#include "client/client_key_gen.h" // OpenSSL Key generation
+#include "client/MessageGenerator.h" // For creating messages to send
 
-// Hard coded public key for this client instance
-//const std::string PUBLIC_KEY = "ABCDEF";
-//const std::string PUBLIC_KEY = "GHIJKL";
-const std::string PUBLIC_KEY = "MNOPQR";
+const int ClientNumber = 2;
+
+// Create key file names
+std::string privFileName = "client/private_key" + std::to_string(ClientNumber) + ".pem";
+std::string pubFileName = "client/public_key" + std::to_string(ClientNumber) + ".pem";
+
+// Define keys
+EVP_PKEY* privKey;
+EVP_PKEY* pubKey;
 
 //Global pointer for client list
 ClientList * global_client_list = nullptr;
@@ -106,18 +111,7 @@ bool is_connection_open(websocket_endpoint* endpoint, int id){
 }
 
 void send_hello_message(websocket_endpoint* endpoint, int id){
-    nlohmann::json user;
-
-    // Format hello message
-    user["type"] = "hello";
-    user["public_key"] = PUBLIC_KEY;
-    user["time-to-die"] = get_ttd();
-
-    nlohmann::json data;
-    data["data"] = user;
-
-    // Serialize JSON object
-    std::string json_string = data.dump();
+    std::string json_string = MessageGenerator::helloMessage(privKey, pubKey, 12345);
 
     // Send the message via the connection
     if(!is_connection_open(endpoint, id)){
@@ -134,13 +128,7 @@ void send_hello_message(websocket_endpoint* endpoint, int id){
 }
 
 void send_client_list_request(websocket_endpoint* endpoint, int id){
-    nlohmann::json data;
-
-    // Format client list request message
-    data["type"] = "client_list_request";
-
-    // Serialize JSON object
-    std::string json_string = data.dump();
+    std::string json_string = MessageGenerator::clientListRequestMessage();
 
     // Send the message via the connection
     if(!is_connection_open(endpoint, id)){
@@ -159,6 +147,22 @@ void send_client_list_request(websocket_endpoint* endpoint, int id){
 
 
 int main() {
+    // Load keys
+    privKey = Client_Key_Gen::loadPrivateKey(privFileName.c_str());
+    pubKey = Client_Key_Gen::loadPublicKey(pubFileName.c_str());
+
+    // If keys files don't exist, create keys and load from newly created files
+    if(!privKey || !pubKey){
+        std::cout << "\nCreating key files\n" << std::endl;
+        if(!Client_Key_Gen::key_gen(ClientNumber)){
+            privKey = Client_Key_Gen::loadPrivateKey(privFileName.c_str());
+            pubKey = Client_Key_Gen::loadPublicKey(pubFileName.c_str());
+        }else{
+            std::cout << "Could not load keys" << std::endl;
+            return 1;
+        }
+    }
+
     bool done = false;
     std::string input;
     websocket_endpoint endpoint;

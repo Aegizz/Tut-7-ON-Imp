@@ -7,12 +7,7 @@
 #include <iostream>
 #include <fstream>
 
-#include <openssl/evp.h>
-#include <openssl/pem.h>
-#include <openssl/rsa.h>
-#include <openssl/bn.h>  // For BIGNUM
-#include <openssl/bio.h>
-#include <openssl/err.h>
+#include "server_key_gen.h"
 
 class ServerList{
     private:
@@ -27,7 +22,6 @@ class ServerList{
 
         void save_mapping_to_file();
         void load_mapping_from_file();
-        void handleErrors();
 
         int my_server_id;
         int clientID=1000;

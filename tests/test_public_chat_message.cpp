@@ -5,7 +5,7 @@
 #include <openssl/pem.h>
 
 int main(){
-    EVP_PKEY * pubKey = Client_Key_Gen::loadPublicKey("public_key.pem");
+    EVP_PKEY * pubKey = Client_Key_Gen::loadPublicKey("tests/public_key0.pem");
     std::string pubChatMessage = PublicChatMessage::generatePublicChatMessage("Hello world!", pubKey);
     if (pubChatMessage == ""){
         std::cerr << "generatePublicChatMessage returned empty string" << std::endl;

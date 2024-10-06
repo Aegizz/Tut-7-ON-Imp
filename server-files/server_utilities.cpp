@@ -82,7 +82,7 @@ int ServerUtilities::send_server_hello(client* c, websocketpp::connection_hdl hd
     std::string data_string = data.dump();
 
     signedMessage["type"] = "signed_data";
-    signedMessage["data"] = data;
+    signedMessage["data"] = data_string;
     signedMessage["counter"] = counter;
     signedMessage["signature"] = ServerSignature::generateSignature(data_string, private_key, std::to_string(counter));
 

@@ -11,7 +11,7 @@ class ChatMessage{
         std::string static generateChatMessage(std::string plaintext_message, std::vector<std::string> chat_participants){
             nlohmann::json json_chat;
             json_chat["message"] = plaintext_message;
-            for (int i = 0; i < chat_participants.size(); i++){
+            for (int i = 0; i < (int)chat_participants.size(); i++){
                 json_chat["participants"].push_back(chat_participants[i]);
             }
             //could use datamessage function here to add signed_data information

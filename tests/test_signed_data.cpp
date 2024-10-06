@@ -58,8 +58,8 @@ int main() {
     int id = endpoint.connect("ws://localhost:9002", global_client_list); // Example connection ID
 
     // Load or create a private key for testing
-    EVP_PKEY* privateKey = Client_Key_Gen::loadPrivateKey("private_key.pem");
-    EVP_PKEY * publicKey = Client_Key_Gen::loadPublicKey("public_key.pem");
+    EVP_PKEY* privateKey = Client_Key_Gen::loadPrivateKey("tests/private_key0.pem");
+    EVP_PKEY * publicKey = Client_Key_Gen::loadPublicKey("tests/public_key0.pem");
     if (!privateKey) {
         std::cerr << "Failed to load private key!" << std::endl;
         return 1; // Exit if key loading fails
