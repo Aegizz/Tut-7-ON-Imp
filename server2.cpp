@@ -14,14 +14,24 @@
 #include <functional>
 #include <vector>
 
-//Self made client list implementation
+//Include server files
 #include "server-files/server_list.h"
 #include "server-files/server_utilities.h"
+#include "server-files/server_key_gen.h"
+#include "server-files/server_signature.h"
 
 // Hard coded server ID + listen port for this server
 const int ServerID = 2; 
 const int listenPort = 9003;
 const std::string myAddress = "127.0.0.1:9003";
+
+// Create key file names
+std::string privFileName = "server-files/private_key_server" + std::to_string(ServerID) + ".pem";
+std::string pubFileName = "server-files/public_key_server" + std::to_string(ServerID) + ".pem";
+
+// Load private keys
+EVP_PKEY* privKey;
+EVP_PKEY* pubKey;
 
 // Initialise global server list pointer as server 2
 ServerList* global_server_list = new ServerList(ServerID);
@@ -132,7 +142,14 @@ int on_message(server* s, websocketpp::connection_hdl hdl, message_ptr msg) {
     strcpy(buffer, payload.c_str()); // This is unsafe if payload length exceeds buffer size
 
     // Deserialize JSON message
-    nlohmann::json data = nlohmann::json::parse(payload);
+    nlohmann::json messageJSON = nlohmann::json::parse(payload);
+    std::string dataString;
+    nlohmann::json data;
+
+    if(messageJSON.contains("data")){
+        dataString = messageJSON["data"].get<std::string>();
+        data = nlohmann::json::parse(dataString);
+    }
 
     std::shared_ptr<connection_data> con_data;
 
@@ -146,13 +163,32 @@ int on_message(server* s, websocketpp::connection_hdl hdl, message_ptr msg) {
         return -1;
     }
 
-    if(data["data"]["type"] == "hello"){
+    if(data["type"] == "hello"){
         // Cancel connection timer
         con_data->timer->cancel();
         std::cout << "Cancelling client connection timer" << std::endl;
 
         // Update client list
-        con_data->client_id = global_server_list->insertClient(data["data"]["public_key"]);
+        con_data->client_id = global_server_list->insertClient(data["public_key"]);
+
+        // Extract signature and counter
+        std::string client_signature = messageJSON["signature"];
+        int counter = messageJSON["counter"];
+
+        // Convert public key string to PEM
+        EVP_PKEY* clientPKey = Server_Key_Gen::stringToPEM(data["public_key"]);
+
+        // Verify signature and close connection if invalid
+        if(!ServerSignature::verifySignature(client_signature, data.dump() + std::to_string(counter), clientPKey)){
+            std::cout << "Invalid signature for client " << con_data->client_id << std::endl;
+            s->close(hdl, websocketpp::close::status::policy_violation, "Client signature could not be verified.");
+            if(connection_map.find(hdl) != connection_map.end()){
+                connection_map.erase(hdl);
+            }
+            return -1;
+        }else{
+            std::cout << "Verified signature of client " << con_data->client_id << std::endl;
+        }
 
         // Move to client server map
         client_server_map[hdl] = con_data;
@@ -164,16 +200,36 @@ int on_message(server* s, websocketpp::connection_hdl hdl, message_ptr msg) {
         serverUtilities->broadcast_client_lists(client_server_map, global_server_list, con_data->client_id);
 
         serverUtilities->broadcast_client_updates(outbound_server_server_map, global_server_list);
-    }else if(data["data"]["type"] == "server_hello"){
+    }else if(data["type"] == "server_hello"){
         // Cancel connection timer
         con_data->timer->cancel();
         std::cout << "Cancelling server connection timer" << std::endl;
 
-        con_data->server_address = data["data"]["sender"];
-        //con_data->server_id = data["data"]["server_id"];
+        con_data->server_address = data["sender"];
+        //con_data->server_id = data["server_id"];
 
         // Need to add error handling in case foreign or invalid server address is entered
+        std::string server_signature = messageJSON["signature"];
+
         con_data->server_id = global_server_list->ObtainID(con_data->server_address);
+        
+        // Obtain Public server's public key from mapping
+        EVP_PKEY* serverPKey = global_server_list->getPKey(con_data->server_id);
+
+        // Extract counter
+        int counter = messageJSON["counter"];
+
+        // Verify signature and close connection if invalid
+        if(!ServerSignature::verifySignature(server_signature, data.dump() + std::to_string(counter), serverPKey)){
+            std::cout << "Invalid signature for server " << con_data->server_id << std::endl;
+            s->close(hdl, websocketpp::close::status::policy_violation, "Server signature could not be verified.");
+            if(connection_map.find(hdl) != connection_map.end()){
+                connection_map.erase(hdl);
+            }
+            return -1;
+        }else{
+            std::cout << "Verified signature of server " << con_data->server_id << std::endl;
+        }
 
         // Check if an existing connection exists
         for(const auto& connectPair: inbound_server_server_map){
@@ -224,7 +280,7 @@ int on_message(server* s, websocketpp::connection_hdl hdl, message_ptr msg) {
                     // Initialize ASIO for the client
                     ws_client.init_asio();
 
-                    serverUtilities->connect_to_server(&ws_client, server_uri, serverID, &outbound_server_server_map);
+                    serverUtilities->connect_to_server(&ws_client, server_uri, serverID, privKey, 12345, &outbound_server_server_map);
 
                     ws_client.run();
 
@@ -239,10 +295,10 @@ int on_message(server* s, websocketpp::connection_hdl hdl, message_ptr msg) {
         // Broadcast client updates to all servers except connecting server
         serverUtilities->broadcast_client_updates(outbound_server_server_map, global_server_list, con_data->server_id);
 
-    }else if(data["type"] == "client_list_request"){
+    }else if(messageJSON["type"] == "client_list_request"){
         // Send client list to requesting client
         serverUtilities->send_client_list(s, hdl, client_server_map, global_server_list);
-    }else if(data["type"] == "client_update_request"){
+    }else if(messageJSON["type"] == "client_update_request"){
         // Find requesting server's outbound connection and send client update on that
         for(const auto& connectPair: outbound_server_server_map){
             auto connection = connectPair.second;
@@ -251,7 +307,7 @@ int on_message(server* s, websocketpp::connection_hdl hdl, message_ptr msg) {
                 serverUtilities->send_client_update(connection->client_instance, connection->connection_hdl, outbound_server_server_map, global_server_list);
             }
         }
-    }else if(data["type"] == "client_update"){
+    }else if(messageJSON["type"] == "client_update"){
         // Process client update
         global_server_list->insertServer(con_data->server_id, payload);
 
@@ -267,6 +323,22 @@ int on_message(server* s, websocketpp::connection_hdl hdl, message_ptr msg) {
 
 
 int main(int argc, char * argv[]) {
+    // Load keys
+    privKey = Server_Key_Gen::loadPrivateKey(privFileName.c_str());
+    pubKey = Server_Key_Gen::loadPublicKey(pubFileName.c_str());
+
+    // If keys files don't exist, create keys and load from newly created files
+    if(!privKey || !pubKey){
+        if(!Server_Key_Gen::key_gen(ServerID)){
+            std::cout << "\nCreating key files\n" << std::endl;
+            privKey = Server_Key_Gen::loadPrivateKey(privFileName.c_str());
+            pubKey = Server_Key_Gen::loadPublicKey(pubFileName.c_str());
+        }else{
+            std::cout << "Could not load keys" << std::endl;
+            return 1;
+        }
+    }
+
     // Create a WebSocket++ client instance
     client ws_client;
 
@@ -306,7 +378,7 @@ int main(int argc, char * argv[]) {
 
             // Loop through the server URIs and attempt connections
             for(const auto& uri: server_uris){
-                serverUtilities->connect_to_server(&ws_client, uri.second, uri.first, &outbound_server_server_map);
+                serverUtilities->connect_to_server(&ws_client, uri.second, uri.first, privKey, 12345, &outbound_server_server_map);
                 
             }
 
@@ -328,9 +400,15 @@ int main(int argc, char * argv[]) {
 
     } catch (const websocketpp::exception & e) {
         std::cout << "WebSocket++ exception: " << e.what() << std::endl;
+        EVP_PKEY_free(privKey);
+        EVP_PKEY_free(pubKey);
     } catch (const std::exception & e) {
         std::cout << "Standard exception: " << e.what() << std::endl;
+        EVP_PKEY_free(privKey);
+        EVP_PKEY_free(pubKey);
     } catch (...) {
         std::cout << "Unknown exception" << std::endl;
+        EVP_PKEY_free(privKey);
+        EVP_PKEY_free(pubKey);
     }
 }

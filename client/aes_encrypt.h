@@ -9,7 +9,7 @@
 
 
 // Constants
-const int AES_GCM_KEY_SIZE = 32;  // 256-bit key
+const int AES_GCM_KEY_SIZE = 16;  // 128-bit key
 const int AES_GCM_IV_SIZE = 16;   // 128-bit IV
 const int AES_GCM_TAG_SIZE = 16;  // 128-bit authentication tag
 

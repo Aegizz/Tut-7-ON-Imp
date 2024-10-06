@@ -3,19 +3,16 @@
 
 #include <string>
 #include <vector>
+#include <sstream>
 #include "aes_encrypt.h"
 #include "client_key_gen.h"
 #include "base64.h"
+#include <string>
+#include <vector>
+#include <iostream>
 #include <nlohmann/json.hpp>
+#include "hexToBytes.h"
 
-/* Converts bytes to hex to be passed to base64 encoding */
-std::string bytesToHex(const std::vector<unsigned char>& data) {
-    std::ostringstream oss;
-    for (unsigned char byte : data) {
-        oss << std::setw(2) << std::setfill('0') << std::hex << static_cast<int>(byte);
-    }
-    return oss.str();
-}
 
 
 
@@ -24,6 +21,8 @@ class DataMessage{
         /* 
             Used for creating the data in a chat message, currently missing client-info and time-to-die
             Returns the resultant string to be provided to the websocket or to be signed in signed_data function.
+
+            Need to add client and server id will ask around
         */
         static std::string generateDataMessage(std::string text, std::vector<EVP_PKEY*> public_keys, std::vector<std::string> server_addresses){
             nlohmann::json data;
@@ -35,6 +34,7 @@ class DataMessage{
                 std::cerr << "Error generating random key." << std::endl;
                 return "";
             }
+
             std::vector<unsigned char> char_text(text.begin(), text.end());
             std::vector<unsigned char> encrypted_text, iv(AES_GCM_IV_SIZE), tag(AES_GCM_TAG_SIZE);
 
@@ -51,6 +51,7 @@ class DataMessage{
             data["iv"] = Base64::encode(bytesToHex(iv));
 
             std::string base64Key = bytesToHex(key);
+
             const unsigned char * key_encoded = reinterpret_cast<const unsigned char *>(base64Key.c_str());
             // Encrypt the symmetric key with each public key
             for (EVP_PKEY* public_key : public_keys) {

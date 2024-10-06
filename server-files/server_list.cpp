@@ -8,6 +8,17 @@ ServerList::ServerList(int server_id){
     load_mapping_from_file();
 }
 
+// Function to obtain server's public key from neighbourhood mapping
+EVP_PKEY* ServerList::getPKey(int server_id){
+    std::unordered_map<int, std::string>::const_iterator found_server = knownServers.find(server_id);
+    if(found_server == knownServers.end()){
+        std::cout << "Unknown Server" << std::endl;
+        return NULL;
+    }
+
+    return Server_Key_Gen::stringToPEM(found_server->second);
+}
+
 // Obtain a server ID from the map using a provided server address
 int ServerList::ObtainID(std::string address){
     for(const auto& server: serverAddresses){
@@ -44,25 +55,40 @@ void ServerList::save_mapping_to_file() {
 }
 
 // Reads the known users for this server from a mapping file
-void ServerList::load_mapping_from_file() {
+void ServerList::load_mapping_from_file(){
+    // Server Map file loading
+    std::string filename = "server-files/neighbourhood_mapping.json";
+
+    std::ifstream neighbourhoodFile(filename);
+    if(!neighbourhoodFile){
+        std::cout << "Unable to load neighbourhood mapping file" << std::endl;
+        return;
+    }
+
+    nlohmann::json j_server_map;
+    neighbourhoodFile >> j_server_map;
+
+    knownServers = j_server_map.get<std::unordered_map<int, std::string>>();
+
     // Generate mapping file name
-    std::string filename = "server-files/server_mapping";
+    filename = "server-files/server_mapping";
     filename.append(std::to_string(my_server_id));
     filename.append(".json");
 
     // Load the map from file name
-    std::ifstream file(filename);
+    std::ifstream clientMapFile(filename);
     // Check if file exists
-    if(!file){
+    if(!clientMapFile){
+        std::cout << "Server mapping file does not exist" << std::endl;
         return;
     }
 
     // Parse file to JSON object
-    nlohmann::json j_map;
-    file >> j_map;
+    nlohmann::json j_client_map;
+    clientMapFile >> j_client_map;
 
     // Convert JSON object to map and store
-    knownClients = j_map.get<std::unordered_map<int, std::string>>();
+    knownClients = j_client_map.get<std::unordered_map<int, std::string>>();
 
     // Find and set last ID used so new clients get correct ID
     int largestID=0;

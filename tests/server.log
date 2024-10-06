@@ -1,0 +1,53 @@
+[2024-10-05 14:03:13] [devel] endpoint constructor
+[2024-10-05 14:03:13] [devel] server constructor
+Starting client thread...
+
+Connection to ws://127.0.0.1:9004 failed, retrying in 500ms...
+Connection to ws://127.0.0.1:9004 failed, retrying in 500ms...
+
+Connection initiated from: 127.0.0.1:39416
+
+Successfully connected to ws://127.0.0.1:9003
+> Server hello sent
+
+Sent client update request to 2
+Connection to ws://127.0.0.1:9004 failed, retrying in 500ms...
+Received message: {"data":{"sender":"127.0.0.1:9003","type":"server_hello"}}
+Cancelling server connection timer
+
+Received message: {"type":"client_update_request"}
+Sent client update to 2
+
+Received message: {"clients":[],"type":"client_update"}
+Connection to ws://127.0.0.1:9004 failed, retrying in 500ms...
+
+Connection to ws://127.0.0.1:9004 failed, retrying in 500ms...
+
+Connection initiated from: 127.0.0.1:39422
+Received message: {"data":{"public_key":"ABCDEF","time-to-die":"2024-10-05T14:04:15Z","type":"hello"}}
+Cancelling client connection timer
+Sent client update to 2
+
+Received message: {"type":"client_list_request"}
+Sent client list to client 1001
+
+Connection to ws://127.0.0.1:9004 failed, retrying in 500ms...
+Connection to ws://127.0.0.1:9004 failed, retrying in 500ms...
+Connection to ws://127.0.0.1:9004 failed, retrying in 500ms...
+Connection to ws://127.0.0.1:9004 failed, retrying in 500ms...
+Connection to ws://127.0.0.1:9004 failed, retrying in 500ms...
+Connection to ws://127.0.0.1:9004 failed, retrying in 500ms...
+Exceeded retry limit. Giving up on connecting to ws://127.0.0.1:9004
+
+Client 1001 closing their connection
+Sent client update to 2
+
+Server 2 closing outbound connection
+Server 
+2 closing inbound connection
+Trying to reconnect to server 2
+Connection to ws://127.0.0.1:9003 failed, retrying in 500ms...
+
+Connection initiated from: 127.0.0.1:59386
+Received message: {"counter":1,"data":"{\"chat\":\"YTQ3ODczZTViMzhmNGUzMjgyYWQyOWJlZmM3NWUxOGM2YTZiMjI3Zjc3YWE1YmNkMTg2NDA2MjU=\",\"destination_servers\":[\"ws://localhost::9002\"],\"iv\":\"ZjI4MWY3ZjljNTgwZjA3M2M0NzdjOTc5NWI4NzFhNjU=\",\"symm_keys\":[\"dUk4aehv2eZyfXo8o9spM6/9ZYTZViSc2Hf5gXTCXQ6naQBtYWDLll+kSyhfPUNETWr3ogQkeGc5NAsGtC0fXnPwLk8R13iKCjtz4wYnBQkfLByhlH0kbNMkvXZb7oGGFSmF6VqYS2DiSeaGKbWLlMiyFPvuN/h95rzav+hSllKW6h9AMUQOtocwtbHe6g4R9ixop6GDbClgG1Xoy3BSLWfETvBVU4ZFoev/dM2irOmXkge87rr/vahi8feB8U6SNMOthDiePkd4FtPEqKsGckk5iiV/vHb/lymeA0+mNdLCEYtEsqS+yU/GZV5V7uQagyZjQsYD5V8kZ43ZmUMdfw==\"],\"type\":\"chat\"}","signature":"rjJL5aQwK1TA4cYkG45XETO8JZSifzGLXwbvyJJPD+KTe5vmXuYbFc91aX2eny5+wM63bwkMpZfINtvtbEGDjCXzRNxk0PkEwTutuvmuaz4i+ocMDCbuKtS7otyXcuXyWOM3eLPTfHTxs7HcUzAcbGnncpGILgiiZLEBqhTSO/34Xe9HArEytj5UCs0bke/KOglKQa6BqO0VavLcTTHwL3C/15JXlu4G1z4sCXgwuxdOjVUcg4wFSNdj8HknpVQs7lE8/Wz+lGTUlDeL7cqUtgigHc95mJgI+ODC2jCHF+astbpTRqlvUF8SprMgVYCdfH0pa4i8L+77LLVu0+TNyg==","type":"signed_data"}
+Standard exception: [json.exception.type_error.305] cannot use operator[] with a string argument with string
