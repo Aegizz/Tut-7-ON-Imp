@@ -100,6 +100,16 @@ void ServerList::load_mapping_from_file(){
     clientID = largestID;
 }
 
+// Retrieves all the clients for a server as a map
+std::unordered_map<int, std::string> ServerList::getClients(int server_id){
+    std::unordered_map<int, std::string> server;
+    if(servers.find(server_id) != servers.end()){
+        server = servers[server_id];
+    }
+
+    return server;
+}
+
 // Retrieves a client's public key using its server and client ids
 std::pair<int, std::string> ServerList::retrieveClient(int server_id, int client_id) {
     // Check if the server exists

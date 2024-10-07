@@ -32,6 +32,7 @@ class ServerList{
         int ObtainID(std::string address);
         std::unordered_map<int, std::string> getUris();
 
+        std::unordered_map<int, std::string> getClients(int server_id);
         std::pair<int, std::string> retrieveClient(int server_id, int client_id);
 
         int insertClient(std::string public_key);

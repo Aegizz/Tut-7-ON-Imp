@@ -227,9 +227,8 @@ int on_message(server* s, websocketpp::connection_hdl hdl, message_ptr msg) {
                 connection_map.erase(hdl);
             }
             return -1;
-        }else{
-            std::cout << "Verified signature of server " << con_data->server_id << std::endl;
         }
+        std::cout << "Verified signature of server " << con_data->server_id << std::endl;
 
         // Check if an existing connection exists
         for(const auto& connectPair: inbound_server_server_map){
@@ -295,6 +294,72 @@ int on_message(server* s, websocketpp::connection_hdl hdl, message_ptr msg) {
         // Broadcast client updates to all servers except connecting server
         serverUtilities->broadcast_client_updates(outbound_server_server_map, global_server_list, con_data->server_id);
 
+    }else if(data["type"] == "public_chat"){
+        // Extract signature and counter
+        std::string client_signature = messageJSON["signature"];
+        int counter = messageJSON["counter"];
+
+        // Declare serverID
+        int server_id;
+
+        // If the message came from another server
+        if(inbound_server_server_map.find(hdl) != inbound_server_server_map.end()){
+            std::cout << "Message has been forwarded." << std::endl;
+
+            // Obtain serverID from connection data retrieved from map
+            server_id = con_data->server_id;
+
+            // Obtain client's key
+            EVP_PKEY* clientPKey = serverUtilities->getPKeyFromFingerprint(data["sender"], server_id, global_server_list);
+
+            // If no key was found, an unknown fingerprint was sent
+            if(clientPKey == nullptr){
+                std::cout << "Message contains an unknown fingerprint." << std::endl;
+                return -1;
+            }
+
+            // Verify signature of sender
+            if(!ServerSignature::verifySignature(client_signature, data.dump() + std::to_string(counter), clientPKey)){
+                std::cout << "Invalid signature" << std::endl;
+                return -1;
+            }
+
+            // Broadcast public chats to all clients 
+            serverUtilities->broadcast_public_chat_clients(client_server_map, messageJSON.dump());
+            return 0;
+        }else if(client_server_map.find(hdl) != client_server_map.end()){ // If the message came from a client
+            // Assign serverID as this server's ID
+            server_id = ServerID;
+
+            // Obtain client's key
+            EVP_PKEY* clientPKey = serverUtilities->getPKeyFromFingerprint(data["sender"], server_id, global_server_list);
+
+            // If no key was found, an unknown fingerprint was sent
+            if(clientPKey == nullptr){
+                std::cout << "Message contains an unknown fingerprint." << std::endl;
+                return -1;
+            }
+
+            // Obtain client ID
+            int client_id = client_server_map[hdl]->client_id;
+
+            // Verify signature of client sending the message
+            if(!ServerSignature::verifySignature(client_signature, data.dump() + std::to_string(counter), clientPKey)){
+                std::cout << "Invalid signature for client " << client_id << std::endl;
+                if(client_server_map.find(hdl) != client_server_map.end()){
+                    client_server_map.erase(hdl);
+                }
+                return -1;
+            }
+            std::cout << "Verified signature of client" << std::endl;
+
+            // Broadcast public chat to all clients except the sender
+            serverUtilities->broadcast_public_chat_clients(client_server_map, messageJSON.dump(), client_id);
+            // Broadcast public chat to all servers except this server
+            serverUtilities->broadcast_public_chat_servers(outbound_server_server_map, messageJSON.dump(), server_id);
+
+            return 0;
+        }
     }else if(messageJSON["type"] == "client_list_request"){
         // Send client list to requesting client
         serverUtilities->send_client_list(s, hdl, client_server_map, global_server_list);
@@ -342,26 +407,26 @@ int main(int argc, char * argv[]) {
     // Create a WebSocket++ client instance
     client ws_client;
 
-    server echo_server;
+    server ws_server;
 
     try {
         // Set logging settings        
         if (argc > 1 && std::string(argv[1]) == "-d") {
-            echo_server.set_access_channels(websocketpp::log::alevel::all);
-            echo_server.set_error_channels(websocketpp::log::elevel::all);
+            ws_server.set_access_channels(websocketpp::log::alevel::all);
+            ws_server.set_error_channels(websocketpp::log::elevel::all);
             
         } else {
-            echo_server.set_access_channels(websocketpp::log::alevel::none);
-            echo_server.set_error_channels(websocketpp::log::elevel::none);
+            ws_server.set_access_channels(websocketpp::log::alevel::none);
+            ws_server.set_error_channels(websocketpp::log::elevel::none);
         }
 
         // Initialize ASIO
-        echo_server.init_asio();
+        ws_server.init_asio();
 
         // Set handlers
-        echo_server.set_open_handler(bind(&on_open, &echo_server, std::placeholders::_1));
-        echo_server.set_close_handler(bind(&on_close, &echo_server, std::placeholders::_1));
-        echo_server.set_message_handler(bind(&on_message, &echo_server, std::placeholders::_1, std::placeholders::_2));
+        ws_server.set_open_handler(bind(&on_open, &ws_server, std::placeholders::_1));
+        ws_server.set_close_handler(bind(&on_close, &ws_server, std::placeholders::_1));
+        ws_server.set_message_handler(bind(&on_message, &ws_server, std::placeholders::_1, std::placeholders::_2));
 
         // Start a separate thread to handle the client that connects to ws://localhost:9003
         std::thread client_thread([]() {
@@ -390,13 +455,13 @@ int main(int argc, char * argv[]) {
         client_thread.detach();
         
         // Listen on port 9002
-        echo_server.listen(listenPort);
+        ws_server.listen(listenPort);
         
         // Start the server accept loop
-        echo_server.start_accept();
+        ws_server.start_accept();
 
         // Start the ASIO io_service run loop
-        echo_server.run();
+        ws_server.run();
 
     } catch (const websocketpp::exception & e) {
         std::cout << "WebSocket++ exception: " << e.what() << std::endl;
