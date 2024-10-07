@@ -24,6 +24,7 @@ class ClientUtilities{
         static bool is_connection_open(websocket_endpoint* endpoint, int id);
         static void send_hello_message(websocket_endpoint* endpoint, int id, EVP_PKEY* privKey, EVP_PKEY* pubKey, int counter);
         static void send_client_list_request(websocket_endpoint* endpoint, int id);
+        static void send_public_chat(websocket_endpoint* endpoint, int id, std::string message, EVP_PKEY* privKey, EVP_PKEY* pubKey, int counter);
 };
 
 #endif

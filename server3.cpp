@@ -227,9 +227,8 @@ int on_message(server* s, websocketpp::connection_hdl hdl, message_ptr msg) {
                 connection_map.erase(hdl);
             }
             return -1;
-        }else{
-            std::cout << "Verified signature of server " << con_data->server_id << std::endl;
         }
+        std::cout << "Verified signature of server " << con_data->server_id << std::endl;
 
         // Check if an existing connection exists
         for(const auto& connectPair: inbound_server_server_map){
@@ -295,6 +294,72 @@ int on_message(server* s, websocketpp::connection_hdl hdl, message_ptr msg) {
         // Broadcast client updates to all servers except connecting server
         serverUtilities->broadcast_client_updates(outbound_server_server_map, global_server_list, con_data->server_id);
 
+    }else if(data["type"] == "public_chat"){
+        // Extract signature and counter
+        std::string client_signature = messageJSON["signature"];
+        int counter = messageJSON["counter"];
+
+        // Declare serverID
+        int server_id;
+
+        // If the message came from another server
+        if(inbound_server_server_map.find(hdl) != inbound_server_server_map.end()){
+            std::cout << "Message has been forwarded." << std::endl;
+
+            // Obtain serverID from connection data retrieved from map
+            server_id = con_data->server_id;
+
+            // Obtain client's key
+            EVP_PKEY* clientPKey = serverUtilities->getPKeyFromFingerprint(data["sender"], server_id, global_server_list);
+
+            // If no key was found, an unknown fingerprint was sent
+            if(clientPKey == nullptr){
+                std::cout << "Message contains an unknown fingerprint." << std::endl;
+                return -1;
+            }
+
+            // Verify signature of sender
+            if(!ServerSignature::verifySignature(client_signature, data.dump() + std::to_string(counter), clientPKey)){
+                std::cout << "Invalid signature" << std::endl;
+                return -1;
+            }
+
+            // Broadcast public chats to all clients 
+            serverUtilities->broadcast_public_chat_clients(client_server_map, messageJSON.dump());
+            return 0;
+        }else if(client_server_map.find(hdl) != client_server_map.end()){ // If the message came from a client
+            // Assign serverID as this server's ID
+            server_id = ServerID;
+
+            // Obtain client's key
+            EVP_PKEY* clientPKey = serverUtilities->getPKeyFromFingerprint(data["sender"], server_id, global_server_list);
+
+            // If no key was found, an unknown fingerprint was sent
+            if(clientPKey == nullptr){
+                std::cout << "Message contains an unknown fingerprint." << std::endl;
+                return -1;
+            }
+
+            // Obtain client ID
+            int client_id = client_server_map[hdl]->client_id;
+
+            // Verify signature of client sending the message
+            if(!ServerSignature::verifySignature(client_signature, data.dump() + std::to_string(counter), clientPKey)){
+                std::cout << "Invalid signature for client " << client_id << std::endl;
+                if(client_server_map.find(hdl) != client_server_map.end()){
+                    client_server_map.erase(hdl);
+                }
+                return -1;
+            }
+            std::cout << "Verified signature of client" << std::endl;
+
+            // Broadcast public chat to all clients except the sender
+            serverUtilities->broadcast_public_chat_clients(client_server_map, messageJSON.dump(), client_id);
+            // Broadcast public chat to all servers except this server
+            serverUtilities->broadcast_public_chat_servers(outbound_server_server_map, messageJSON.dump(), server_id);
+
+            return 0;
+        }
     }else if(messageJSON["type"] == "client_list_request"){
         // Send client list to requesting client
         serverUtilities->send_client_list(s, hdl, client_server_map, global_server_list);

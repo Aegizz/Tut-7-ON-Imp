@@ -120,10 +120,10 @@ int ServerUtilities::send_client_update_request(client* c, websocketpp::connecti
 
     try {
         c->send(hdl, json_string, websocketpp::frame::opcode::text);
-        std::cout << "Sent client update request to " << outbound_server_server_map[hdl]->server_id << std::endl;
+        std::cout << "Sent client update request to server " << outbound_server_server_map[hdl]->server_id << std::endl;
         return 0;
     } catch (const websocketpp::exception & e) {
-        std::cout << "Failed to send update request to " << outbound_server_server_map[hdl]->server_id << " because: " << e.what() << std::endl;
+        std::cout << "Failed to send update request to server " << outbound_server_server_map[hdl]->server_id << " because: " << e.what() << std::endl;
         return -1;
     }
 
@@ -140,7 +140,7 @@ int ServerUtilities::send_client_update(client* c, websocketpp::connection_hdl h
 
     try {
         c->send(hdl, json_string, websocketpp::frame::opcode::text);
-        std::cout << "Sent client update to " << outbound_server_server_map[hdl]->server_id << std::endl;
+        std::cout << "Sent client update to server " << outbound_server_server_map[hdl]->server_id << std::endl;
         return 0;
     } catch (const websocketpp::exception & e) {
         std::cout << "Failed to send client update to " << outbound_server_server_map[hdl]->server_id << " because: " << e.what() << std::endl;
@@ -181,6 +181,76 @@ void ServerUtilities::broadcast_client_lists(std::unordered_map<websocketpp::con
             send_client_list(connection->server_instance, connection->connection_hdl, client_server_map, global_server_list);
         }
     }
+}
+
+// Send public chat to connection
+int ServerUtilities::send_public_chat_server(client* c, websocketpp::connection_hdl hdl, std::unordered_map<websocketpp::connection_hdl, std::shared_ptr<connection_data>, connection_hdl_hash, connection_hdl_equal> outbound_server_server_map, std::string message){
+
+    if(!is_connection_open(c, hdl)){
+        std::cout << "Connection is not open to send public chat to server " << outbound_server_server_map[hdl]->server_id << std::endl;
+        return -1;
+    }
+
+    try {
+        c->send(hdl, message, websocketpp::frame::opcode::text);
+        std::cout << "Sent public chat to server " << outbound_server_server_map[hdl]->server_id << std::endl;
+        return 0;
+    } catch (const websocketpp::exception & e) {
+        std::cout << "Failed to send public chat to server " << outbound_server_server_map[hdl]->server_id << " because: " << e.what() << std::endl;
+        return -1;
+    }
+}
+
+// Send public chat to all servers but specified server
+void ServerUtilities::broadcast_public_chat_servers(std::unordered_map<websocketpp::connection_hdl, std::shared_ptr<connection_data>, connection_hdl_hash, connection_hdl_equal> outbound_server_server_map, std::string message, int server_id_nosend){
+    for(const auto& connectPair: outbound_server_server_map){
+        auto connection = connectPair.second;
+        if(connection->server_id != server_id_nosend){
+            send_public_chat_server(connection->client_instance, connection->connection_hdl, outbound_server_server_map, message);
+        }
+    }
+}
+
+// Send public chat to connection
+int ServerUtilities::send_public_chat_client(server* s, websocketpp::connection_hdl hdl, std::unordered_map<websocketpp::connection_hdl, std::shared_ptr<connection_data>, connection_hdl_hash, connection_hdl_equal> client_server_map, std::string message){
+    // Check if connection is open before sending
+
+    try {
+        s->send(hdl, message, websocketpp::frame::opcode::text);
+        std::cout << "Sent public chat to client " << client_server_map[hdl]->client_id << std::endl;
+        return 0;
+    } catch (const websocketpp::exception & e) {
+        std::cout << "Failed to send public chat to client " << client_server_map[hdl]->client_id << " because: " << e.what() << std::endl;
+        return -1;
+    }
+}
+
+// Send public chat to all clients but specified client
+void ServerUtilities::broadcast_public_chat_clients(std::unordered_map<websocketpp::connection_hdl, std::shared_ptr<connection_data>, connection_hdl_hash, connection_hdl_equal> client_server_map, std::string message, int client_id_nosend){
+    for(const auto& connectPair: client_server_map){
+        auto connection = connectPair.second;
+        if(connection->client_id != client_id_nosend){
+            send_public_chat_client(connection->server_instance, connection->connection_hdl, client_server_map, message);
+        }
+    }
+}
+
+// Look through a server's client map and see if a matching fingerprint can be generated (fingerprints are unable to be reversed into keys)
+EVP_PKEY* ServerUtilities::getPKeyFromFingerprint(std::string fingerprint, int sender_server_id, ServerList* global_server_list){
+    std::unordered_map<int, std::string> clients = global_server_list->getClients(sender_server_id);
+    if(clients.empty()){
+        std::cout << "Invalid serverID" << std::endl;
+        return nullptr;
+    }
+
+    for(const auto& client: clients){
+        EVP_PKEY* clientKey = Server_Key_Gen::stringToPEM(client.second);
+
+        if(Fingerprint::generateFingerprint(clientKey) == fingerprint){
+            return clientKey;
+        }
+    }
+    return nullptr;
 }
 
 // Define a function that will handle the client connections retry logic

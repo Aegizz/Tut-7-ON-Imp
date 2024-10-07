@@ -64,3 +64,20 @@ void ClientUtilities::send_client_list_request(websocket_endpoint* endpoint, int
         std::cout << "> Client list request sent" << "\n" << std::endl;
     }
 }
+
+void ClientUtilities::send_public_chat(websocket_endpoint* endpoint, int id, std::string message, EVP_PKEY* privKey, EVP_PKEY* pubKey, int counter){
+    std::string json_string = MessageGenerator::publicChatMessage(message, privKey, pubKey, counter);
+
+    // Send the message via the connection
+    if(!is_connection_open(endpoint, id)){
+        return;
+    }
+    websocketpp::lib::error_code ec;
+    endpoint->send(id, json_string, websocketpp::frame::opcode::text, ec);
+
+    if (ec) {
+        std::cout << "> Error sending public chat message: " << ec.message() << std::endl;
+    } else {
+        std::cout << ">  Public chat message sent" << "\n" << std::endl;
+    }
+}
