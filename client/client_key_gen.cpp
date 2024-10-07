@@ -189,3 +189,19 @@ int Client_Key_Gen::rsaVerify(EVP_PKEY* pubKey, const unsigned char* data, size_
     EVP_PKEY_CTX_free(ctx);
     return result;  // Returns 1 for success, 0 for failure
 }
+
+EVP_PKEY* Client_Key_Gen::stringToPEM(std::string pKey) {
+    BIO* bio = BIO_new_mem_buf(pKey.data(), -1);  // Create a BIO for the key string
+    //BIO* bio = BIO_new_mem_buf(found_server->second.data(), -1);  // Create a BIO for the key string
+    if (!bio) Client_Key_Gen::handleErrors(); // Must be fully qualified call to avoid compiler errors
+
+    EVP_PKEY* clientPKey = PEM_read_bio_PUBKEY(bio, NULL, NULL, NULL);  // Read PEM public key
+    BIO_free(bio);  // Free the BIO after use
+
+    if (!clientPKey) {
+        std::cerr << "Error loading public key from string." << std::endl;
+        Client_Key_Gen::handleErrors(); // Must be fully qualified call to avoid compiler errors
+    }
+
+    return clientPKey;
+}
