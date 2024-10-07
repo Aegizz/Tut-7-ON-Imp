@@ -8,7 +8,7 @@
 #include "client_signature.h"
 
 
-std::string MessageGenerator::chatMessage(std::string message, EVP_PKEY * your_private_key, EVP_PKEY * your_public_key, std::vector<EVP_PKEY*> their_public_keys, std::vector<std::string> destination_servers_vector, int client_id, int server_id, int counter){
+std::string MessageGenerator::chatMessage(std::string message, EVP_PKEY * your_private_key, EVP_PKEY * your_public_key, std::vector<EVP_PKEY*> their_public_keys, std::vector<std::string> destination_servers_vector, int counter, int client_id, int server_id){
     
     std::string data; // To hold the encrypted chat message
     std::vector<std::string> fingerprints; // Store fingerprints of participants

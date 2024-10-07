@@ -34,12 +34,12 @@ int main() {
         your_public_key, 
         their_public_keys, 
         destination_servers_vector, 
+        counter, 
         client_id, 
-        server_id, 
-        counter
+        server_id
     );
 
-    std::cout << "Signed Chat Message: " << signed_chat_message << std::endl;
+    std::cout << "Signed Chat Message: " << signed_chat_message << std::endl << std::endl;
 
     // Step 7: Create a client list request message
     std::string client_list_request = MessageGenerator::clientListRequestMessage();

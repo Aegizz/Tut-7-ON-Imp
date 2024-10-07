@@ -82,7 +82,7 @@ void ClientUtilities::send_public_chat(websocket_endpoint* endpoint, int id, std
     }
 }
 
-void ClientUtilities::send_chat(websocket_endpoint* endpoint, int connection_id, std::string message, EVP_PKEY* privKey, EVP_PKEY* pubKey, std::vector<EVP_PKEY*> their_public_keys, std::vector<std::string> destination_servers_vector, int client_id, int server_id, int counter){
+void ClientUtilities::send_chat(websocket_endpoint* endpoint, int connection_id, std::string message, EVP_PKEY* privKey, EVP_PKEY* pubKey, std::vector<EVP_PKEY*> their_public_keys, std::vector<std::string> destination_servers_vector,int counter, int client_id, int server_id){
     std::string json_string = MessageGenerator::chatMessage(message, privKey, pubKey, their_public_keys, destination_servers_vector, client_id, server_id, counter);
 
     if(!is_connection_open(endpoint, connection_id)){

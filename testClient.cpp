@@ -41,6 +41,7 @@
 #include <iostream>
 #include <map>
 #include <string>
+#include <vector>
 #include <nlohmann/json.hpp> // For JSON library
 
 
@@ -48,6 +49,7 @@
 #include "client/aes_encrypt.h" // AES GCM Encryption with OpenSSL
 #include "client/client_key_gen.h" // OpenSSL Key generation
 #include "client/client_utilities.h" // For sending messages, checking connections
+#include "client/Fingerprint.h" // For fingerprint generation
 
 // Used to differentiate client processses locally
 const int ClientNumber = 1;
@@ -93,7 +95,8 @@ int main() {
 
     //bool done = false;
     std::string input;
-    websocket_endpoint endpoint;
+    std::string fingerprint = Fingerprint::generateFingerprint(pubKey);
+    websocket_endpoint endpoint(fingerprint, privKey);
 
     int initId = endpoint.connect("ws://localhost:9002", global_client_list);
     if (initId != -1) {
@@ -111,6 +114,15 @@ int main() {
         ClientUtilities::send_client_list_request(&endpoint, initId);
 
         ClientUtilities::send_public_chat(&endpoint, initId, "Test Message1", privKey, pubKey, 12345);
+
+        std::vector<std::string> destination_servers = {"127.0.0.1:9003"};
+
+        std::string pubkey2string="-----BEGIN PUBLIC KEY-----\nMIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAoLkUMv77BFKwKGL0JAJy\nrLnYe8GRPX4yqVVKjwSLlymtiv4RmIMVRUD2nCMuHN6gE5iuRvgFb8pWmDGjjxYI\njSPLIDfqHzIUjT6xWJjfzhzKGJMAmbHcS/BOAn1BgjP1F75FvkiFPXP4WAOfS5+t\nfilkR7djQqTG81L0+3EdYUf8qfAU13thRXjOmcIPkTRMEppOQRz7G75mm/JiGxCa\nSpMDCPc39D+AcguVngYT3J85nB3uXsPQA0vl8rhePP6X31ukcBayuYWqAsWL2U3a\nJQeOiSHtFmtACErJyWVR8Xti9yTck0VvBWN/UsYA10TJ3+7k9lKCeFSO19eh6Wpn\nfwIDAQAB\n-----END PUBLIC KEY-----\n";
+        EVP_PKEY* pubkey2 = Client_Key_Gen::stringToPEM(pubkey2string);
+        std::vector<EVP_PKEY*> theirPubKeys;
+        theirPubKeys.push_back(pubkey2);
+
+        ClientUtilities::send_chat(&endpoint, initId, "Hello World!", privKey, pubKey, theirPubKeys, destination_servers, 12345);
         
         sleep(5);
         
