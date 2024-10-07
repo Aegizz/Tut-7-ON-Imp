@@ -14,7 +14,6 @@
 #include <websocketpp/config/asio_no_tls_client.hpp>
 #include <websocketpp/client.hpp>
 
-#include <algorithm> // For std::find
 #include <unordered_set>
 
 #include "server_signature.h"
