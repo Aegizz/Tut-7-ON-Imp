@@ -48,6 +48,7 @@
 #include "client/aes_encrypt.h" // AES GCM Encryption with OpenSSL
 #include "client/client_key_gen.h" // OpenSSL Key generation
 #include "client/client_utilities.h" // For sending messages, checking connections
+#include "client/Fingerprint.h" // For fingerprint generation
 
 // Used to differentiate client processses locally
 const int ClientNumber = 2;
@@ -93,7 +94,8 @@ int main() {
 
     //bool done = false;
     std::string input;
-    websocket_endpoint endpoint;
+    std::string fingerprint = Fingerprint::generateFingerprint(pubKey);
+    websocket_endpoint endpoint(fingerprint, privKey);
 
     int initId = endpoint.connect("ws://localhost:9003", global_client_list);
     if (initId != -1) {
