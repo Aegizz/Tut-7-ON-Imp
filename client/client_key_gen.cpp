@@ -5,7 +5,19 @@ void Client_Key_Gen::handleErrors() {
     abort();
 }
 
-int Client_Key_Gen::key_gen() {
+int Client_Key_Gen::key_gen(int client_id, const std::string& directory) {
+    std::string privFilename = "client/private_key" + std::to_string(client_id) + ".pem";
+    std::string pubFilename = "client/public_key" + std::to_string(client_id) + ".pem";
+    // Append directory if provided
+    if (!directory.empty()) {
+        // Erase client directory
+        privFilename.erase(0,7); 
+        pubFilename.erase(0,7);
+        // Append new directory
+        privFilename = directory + "/" + privFilename;
+        pubFilename = directory + "/" + pubFilename;
+    }
+
     // 1. Initialize OpenSSL
     OpenSSL_add_all_algorithms();
     ERR_load_crypto_strings();
@@ -29,7 +41,7 @@ int Client_Key_Gen::key_gen() {
     if (EVP_PKEY_keygen(ctx, &pkey) <= 0) handleErrors();
 
     // 4. Write the private key to private_key.pem (PEM format)
-    FILE *private_key_file = fopen("private_key.pem", "wb");
+    FILE *private_key_file = fopen(privFilename.c_str(), "wb");
     if (!private_key_file) {
         std::cerr << "Unable to open private_key.pem for writing\n";
         EVP_PKEY_free(pkey);
@@ -43,7 +55,7 @@ int Client_Key_Gen::key_gen() {
     fclose(private_key_file);
 
     // 5. Write the public key to public_key.pem (SPKI format, PEM)
-    FILE *public_key_file = fopen("public_key.pem", "wb");
+    FILE *public_key_file = fopen(pubFilename.c_str(), "wb");
     if (!public_key_file) {
         std::cerr << "Unable to open public_key.pem for writing\n";
         EVP_PKEY_free(pkey);
@@ -176,4 +188,20 @@ int Client_Key_Gen::rsaVerify(EVP_PKEY* pubKey, const unsigned char* data, size_
     
     EVP_PKEY_CTX_free(ctx);
     return result;  // Returns 1 for success, 0 for failure
+}
+
+EVP_PKEY* Client_Key_Gen::stringToPEM(std::string pKey) {
+    BIO* bio = BIO_new_mem_buf(pKey.data(), -1);  // Create a BIO for the key string
+    //BIO* bio = BIO_new_mem_buf(found_server->second.data(), -1);  // Create a BIO for the key string
+    if (!bio) Client_Key_Gen::handleErrors(); // Must be fully qualified call to avoid compiler errors
+
+    EVP_PKEY* clientPKey = PEM_read_bio_PUBKEY(bio, NULL, NULL, NULL);  // Read PEM public key
+    BIO_free(bio);  // Free the BIO after use
+
+    if (!clientPKey) {
+        std::cerr << "Error loading public key from string." << std::endl;
+        Client_Key_Gen::handleErrors(); // Must be fully qualified call to avoid compiler errors
+    }
+
+    return clientPKey;
 }

@@ -2,28 +2,47 @@
  [devel] server constructor
 Starting client thread...
 
+Connection to ws://127.0.0.1:9004 failed, retrying in 500ms...
+Connection to ws://127.0.0.1:9004 failed, retrying in 500ms...
+
+Connection initiated from: 127.0.0.1:46048
 
 Successfully connected to ws://127.0.0.1:9003
 > Server hello sent
 
 Sent client update request to 2
-
-Connection initiated from: 127.0.0.1:52784
-Received message: {"data":{"sender":"127.0.0.1:9003","type":"server_hello"}}
+Received message: {"counter":12345,"data":"{\"sender\":\"127.0.0.1:9003\",\"type\":\"server_hello\"}","signature":"img94eEzrkZ8pK+jJ1mIhcshD6U+K5JQ6oY8EBdmwPAJMiS7qvf2hR20amKJaNhS6FVcd1RF5vzg6Xsa+XNBKeFWRSkMhgh3M4nPuxiW4svGOVnDhckLiHYf5PXgvAYvKv1hLdTDo/GIYlTTyVKC6mjX7xKO2N/AJeTgf4uYeSDM7X0H1FNIo2w+Koov0Gmp5fmYqXzJoUAOI6gSPy0hiTCwc3CCc3Dgry5vJuNI6yT13q7nBxRPZ8pcxMY3HWcHunDPK+hW1Eb6FyK2vjNrqu+b3cbp1ZIfmQOqPiTy9xJbW2E6h1ZTCgTIVhKa+UFT2M74Jtsw10YAXbhJ36vg6w==","type":"signed_data"}
+Connection to ws://127.0.0.1:9004 failed, retrying in 500ms...
 Cancelling server connection timer
+Verified signature of server 2
 
 Received message: {"type":"client_update_request"}
 Sent client update to 2
 
+Received message: {"clients":[],"type":"client_update"}
+Connection to ws://127.0.0.1:9004 failed, retrying in 500ms...
 
-Connection initiated from: 127.0.0.1:52794
-Received message: {"data":{"public_key":"ABCDEF","time-to-die":"<time-to-die>","type":"hello"}}
+
+Connection initiated from: 127.0.0.1:46050
+Received message: {"counter":12345,"data":"{\"public_key\":\"-----BEGIN PUBLIC KEY-----\\nMIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEA22mg6Er/nRqIfs/a0vDQ\\nwnKw4OJ0ddzhAjmg50nLbOhjDt1KZUnYCSb4et0UIXX5wPoOjYDqnSdJjCOdgfpD\\nsXrlqm1Tx6OoyJuPC7PYrAgHO2t82NRKOhnRPF5RttliMsNsRPUB7k2fEUGkpdSk\\n8D0QsXMPobnNe3jKtwrz1T7b2gKTn+IOpeuYigbxTuX9qRQLg0E/SLNa9aEwlG12\\ne/HIkCzGECAH9tYgk5OcrxQ5bpze6jWyaLC/9JrA/MWlK8LJyUiCFbS7X+26aUhH\\n65pW6Vs2HBgAYDWYfazxUmG3lrJ9aK89ljhnbqscEBaXiRw6cEvxuha/pgZR4/23\\ntQIDAQAB\\n-----END PUBLIC KEY-----\\n\",\"type\":\"hello\"}","signature":"wXu77rn8oZjgRRRye3BeDd9qp9EGIjL4MyphpT9SCpOh43c2z1O5y07J1iPmgE53jXRv97tLYPw41BjdjSNzdil6RLVVDDL6LGLDtXs+902W/FJikmoFmoF4yFBnbEPzavkuRNIjLUwVHchHXMydmynVNDgKrinOpUv8awpKA6gKvBWDYbEOrv01DA9s6h1SSaXO8r38jcEwSVGr9pQbSVh/1S9SKkqUGiC6O+Pvj6yMkVZFo30cJmOOc/c9MZBQZ2tf0yeMsa1wRtfDHiBG4UqmmDe6T+nYHt1cLI/YYGyF93MKzm844ISjvTDkEc6mjzKJA5STWSBOe7iGfKZngQ==","type":"signed_data"}
 Cancelling client connection timer
+Verified signature of client 1001
 Sent client update to 2
 
+Connection to ws://127.0.0.1:9004 failed, retrying in 500ms...
 Received message: {"type":"client_list_request"}
 Sent client list to client 1001
 
+Received message: {"counter":12345,"data":"{\"message\":\"Test Message1\",\"sender\":\"YjQ0NGQyMGY0YTI2Njg0ZmY0NGYxOWRkOTVhZGRlNDJhYThhODFkZmJiZDI1NDJlOTgzMjU5YTU4OTNiNTdjOQ==\",\"type\":\"public_chat\"}","signature":"JVOuQW/iZi6m00jB7/3EQMZWXnIvolcy/qLhQeSrG9gFxH1Y8DETziJ/WXQqtsTYneysRW96UtxLYIxiiqJjVT74phaQ/DSfVGY5Pt+jtPiZ4Q8dW3CI2AUR3aV4OYUeGYXV8gJ8bqUv2QQBd+VDB2Hlg3rKbWepDVQ2aSNdXNJoCaPF23C0JfxkWxiwbsDLCodZbUDVxGqnNHLW1PZ9IF7wYJtHYLltPREqtVJyQsq1t334VJY55/vgE1awtiLFhNjOgyJ05vrMDx0uUatfEveJ1TG5kQmW55g1tusipjvAR5FmJ0XwiDSzqYLVynE0XXBOqMPRiXOZUG/f/SYRZg==","type":"signed_data"}
+Verified signature of client
+Sent public chat to 2
+Connection to ws://127.0.0.1:9004 failed, retrying in 500ms...
+Connection to ws://127.0.0.1:9004 failed, retrying in 500ms...
+Connection to ws://127.0.0.1:9004 failed, retrying in 500ms...
+Connection to ws://127.0.0.1:9004 failed, retrying in 500ms...
+Connection to ws://127.0.0.1:9004 failed, retrying in 500ms...
+Connection to ws://127.0.0.1:9004 failed, retrying in 500ms...
+Exceeded retry limit. Giving up on connecting to ws://127.0.0.1:9004
 
 Client 1001 closing their connection
 Sent client update to 2

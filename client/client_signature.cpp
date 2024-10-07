@@ -2,9 +2,7 @@
 #include "client_key_gen.h"
 #include "Sha256Hash.h"
 #include "base64.h"
-ClientSignature::ClientSignature(){
 
-};
 /*Generates a signature from a message based on a client's private key. Will concatenate counter for you does not need to be included*/
 std::string ClientSignature::generateSignature(std::string message, EVP_PKEY *private_key, std::string counter) {
     // Combine the message and counter, then hash the result

@@ -17,25 +17,24 @@ typedef websocketpp::server<websocketpp::config::asio> server;
 void testSendAndReceive(SignedData& signedData, EVP_PKEY* privateKey, std::vector<EVP_PKEY *> recipent_pub_keys, std::vector<std::string> server_addresses, websocket_endpoint* endpoint, int id) {
     // Sample data to send
     std::string data = DataMessage::generateDataMessage("Hello world!", recipent_pub_keys, server_addresses);
-    std::cout << data << std::endl;
     int counter = 1;
 
     // Sending a signed message
     signedData.sendSignedMessage(data, privateKey, endpoint, id, counter);
 
 
-    nlohmann::json message;
+    nlohmann::json message_json;
 
-    message["type"] = "signed_data";
-    message["data"] = data;
-    message["counter"] = counter;
-    message["signature"] = ClientSignature::generateSignature(data, privateKey, std::to_string(counter));
+    message_json["type"] = "signed_data";
+    message_json["data"] = data;
+    message_json["counter"] = counter;
+    message_json["signature"] = ClientSignature::generateSignature(data, privateKey, std::to_string(counter));
 
-    std::string json_string = message.dump();
+    std::string json_string = message_json.dump();
 
     // Create a mock signed message for testing decryption
 
-    std::string mockMessageStr = message.dump();
+    std::string mockMessageStr = message_json.dump();
 
     // Attempt to decrypt the signed message
     std::string decryptedMessage = signedData.decryptSignedMessage(mockMessageStr, privateKey);
@@ -59,8 +58,8 @@ int main() {
     int id = endpoint.connect("ws://localhost:9002", global_client_list); // Example connection ID
 
     // Load or create a private key for testing
-    EVP_PKEY* privateKey = Client_Key_Gen::loadPrivateKey("private_key.pem");
-    EVP_PKEY * publicKey = Client_Key_Gen::loadPublicKey("public_key.pem");
+    EVP_PKEY* privateKey = Client_Key_Gen::loadPrivateKey("tests/private_key0.pem");
+    EVP_PKEY * publicKey = Client_Key_Gen::loadPublicKey("tests/public_key0.pem");
     if (!privateKey) {
         std::cerr << "Failed to load private key!" << std::endl;
         return 1; // Exit if key loading fails

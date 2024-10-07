@@ -8,6 +8,18 @@ ServerList::ServerList(int server_id){
     load_mapping_from_file();
 }
 
+// Function to obtain server's public key from neighbourhood mapping
+EVP_PKEY* ServerList::getPKey(int server_id){
+    std::unordered_map<int, std::string>::const_iterator found_server = knownServers.find(server_id);
+    if(found_server == knownServers.end()){
+        std::cout << "Unknown Server" << std::endl;
+        return NULL;
+    }
+
+    return Server_Key_Gen::stringToPEM(found_server->second);
+}
+
+// Obtain a server ID from the map using a provided server address
 int ServerList::ObtainID(std::string address){
     for(const auto& server: serverAddresses){
         if(server.second == address){
@@ -15,6 +27,18 @@ int ServerList::ObtainID(std::string address){
         }
     }
     return -1;
+}
+
+// Obtain the uris of the other servers from the map
+std::unordered_map<int, std::string> ServerList::getUris(){
+    std::unordered_map<int, std::string> mapToReturn = serverAddresses;
+
+    for(const auto& address: mapToReturn){
+        std::string uri = "ws://" + address.second;
+        mapToReturn[address.first] = uri;
+    }
+    mapToReturn.erase(my_server_id);
+    return mapToReturn;
 }
 
 // Saves the known users to a mapping file
@@ -31,25 +55,40 @@ void ServerList::save_mapping_to_file() {
 }
 
 // Reads the known users for this server from a mapping file
-void ServerList::load_mapping_from_file() {
+void ServerList::load_mapping_from_file(){
+    // Server Map file loading
+    std::string filename = "server-files/neighbourhood_mapping.json";
+
+    std::ifstream neighbourhoodFile(filename);
+    if(!neighbourhoodFile){
+        std::cout << "Unable to load neighbourhood mapping file" << std::endl;
+        return;
+    }
+
+    nlohmann::json j_server_map;
+    neighbourhoodFile >> j_server_map;
+
+    knownServers = j_server_map.get<std::unordered_map<int, std::string>>();
+
     // Generate mapping file name
-    std::string filename = "server-files/server_mapping";
+    filename = "server-files/server_mapping";
     filename.append(std::to_string(my_server_id));
     filename.append(".json");
 
     // Load the map from file name
-    std::ifstream file(filename);
+    std::ifstream clientMapFile(filename);
     // Check if file exists
-    if(!file){
+    if(!clientMapFile){
+        std::cout << "Server mapping file does not exist" << std::endl;
         return;
     }
 
     // Parse file to JSON object
-    nlohmann::json j_map;
-    file >> j_map;
+    nlohmann::json j_client_map;
+    clientMapFile >> j_client_map;
 
     // Convert JSON object to map and store
-    knownClients = j_map.get<std::unordered_map<int, std::string>>();
+    knownClients = j_client_map.get<std::unordered_map<int, std::string>>();
 
     // Find and set last ID used so new clients get correct ID
     int largestID=0;
@@ -59,6 +98,16 @@ void ServerList::load_mapping_from_file() {
         }
     }
     clientID = largestID;
+}
+
+// Retrieves all the clients for a server as a map
+std::unordered_map<int, std::string> ServerList::getClients(int server_id){
+    std::unordered_map<int, std::string> server;
+    if(servers.find(server_id) != servers.end()){
+        server = servers[server_id];
+    }
+
+    return server;
 }
 
 // Retrieves a client's public key using its server and client ids
@@ -77,6 +126,22 @@ std::pair<int, std::string> ServerList::retrieveClient(int server_id, int client
     }
 }
 
+// Retrieve the senders public key using their fingerprint (will be useful for signature verification on server)
+std::string ServerList::retrieveClientKey(int server_id, std::string fingerprint) {
+    // Check if the server exists
+    if (serversFingerprints.find(server_id) != serversFingerprints.end()) {
+        // Check if the fingerprint exists in the server
+        auto& client_list = serversFingerprints[server_id];
+        if (client_list.find(fingerprint) != client_list.end()) {
+            return client_list[fingerprint];
+        } else {
+            throw std::runtime_error("Fingerprint not found.");
+        }
+    } else {
+        throw std::runtime_error("Server ID not found.");
+    }
+}
+
 // Inserts a client to the list when a new connection is established
 int ServerList::insertClient(std::string public_key){
     // Check list of known clients to see if client's public key matches one stored 
@@ -84,6 +149,7 @@ int ServerList::insertClient(std::string public_key){
         // If the client's public key matches, use previous ID
         if(client.second  == public_key){
             servers[my_server_id][client.first] = public_key;
+            serversFingerprints[my_server_id][Fingerprint::generateFingerprint(Server_Key_Gen::stringToPEM(public_key))] = public_key;
             currentClients[client.first] = public_key;
 
             return client.first;
@@ -94,6 +160,10 @@ int ServerList::insertClient(std::string public_key){
 
     // Add client to maps
     servers[my_server_id][clientID] = public_key;
+
+    std::string fingerprintString = Fingerprint::generateFingerprint(Server_Key_Gen::stringToPEM(public_key));
+    serversFingerprints[my_server_id][fingerprintString] = public_key;
+    
     currentClients[clientID] = public_key;
 
     // Add new client to map of known clients and save new map to file
@@ -106,6 +176,19 @@ int ServerList::insertClient(std::string public_key){
 // Removes a client from the list when the connection is dropped
 void ServerList::removeClient(int client_id){
     // Remove client from maps
+    std::string pubKey;
+    for(const auto& clients : servers[my_server_id]){
+        if(clients.first == client_id){
+            pubKey = clients.second;
+        }
+    }
+    
+    for(const auto& clients: serversFingerprints[my_server_id]){
+        if(clients.second == pubKey){
+            serversFingerprints[my_server_id].erase(clients.first);
+        }
+    }
+
     servers[my_server_id].erase(client_id);
 
     currentClients.erase(client_id);
@@ -114,6 +197,7 @@ void ServerList::removeClient(int client_id){
 // Removes a server from the list
 void ServerList::removeServer(int server_id){
     servers.erase(server_id);
+    serversFingerprints.erase(server_id);
 }
 
 // Inserts or replaces a server in the list using a client update
@@ -126,12 +210,18 @@ void ServerList::insertServer(int server_id, std::string update){
 
     std::unordered_map<int, std::string> updatedServer;
 
+    std::unordered_map<std::string, std::string> updatedServerFingerprints;
+
     for(const auto& client: clientsArray){
         updatedServer[client["client_id"]] = client["public_key"];
+        std::string fingerprintString = Fingerprint::generateFingerprint(Server_Key_Gen::stringToPEM(client["public_key"]));
+        updatedServerFingerprints[fingerprintString] = client["public_key"];
     }
 
     // Store map
     servers[server_id] = updatedServer;
+
+    serversFingerprints[server_id] = updatedServerFingerprints;
 }
 
 // Creates a JSON client list of current connected network

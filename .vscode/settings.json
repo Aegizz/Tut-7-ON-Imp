@@ -101,6 +101,7 @@
         "cinttypes": "cpp",
         "typeindex": "cpp",
         "*.def": "cpp",
-        "*.ipp": "cpp"
+        "*.ipp": "cpp",
+        "shared_mutex": "cpp"
     }
 }
