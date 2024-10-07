@@ -310,7 +310,7 @@ int on_message(server* s, websocketpp::connection_hdl hdl, message_ptr msg) {
             server_id = con_data->server_id;
 
             // Obtain client's key
-            EVP_PKEY* clientPKey = serverUtilities->getPKeyFromFingerprint(data["sender"], server_id, global_server_list);
+            EVP_PKEY* clientPKey = Server_Key_Gen::stringToPEM(global_server_list->retrieveClientKey(server_id, data["sender"]));
 
             // If no key was found, an unknown fingerprint was sent
             if(clientPKey == nullptr){
@@ -331,8 +331,7 @@ int on_message(server* s, websocketpp::connection_hdl hdl, message_ptr msg) {
             // Assign serverID as this server's ID
             server_id = ServerID;
 
-            // Obtain client's key
-            EVP_PKEY* clientPKey = serverUtilities->getPKeyFromFingerprint(data["sender"], server_id, global_server_list);
+            EVP_PKEY* clientPKey = Server_Key_Gen::stringToPEM(global_server_list->retrieveClientKey(server_id, data["sender"]));
 
             // If no key was found, an unknown fingerprint was sent
             if(clientPKey == nullptr){

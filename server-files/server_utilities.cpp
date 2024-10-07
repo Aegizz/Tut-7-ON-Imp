@@ -235,24 +235,6 @@ void ServerUtilities::broadcast_public_chat_clients(std::unordered_map<websocket
     }
 }
 
-// Look through a server's client map and see if a matching fingerprint can be generated (fingerprints are unable to be reversed into keys)
-EVP_PKEY* ServerUtilities::getPKeyFromFingerprint(std::string fingerprint, int sender_server_id, ServerList* global_server_list){
-    std::unordered_map<int, std::string> clients = global_server_list->getClients(sender_server_id);
-    if(clients.empty()){
-        std::cout << "Invalid serverID" << std::endl;
-        return nullptr;
-    }
-
-    for(const auto& client: clients){
-        EVP_PKEY* clientKey = Server_Key_Gen::stringToPEM(client.second);
-
-        if(Fingerprint::generateFingerprint(clientKey) == fingerprint){
-            return clientKey;
-        }
-    }
-    return nullptr;
-}
-
 // Define a function that will handle the client connections retry logic
 void ServerUtilities::connect_to_server(client* c, std::string const & uri, int server_id, EVP_PKEY* private_key, int counter, std::unordered_map<websocketpp::connection_hdl, std::shared_ptr<connection_data>, connection_hdl_hash, connection_hdl_equal>* outbound_server_server_map, int retry_attempts) {
     for(const auto& connection: *outbound_server_server_map){

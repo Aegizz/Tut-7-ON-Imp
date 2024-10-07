@@ -12,6 +12,9 @@
 #include "aes_encrypt.h"
 #include "client.h"
 
+#include "client_signature.h"
+#include "client_key_gen.h"
+
 class connection_metadata {
 private:
     ClientList * global_client_list;
@@ -59,15 +62,45 @@ public:
         std::string payload = msg->get_payload();
 
         // Deserialize JSON message
-        nlohmann::json data = nlohmann::json::parse(payload);
+        nlohmann::json messageJSON = nlohmann::json::parse(payload);
+        std::string dataString;
+        nlohmann::json data;
 
-        if(data["type"] == "client_list"){
+        if(messageJSON.contains("data")){
+            dataString = messageJSON["data"].get<std::string>();
+            data = nlohmann::json::parse(dataString);
+        }
+
+        if(messageJSON["type"] == "client_list"){
             std::cout << "Client list received: " << payload << std::endl;
             if (global_client_list != nullptr){
                 delete global_client_list;
             }
             // Process client list
-            global_client_list = new ClientList(data);
+            global_client_list = new ClientList(messageJSON);
+        }else if(data["type"] == "public_chat"){
+            std::pair<int, std::pair<int, std::string>> chatInfo = global_client_list->retrieveClientFromFingerprint(data["sender"]);
+            if(chatInfo.first == -1){
+                std::cout << "Invalid fingerprint received in public message" << std::endl;
+                return;
+            }
+
+            int server_id = chatInfo.first;
+            int client_id = chatInfo.second.first;
+            std::string public_key = chatInfo.second.second;
+            EVP_PKEY* pubKey = Client_Key_Gen::stringToPEM(public_key);
+
+            std::string signature = messageJSON["signature"];
+            int counter = messageJSON["counter"];
+
+            if(!ClientSignature::verifySignature(signature, data.dump() + std::to_string(counter), pubKey)){
+                std::cout << "Invalid signature" << std::endl;
+                return;
+            }
+            std::cout << "Verified signature" << std::endl;
+
+            std::cout << "Public chat received from client " << client_id << " on server " << server_id << std::endl;
+            std::cout << data["message"] << std::endl;
         }else{
             // Print the received message
             std::cout << "> Message received: " << payload << std::endl;
