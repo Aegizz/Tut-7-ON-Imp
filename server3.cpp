@@ -342,26 +342,26 @@ int main(int argc, char * argv[]) {
     // Create a WebSocket++ client instance
     client ws_client;
 
-    server echo_server;
+    server ws_server;
 
     try {
         // Set logging settings        
         if (argc > 1 && std::string(argv[1]) == "-d") {
-            echo_server.set_access_channels(websocketpp::log::alevel::all);
-            echo_server.set_error_channels(websocketpp::log::elevel::all);
+            ws_server.set_access_channels(websocketpp::log::alevel::all);
+            ws_server.set_error_channels(websocketpp::log::elevel::all);
             
         } else {
-            echo_server.set_access_channels(websocketpp::log::alevel::none);
-            echo_server.set_error_channels(websocketpp::log::elevel::none);
+            ws_server.set_access_channels(websocketpp::log::alevel::none);
+            ws_server.set_error_channels(websocketpp::log::elevel::none);
         }
 
         // Initialize ASIO
-        echo_server.init_asio();
+        ws_server.init_asio();
 
         // Set handlers
-        echo_server.set_open_handler(bind(&on_open, &echo_server, std::placeholders::_1));
-        echo_server.set_close_handler(bind(&on_close, &echo_server, std::placeholders::_1));
-        echo_server.set_message_handler(bind(&on_message, &echo_server, std::placeholders::_1, std::placeholders::_2));
+        ws_server.set_open_handler(bind(&on_open, &ws_server, std::placeholders::_1));
+        ws_server.set_close_handler(bind(&on_close, &ws_server, std::placeholders::_1));
+        ws_server.set_message_handler(bind(&on_message, &ws_server, std::placeholders::_1, std::placeholders::_2));
 
         // Start a separate thread to handle the client that connects to ws://localhost:9003
         std::thread client_thread([]() {
@@ -390,13 +390,13 @@ int main(int argc, char * argv[]) {
         client_thread.detach();
         
         // Listen on port 9002
-        echo_server.listen(listenPort);
+        ws_server.listen(listenPort);
         
         // Start the server accept loop
-        echo_server.start_accept();
+        ws_server.start_accept();
 
         // Start the ASIO io_service run loop
-        echo_server.run();
+        ws_server.run();
 
     } catch (const websocketpp::exception & e) {
         std::cout << "WebSocket++ exception: " << e.what() << std::endl;
