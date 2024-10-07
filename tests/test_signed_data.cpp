@@ -9,6 +9,7 @@
 #include "../client/websocket_endpoint.h"
 #include "../client/websocket_metadata.h"
 #include "../client/DataMessage.h"
+#include "../client/Fingerprint.h"
 
 using websocketpp::connection_hdl;
 
@@ -50,20 +51,23 @@ void testSendAndReceive(SignedData& signedData, EVP_PKEY* privateKey, std::vecto
 ClientList * global_client_list = nullptr;
 
 int main() {
-    // Initialize WebSocket server (or endpoint) here
-    websocket_endpoint endpoint;
-    // You would typically set up the endpoint, including any necessary configurations.
-    
-    // Mock connection metadata
-    int id = endpoint.connect("ws://localhost:9002", global_client_list); // Example connection ID
-
-    // Load or create a private key for testing
+    // Load keys
     EVP_PKEY* privateKey = Client_Key_Gen::loadPrivateKey("tests/private_key0.pem");
-    EVP_PKEY * publicKey = Client_Key_Gen::loadPublicKey("tests/public_key0.pem");
+    EVP_PKEY* publicKey = Client_Key_Gen::loadPublicKey("tests/public_key0.pem");
     if (!privateKey) {
         std::cerr << "Failed to load private key!" << std::endl;
         return 1; // Exit if key loading fails
     }
+
+    // Generate fingerprints
+    std::string fingerprint = Fingerprint::generateFingerprint(publicKey);
+
+    // Initialize WebSocket server (or endpoint) here
+    websocket_endpoint endpoint(fingerprint, privateKey);
+    // You would typically set up the endpoint, including any necessary configurations.
+    
+    // Mock connection metadata
+    int id = endpoint.connect("ws://localhost:9002", global_client_list); // Example connection ID
 
     // Create an instance of SignedData
     SignedData signedData;

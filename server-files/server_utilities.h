@@ -14,6 +14,9 @@
 #include <websocketpp/config/asio_no_tls_client.hpp>
 #include <websocketpp/client.hpp>
 
+#include <algorithm> // For std::find
+#include <unordered_set>
+
 #include "server_signature.h"
 #include "server_key_gen.h"
 #include "../client/Fingerprint.h"
@@ -110,6 +113,12 @@ class ServerUtilities{
 
         int send_public_chat_client(server* s, websocketpp::connection_hdl hdl, std::unordered_map<websocketpp::connection_hdl, std::shared_ptr<connection_data>, connection_hdl_hash, connection_hdl_equal> client_server_map, std::string message);
         void broadcast_public_chat_clients(std::unordered_map<websocketpp::connection_hdl, std::shared_ptr<connection_data>, connection_hdl_hash, connection_hdl_equal> client_server_map, std::string message, int client_id_nosend=0);
+
+        int send_private_chat_server(client* c, websocketpp::connection_hdl hdl, std::unordered_map<websocketpp::connection_hdl, std::shared_ptr<connection_data>, connection_hdl_hash, connection_hdl_equal> outbound_server_server_map, std::string message);
+        void broadcast_private_chat_servers(std::unordered_set<std::string> serverSet, std::unordered_map<websocketpp::connection_hdl, std::shared_ptr<connection_data>, connection_hdl_hash, connection_hdl_equal> outbound_server_server_map, std::string message);
+
+        int send_private_chat_client(server* s, websocketpp::connection_hdl hdl, std::unordered_map<websocketpp::connection_hdl, std::shared_ptr<connection_data>, connection_hdl_hash, connection_hdl_equal> client_server_map, std::string message);
+        void broadcast_private_chat_clients(std::unordered_map<websocketpp::connection_hdl, std::shared_ptr<connection_data>, connection_hdl_hash, connection_hdl_equal> client_server_map, std::string message, int client_id_nosend=0);
 
         void connect_to_server(client* c, std::string const & uri, int server_id, EVP_PKEY* private_key, int counter, std::unordered_map<websocketpp::connection_hdl, std::shared_ptr<connection_data>, connection_hdl_hash, connection_hdl_equal>* outbound_server_server_map, int retry_attempts = 0);
 

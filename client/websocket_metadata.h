@@ -116,8 +116,8 @@ public:
             // Remove tag from cipher text string to leave actual ciphertext
             ciphertextString = ciphertextString.substr(0, ciphertextString.length() - AES_GCM_TAG_SIZE);
 
-            std::vector<unsigned char> key;
             std::vector<std::string> symm_keys = data["symm_keys"].get<std::vector<std::string>>();
+
             // For each recipient
             for(size_t i=0;i<symm_keys.size();i++){
                 // Decode the encrypted symmetric key from Base64 into hex and cast to unsigned char*
@@ -139,7 +139,7 @@ public:
                 std::vector<unsigned char> key(keyString.begin(), keyString.end());
 
                 // Check if key is the right size
-                if (keyString.size() == AES_GCM_KEY_SIZE) {
+                if (keyString.size() != AES_GCM_KEY_SIZE) {
                     std::cerr << "Decryption of the symmetric key failed!" << std::endl;
                     OPENSSL_free(decryptedKey);
                     continue;
@@ -156,14 +156,13 @@ public:
                 // Decrypt using AES-GCM and handle any errors
                 if (AESGCM::aes_gcm_decrypt(ciphertext, key, iv, tag, decrypted_text)) {
                     std::string decrypted_str(decrypted_text.begin(), decrypted_text.end());
+
                     try {
                         // Attempt to parse the string as JSON
-                        nlohmann::json parsedData = nlohmann::json::parse(decrypted_str);
+                        nlohmann::json chat = nlohmann::json::parse(decrypted_str);
 
                         // If parsing is successful, you can work with the JSON object
-                        std::cout << "Valid JSON: " << parsedData.dump(4) << std::endl << std::endl;
-                        
-                        std::pair<int, std::pair<int, std::string>> chatInfo = global_client_list->retrieveClientFromFingerprint(data["chat"]["participants"][0]);
+                        std::pair<int, std::pair<int, std::string>> chatInfo = global_client_list->retrieveClientFromFingerprint(chat["participants"][0]);
                         if(chatInfo.first == -1){
                             std::cout<<"Invalid fingerprint received in message"<<std::endl;
                             return;
@@ -184,14 +183,12 @@ public:
                         std::cout << "Verified signature" << std::endl;
 
                         std::cout << "Chat received from client " << client_id << " on server " << server_id << std::endl << std::endl;
-                        std::cout << parsedData["message"] << std::endl;
+                        std::cout << chat["message"] << std::endl;
                     }catch (nlohmann::json::parse_error& e) {
                         // Catch parse error exception and display error message
                         std::cerr << "Invalid JSON format: " << e.what() << std::endl;
                         continue;
                     }
-                    
-                    
                 } else {
                     std::cerr << "Decryption failed!" << std::endl;
                     return;
@@ -201,7 +198,7 @@ public:
             
         }else{
             // Print the received message
-            std::cout << "> Message received: " << payload << std::endl;
+            std::cout << "> Invalid message type received: " << payload << std::endl;
         }
         std::cout << "\n";
     }

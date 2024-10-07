@@ -41,6 +41,7 @@
 #include <iostream>
 #include <map>
 #include <string>
+#include <vector>
 #include <nlohmann/json.hpp> // For JSON library
 
 
@@ -112,7 +113,7 @@ int main() {
         ClientUtilities::send_hello_message(&endpoint, initId, privKey, pubKey, 12345);
         ClientUtilities::send_client_list_request(&endpoint, initId);
 
-        ClientUtilities::send_public_chat(&endpoint, initId, "Test Message3", privKey, pubKey, 12345);
+        //ClientUtilities::send_public_chat(&endpoint, initId, "Test Message3", privKey, pubKey, 12345);
         
         sleep(60);
         

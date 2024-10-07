@@ -63,7 +63,7 @@ server-debug: server.cpp
 
 test-client: test-client-list test-client-aes-encrypt test-client-sha256 test-base64 test-client-key-gen test-client-signature test-client-signed-data test-chat-message test-data-message test-hello-messsage
 
-test-client-list: tests/test_client_list.cpp client/client_list.h client/client_list.cpp
+test-client-list: tests/test_client_list.cpp client/*.cpp client/Fingerprint.h
 	$(CXX) $(CXXFLAGS) -g -o $@ $^ $(LIBS)
 test-client-aes-encrypt: tests/test_aes_encrypt.cpp client/aes_encrypt.cpp client/aes_encrypt.h
 	$(CXX) $(CXXFLAGS) -g -o $@ $^ $(LIBS)
@@ -75,7 +75,7 @@ test-base64: tests/test_base64.cpp client/base64.cpp
 	$(CXX) $(CXXFLAGSR) -g -o $@ $^ $(LIBS)
 test-client-signature: client/base64.cpp client/client_key_gen.cpp client/client_signature.cpp tests/test_client_signature.cpp client/Sha256Hash.cpp
 	$(CXX) $(CXXFLAGS) -g -o $@ $^ $(LIBS)
-test-client-signed-data: client/*.cpp tests/test_signed_data.cpp
+test-client-signed-data: client/*.cpp client/Fingerprint.h tests/test_signed_data.cpp
 	$(CXX) $(CXXFLAGS) -g -o $@ $^ $(LIBS)
 test-data-message: client/aes_encrypt.cpp client/client_key_gen.cpp client/base64.cpp tests/test_data_message.cpp client/hexToBytes.cpp
 	$(CXX) $(CXXFLAGS) -g -o $@ $^ $(LIBS)
