@@ -62,18 +62,21 @@ To set up new servers in the neighbourhood there are a few important files to ch
   - It is important that this matches the neighbourhood mapping so connections can be established and maintained properly.
 - In the server-files directory, each server maintains a server_mappingX.json file where X is the ID of the server. These store the IDs of clients of that server against their public keys.
   - If you want to create new ID mappings, delete the existing clients in the mapping. New clients will be added to the JSON file when connecting for the first time so these files don't need to be manually changed to allow new clients to connect but if you want to use IDs that are already assigned then modification will be required.
+  - You will need to create a new call in the Makefile for serverY identical to server but replacing the dependency of server.cpp with serverY.cpp.
  
 # How to set up new Clients
 - In userClient there exists a const int clientNumber which is for their local client number X (nothing to do with their ClientID), this is important for key management.  
 - Deleting client/private_keyX.pem and client/public_keyX.pem where X is the local client number (e.g. testClientX) will regenerate a client's keys when running userClient.
 - Run ```cp userClient userClientY.cpp``` to create another user client.
+- You will need to create a new call in the Makefile for userClientY identical to userClient but replacing the dependency of userClient.cpp with userClientY.cpp.
 
- # How to use the userClient
+ # How to use the userClient and Server
+ Run ```./server``` or ```./serverX``` where X is the number of the server process.
  - connect <ws uri>
  - send <message type> <connection id>
    - Message types are private and public
      - If private, it will prompt you for Server IDs and Client IDs of recipients
- - close <connection id> [<close code:default=1000>] [<close reason>]
+ - close <connection id> <close code:default=1000> <close reason>
  - show <connection id>
  - help: Display this help text
  - quit: Exit the program
