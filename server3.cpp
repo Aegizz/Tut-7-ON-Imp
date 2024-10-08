@@ -186,8 +186,6 @@ int on_message(server* s, websocketpp::connection_hdl hdl, message_ptr msg) {
                 connection_map.erase(hdl);
             }
             return -1;
-        }else{
-            std::cout << "Verified signature of client " << con_data->client_id << std::endl;
         }
 
         // Move to client server map

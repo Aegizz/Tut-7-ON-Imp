@@ -61,7 +61,7 @@ EVP_PKEY* privKey;
 EVP_PKEY* pubKey;
 
 //Global pointer for client list
-ClientList * global_client_list = nullptr;
+ClientList * global_client_list = new ClientList;
 
 std::ostream & operator<< (std::ostream & out, connection_metadata const & data) {
     out << "> URI: " << data.m_uri << "\n"
