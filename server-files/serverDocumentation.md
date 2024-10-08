@@ -2,10 +2,12 @@
 
 The following server featues have been implemented
 
-- server_hello (unsigned so there is no server verification yet)
+- Signature verification
+- server_hello
 - client_update
 - client_update_request
 - client_list
+- public and private chat forwarding
   
 There exists server 1 hosted on ws://localhost:9002, server 2 hosted on ws://localhost:9003 and server 3 hosted on ws://localhost:9004.
 
@@ -15,15 +17,43 @@ The server iterates through server_uris, an unordered_map<int, string> of server
 Each server is able to create client instances that connect and communicate with other servers on behalf of it's server.
 
 ## Connection Types
-The server can have clients connect to it, have servers connect to it, and connect to other servers. Though messages could be sent over a connection with another server, to simplify the implementation, a server can only communicate with another server over a connection they have established with that server. For this reason there exist three connection types:
+The server can have clients connect to it, have servers connect to it, and connect to other servers. Though messages could be sent over a single connection with another server, to simplify the implementation, a server can only communicate with another server over a connection they have initiated with that server . For this reason there exist three connection types:
 
 - client_server connections: A connection between a client and a server.
-- inbound_server_server connections: A connection another server has established. Messages are only received over this connection.
-- outbound_server_server connections: A connection established by a server with another server. Messages are only sent over this connection.
+- inbound_server_server connections: A connection another server has initiated. Messages are only received over this connection.
+- outbound_server_server connections: A connection initiated by a server with another server. Messages are only sent over this connection.
+
+## Current Implementation
+The server currently tries to establish a connection to all the known servers, which at this stage are ws://localhost:9002, ws://localhost:9003, ws://localhost:9004.
+
+Each server has a ServerID variable which is set to their server ID, a listenPort variable which is set to their listening port, and myAddress variable which is set to their address.
+
+The server creates a ServerList object, providing the ServerID variable to create an object specifically for that server. It also creates a ServerUtilities class, providing their address to create an object specifically for that server.
 
 ## ServerList
 
 This class stores the list of servers and their clients, clients connected to the server, and all clients native to the server that are known.
+
+### Obtaining a server's public key
+```
+    EVP_PKEY* getPKey(int server_id);
+    /*
+        Iterate over knownServers map looking for server_id.
+        If server_id was not found in the map, return nullptr.
+        Convert string public key to PEM format.
+        Return key.
+    */   
+```
+
+### Obtaining a server's ID
+```
+    int ObtainID(std::string address);
+    /*
+        Iterate over defined serverAddresses map looking for specified address.
+        Return ID when found.
+        Otherwise return -1.
+    */   
+```
 
 ### Generating server_uris
 ```
@@ -37,12 +67,25 @@ This class stores the list of servers and their clients, clients connected to th
     */   
 ```
 
+### Retrieving Cliets
+```
+    std::unordered_map<int, std::string> getClients(int server_id);
+    /*
+        Create empty unordered_map<int, string>.
+        If the server_id is contained in servers map, set that map equal to the 
+        map of the clients for that server.
+        Otherwise return the empty map.
+    */   
+```
+
 ### Adding a client to client list
 ```
     int insertClient(std::string public_key);
     /*
         Iterate over map of known clients and check if a previous ID exists. (client is known to server)
         Increment clientID value if not known before.
+        Use client ID to add client to my_server in the server map.
+        Generate fingerprint using public key and add to my_server in the serverFingerprints map, storing against fingerprint rather than ID.
         Use client ID to add client and their public key into currentClients map.
         Add client to map of known clients if they weren't previously known.
         Save knownClients map to a JSON file.
@@ -54,12 +97,14 @@ This class stores the list of servers and their clients, clients connected to th
 ```
     void ServerList::removeClient(int client_id);
     /*
+        Iterate through map of clients for my_server in servers map and find public_key.
+        Iterate through map of clients for my_server in serverFingerprints map and erase client whose public key matches.
         Remove client from this server in servers map.
         Remove client from current connected clients map 
     */
 ```
 
-## Server Handles
+## Server Connection Handlers
 
 ### When a connection is opened
 ```
@@ -94,24 +139,68 @@ This class stores the list of servers and their clients, clients connected to th
 ```
     int on_message(server* s, websocketpp::connection_hdl hdl, message_ptr msg);
     /*
-        Parse the JSON message into a JSON object.
-        Check if the connection the message was received on has been confirmed, or if is a confirmed connection (an inbound connection).
+        Parse the JSON message into a JSON object messageJSON.
+        Check if the connection the message was received on is in the connection_map for unconfirmed connections or if it is in the inbound_server_server_map meaning it has been confirmed.
         If the message is a hello
             Cancel connection timer.
-            Insert client into client list, providing public key that was received in the message.
-            Take the returned client ID and set it as the client ID in the connection structure.
-            Move the connection to the client connection map.
-            Send updated client list to all clients except the newly established one.
-            Send client updates to all servers.
+            Extract signature and counter from JSON object and convert public key from a string to a PEM.
+            Verify the signature using the signature, data message, counter and public key.
+            If the signature cannot be verified
+                Close the connection with the client and remove from unconfirmed connections map.
+            If the signature can be verified
+                Insert client into client list, providing public key that was received in the message.
+                Take the returned client ID and set it as the client ID in the connection structure.
+                Move the connection to the client connection map.
+                Send updated client list to all clients except the newly established one.
+                Send client updates to all servers.
         If the message is a server hello
             Cancel connection timer.
             Set the address sent in the message as the server address in the connection structure and use the address to obtain the server ID from the ServerList object.
-            Iterate over inbound connections map and find if an inbound connection already exists to this server.
-                If a connectione exists, close the new connection, erase it from the temporary connection map and return an error.
-                Otherwise do nothing.
-            Add connection data to inbound connections map and erase from temporary connections map.
-            Check if an outbound connection exists, and if it doesn't attempt to establish the connection.
-            Send client updates to all servers.
+            If an invalid address was entered, return an error.
+            Obtain server's public key using server ID.
+            Attempt to verify the signature.
+            If the signature cannot be verified
+                Close the connection with the server and remove from unconfirmed connections map.
+            If the signature can be verified
+                Iterate over inbound connections map and find if an inbound connection already exists to this server.
+                    If a connection exists, close the new connection, erase it from the temporary connection map and return an error.
+                    Otherwise do nothing.
+                    Add connection data to inbound connections map and erase from temporary connections map.
+                    Check if an outbound connection exists, and if it doesn't attempt to establish the connection.
+                    Send client updates to all servers.
+        If the message is a public chat
+            Extract signature and counter.
+            If the connection is an inbound connection (so message has been forwarded)
+                Obtain serverID from connection_data structure.
+                Obtain public key for sender using fingerprint and serverID
+                Attempt to verify the signature of the sender
+                    If the signature cannot be verified
+                        Do not forward the message and return an error
+                    If the signature can be verified
+                        Broadcast the public chats to all clients connected to the server.
+            If the connection is a client connection (so message needs to be sent out)
+                Set serverID as this server.
+                Obtain public key for sender using fingerprint and serverID
+                Attempt to verify the signature of the sender
+                    If the signature cannot be verified
+                        Do not forward the message and return an error.
+                    If the signature can be verified
+                        Broadcast the public chats to all clients connected to the server except the sender.
+                        Broadcast the public chat to all servers.
+        If the message is a private chat
+            Extract the signature and counter from the message for signature verification.
+            If the connection is an inbound connection (so message has been forwarded)
+                Broadcast the private chat to all clients on the server.
+            If the connection is a client connection (so message needs to be sent out)
+                Obtain the client ID from the server.
+                Obtain the client's public key from ServerList and convert it to PEM.
+                Attempt to verify the signature
+                    If the signature cannot be verified
+                        Do not forward the message and return an error.
+                    If the signature can be verified
+                        Create a set of the destination_servers (so every address is unique).
+                        Broadcast private chat to clients if this server is the home server of a recipient.
+                        Broadcast private chat to all servers in the set
         If the message is a client list request
             Send the client list on the connection to the requesting client.
         If the message is a client update request
@@ -142,10 +231,3 @@ This class stores the list of servers and their clients, clients connected to th
             Attempt to reconnect to the server using the provided uri.
     */
 ```
-
-## Current Implementation
-The server currently tries to establish a connection to all the known servers, which at this stage are ws://localhost:9002, ws://localhost:9003, ws://localhost:9004.
-
-Each server has a ServerID variable which is set to their server ID, a listenPort variable which is set to their listening port, and myAddress variable which is set to their address.
-
-The server creates a ServerList object, providing the ServerID variable to create an object specifically for that server. It also creates a ServerUtilities class, providing their address to create an object specifically for that server.
