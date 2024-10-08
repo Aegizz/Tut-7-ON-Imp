@@ -330,7 +330,6 @@ void send_client_list_request(websocket_endpoint* endpoint, int id){
 }
 
 
-
 int main() {
     bool done = false;
     std::string input;
@@ -385,8 +384,18 @@ int main() {
                 std::string reason;
                 
                 ss >> cmd >> id >> close_code;
-                std::getline(ss,reason);
 
+                if (id < 0) {
+                    std::cout << "> Invalid connenction id: " << id << std::endl;
+                    continue;
+                }
+
+                if (close_code < 1000 && close_code > 4999) {
+                    std::cout << "> Invalid close code: " << close_code << std::endl;
+                    continue;
+                }
+
+                std::getline(ss,reason);
                 endpoint.close(id, close_code, reason);
             }
         }  else if (input.substr(0,4) == "show") {
