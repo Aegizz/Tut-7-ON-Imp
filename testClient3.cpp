@@ -24,9 +24,7 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-// **NOTE:** This file is a snapshot of the WebSocket++ utility client tutorial.
-// Additional related material can be found in the tutorials/utility_client
-// directory of the WebSocket++ repository.
+// **NOTE:** This file is based on the WebSocket++ utility client tutorial.
 
 #include <websocketpp/config/asio_no_tls_client.hpp>
 #include <websocketpp/client.hpp>

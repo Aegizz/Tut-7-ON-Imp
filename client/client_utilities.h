@@ -47,6 +47,10 @@ class ClientUtilities{
 
             websocket_endpoint* endpoint - Connection to server 
             int id - Local ID for connection
+            std::string message - Message to send
+            EVP_PKEY* privKey - Your private key
+            EVP_PKEY* pubKey - Your public key
+            int counter - Current counter value
         */
         static void send_public_chat(websocket_endpoint* endpoint, int id, std::string message, EVP_PKEY* privKey, EVP_PKEY* pubKey, int counter);
 
@@ -56,6 +60,12 @@ class ClientUtilities{
 
             websocket_endpoint* endpoint - Connection to server 
             int id - Local ID for connection
+            std::string message - Message to send
+            EVP_PKEY* privKey - Your private key
+            EVP_PKEY* pubKey - Your public key
+            std::vector<EVP_PKEY*> their_public_keys - List of their public keys
+            std::vector<std::string> destination_servers_vector
+            int counter - Current counter value
         */
         static void send_chat(websocket_endpoint* endpoint, int connection_id, std::string message, EVP_PKEY* privKey, EVP_PKEY* pubKey, std::vector<EVP_PKEY*> their_public_keys, std::vector<std::string> destination_servers_vector, int counter, int client_id=0, int server_id=0);
 };

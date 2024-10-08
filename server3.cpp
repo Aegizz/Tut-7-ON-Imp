@@ -180,7 +180,7 @@ int on_message(server* s, websocketpp::connection_hdl hdl, message_ptr msg) {
 
         // Verify signature and close connection if invalid
         if(!ServerSignature::verifySignature(client_signature, data.dump() + std::to_string(counter), clientPKey)){
-            std::cout << "Invalid signature for client " << con_data->client_id << std::endl;
+            std::cout << "Invalid signature for client " << std::endl;
             s->close(hdl, websocketpp::close::status::policy_violation, "Client signature could not be verified.");
             if(connection_map.find(hdl) != connection_map.end()){
                 connection_map.erase(hdl);
@@ -208,16 +208,18 @@ int on_message(server* s, websocketpp::connection_hdl hdl, message_ptr msg) {
         con_data->server_address = data["sender"];
         //con_data->server_id = data["server_id"];
 
-        // Need to add error handling in case foreign or invalid server address is entered
+        // Extract signature and counter to verify signature
         std::string server_signature = messageJSON["signature"];
+        int counter = messageJSON["counter"];
 
         con_data->server_id = global_server_list->ObtainID(con_data->server_address);
+        if(con_data->server_id == -1){
+            std::cout << "Invalid sender address entered in server hello" << std::endl;
+            return -1;
+        }
 
         // Obtain Public server's public key from mapping
         EVP_PKEY* serverPKey = global_server_list->getPKey(con_data->server_id);
-
-        // Extract counter
-        int counter = messageJSON["counter"];
 
         // Verify signature and close connection if invalid
         if(!ServerSignature::verifySignature(server_signature, data.dump() + std::to_string(counter), serverPKey)){
@@ -410,7 +412,7 @@ int on_message(server* s, websocketpp::connection_hdl hdl, message_ptr msg) {
                 serverSet.erase(myAddress);
             }
 
-            // Broadcast the private chat to all required servers (will remove double ups of servers to prevent the message being forwarded sent multiple times)
+            // Broadcast the private chat to all required servers
             serverUtilities->broadcast_private_chat_servers(serverSet, outbound_server_server_map, messageJSON.dump());
         }
         return 0;
