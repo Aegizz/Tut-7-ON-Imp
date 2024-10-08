@@ -22,9 +22,41 @@ class ClientUtilities{
     public:
         static std::string get_ttd();
         static bool is_connection_open(websocket_endpoint* endpoint, int id);
+
+        /*
+            Calls MessageGenerator::helloMessage() and sends it to server.
+            Refer to ClientDocumentation.md for more details.
+
+            websocket_endpoint* endpoint - Connection to server 
+            int id - Local ID for connection
+        */
         static void send_hello_message(websocket_endpoint* endpoint, int id, EVP_PKEY* privKey, EVP_PKEY* pubKey, int counter);
+
+        /*
+            Calls MessageGenerator::clientListRequestMessage() and sends it to server.
+            Refer to ClientDocumentation.md for more details.
+
+            websocket_endpoint* endpoint - Connection to server 
+            int id - Local ID for connection
+        */
         static void send_client_list_request(websocket_endpoint* endpoint, int id);
+
+        /*
+            Calls MessageGenerator::publicChatMessage() and sends it to server.
+            Refer to ClientDocumentation.md for more details.
+
+            websocket_endpoint* endpoint - Connection to server 
+            int id - Local ID for connection
+        */
         static void send_public_chat(websocket_endpoint* endpoint, int id, std::string message, EVP_PKEY* privKey, EVP_PKEY* pubKey, int counter);
+
+        /*
+            Calls MessageGenerator::chatMessage() and sends it to server.
+            Refer to ClientDocumentation.md for more details.
+
+            websocket_endpoint* endpoint - Connection to server 
+            int id - Local ID for connection
+        */
         static void send_chat(websocket_endpoint* endpoint, int connection_id, std::string message, EVP_PKEY* privKey, EVP_PKEY* pubKey, std::vector<EVP_PKEY*> their_public_keys, std::vector<std::string> destination_servers_vector, int counter, int client_id=0, int server_id=0);
 };
 

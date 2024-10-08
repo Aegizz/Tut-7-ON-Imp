@@ -2,11 +2,11 @@
 
 int main() {
     // Load the public and private keys
-    if(Client_Key_Gen::key_gen(0, "tests"))
+    if(Client_Key_Gen::key_gen(0, false, true))
         return 1;
     
-    EVP_PKEY* privateKey = Client_Key_Gen::loadPrivateKey("tests/private_key0.pem");
-    EVP_PKEY* publicKey = Client_Key_Gen::loadPublicKey("tests/public_key0.pem");
+    EVP_PKEY* privateKey = Client_Key_Gen::loadPrivateKey("tests/test-keys/private_key0.pem");
+    EVP_PKEY* publicKey = Client_Key_Gen::loadPublicKey("tests/test-keys/public_key0.pem");
 
     if (!privateKey || !publicKey) {
         std::cerr << "Error loading keys." << std::endl;

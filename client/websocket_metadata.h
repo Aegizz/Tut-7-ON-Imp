@@ -184,6 +184,7 @@ public:
 
                         std::cout << "Chat received from client " << client_id << " on server " << server_id << std::endl << std::endl;
                         std::cout << chat["message"] << std::endl;
+                        break;
                     }catch (nlohmann::json::parse_error& e) {
                         // Catch parse error exception and display error message
                         std::cerr << "Invalid JSON format: " << e.what() << std::endl;

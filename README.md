@@ -45,6 +45,8 @@ Our implementation is modified to heavily use server and client IDs to simplify 
     - server runs on ws://localhost:9002, server1 runs on ws://localhost:9003 and server3 runs on ws://localhost:9004
   
     - To compile servers, run ```make servers```
+
+- Refer to serverDocumentation.md for what files need to be changed to establish new severs
   
 - Currently there exists testClient, testClient2 and testClient3 as well as userClient (which takes input from stdin)
   
