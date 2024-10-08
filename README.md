@@ -46,33 +46,37 @@ Our implementation is modified to heavily use server and client IDs to simplify 
   
     - To compile servers, run ```make servers```
 
-- See 'How to set up new Servers below' to see what files need to be changed to add modify the neighbourhood
+- See 'How to set up new Servers below' to see what files need to be changed to modify the neighbourhood.
   
-- Currently there exists testClient, testClient2 and testClient3 as well as userClient (which takes input from stdin)
-  
-    - testClient connects to server on ws://localhost:9002, testClient2 connects to server2 on ws://localhost:9003 and testClient3 connects to server3 on ws://localhost:9004.
-  
-    - To compile test clients, run ```make testClients```
-  
+- Currently there exists userClient (which takes input from stdin)
+  -  We have been using testClient's for automated testing.
     - To compile userClient, run ```make userClient```
 
 # How to set up new Servers
 To set up new servers in the neighbourhood there are a few important files to change.
 
 - server-files/neighbourhood_mapping.json contains valid public keys belonging to the servers stored against their server ID (a value you decide) stored in JSON form.
-- In server-files/server_list.h, a private member of the ServerList class serverAddresses stores the IP+Port combination of the websocket server against the server ID.
-  - It is important that both of these are matching so connections can be established and maintained properly.
 - In each serverX.cpp file where X is the ID of the server, there exists a const int ServerID, listenPort and a const std::string myAddress.
   - It is important that these are updated to match the current neighbourhood setup.
+- In server-files/server_list.h, a private member of the ServerList class serverAddresses stores the IP+Port combination of the websocket server against the server ID.
+  - It is important that this matches the neighbourhood mapping so connections can be established and maintained properly.
+- In the server-files directory, each server maintains a server_mappingX.json file where X is the ID of the server. These store the IDs of clients of that server against their public keys.
+  - If you want to create new ID mappings, delete the existing clients in the mapping. New clients will be added to the JSON file when connecting for the first time so these files don't need to be manually changed to allow new clients to connect but if you want to use IDs that are already assigned then modification will be required.
  
 # How to set up new Clients
-- Deleting private_keyX.pem and public_keyX.pem where X is the local client number (e.g. testClientX) will regenerate a client's keys.
-  - Run ```cp testClientX.cpp testClientY.cpp``` to create a new test client or ```cp userClient userClientY.cpp``` to create another user client.
-- Each client both userClient's and testClient's have a const int clientNumber which matches their local client number X.    
-- Input can be passed to bash to input what server the userClient will connect to.
-- In each testClient, there is a command with a manually entered URI for the server to connect to in the command "endpoint.connect". Changing this will change what server the client will connect to.
-- In the server-files directory, each server maintains a server_mappingX.json file where X is the ID of the server. These store the IDs of clients of that server against their public keys.
-  - If you want to create new ID mappings, delete the existing clients in the mapping. New clients will be added to the JSON file when connecting for the first time so these files don't need to be manually changed to allow new clients to connect but if you want to use already existing IDs then modification will be required.   
+- In userClient there exists a const int clientNumber which is for their local client number X (nothing to do with their ClientID), this is important for key management.  
+- Deleting client/private_keyX.pem and client/public_keyX.pem where X is the local client number (e.g. testClientX) will regenerate a client's keys when running userClient.
+- Run ```cp userClient userClientY.cpp``` to create another user client.
+
+ # How to use the userClient
+ - connect <ws uri>
+ - send <message type> <connection id>
+   - Message types are private and public
+     - If private, it will prompt you for Server IDs and Client IDs of recipients
+ - close <connection id> [<close code:default=1000>] [<close reason>]
+ - show <connection id>
+ - help: Display this help text
+ - quit: Exit the program
   
 
 # Current Implemented Features
