@@ -144,8 +144,18 @@ int main() {
                 std::string reason;
                 
                 ss >> cmd >> id >> close_code;
-                std::getline(ss,reason);
 
+                if (id < 0) {
+                    std::cout << "> Invalid connenction id: " << id << std::endl;
+                    continue;
+                }
+
+                if (close_code < 1000 && close_code > 3999) {
+                    std::cout << "> Invalid close code: " << close_code << std::endl;
+                    continue;
+                }
+
+                std::getline(ss,reason);
                 endpoint.close(id, close_code, reason);
             }
         }  else if (input.substr(0,4) == "show") {
@@ -181,10 +191,67 @@ int main() {
                     std::string message;
                     std::getline(std::cin, message);  // Get the message from the user
                     
-                    if(msgType == "private"){
+                    if (msgType == "private") { 
                         // Send private message
-                    }else if(msgType == "public"){
+                        bool done2 = false;
+                        std::vector<int> server_ids;
+                        std::vector<int> client_ids;
+                        while (!done2) {
+                            // Get Server ID
+                            std::cout << "Which Server ID is the Client: " << std::endl;
+                            std::string server;
+                            std::getline(std::cin, server);
+                            try {
+                                int server2 = stoi(server);
+                                server_ids.push_back(server2);
+                            } catch (const std::invalid_argument& e) {
+                                std::cout << "Invalid argument: Cannot convert '"<< server << "'to an integer." << std::endl;
+                                continue;
+                            }
+                            
+                            //Get Client ID
+                            std::cout << "Please Provide the Client ID: " << std::endl;
+                            std::string client;
+                            std::getline(std::cin, client);
+                            try {
+                                int client2 = stoi(client);
+                                client_ids.push_back(client2);
+                            } catch (const std::invalid_argument& e) {
+                                std::cout << "Invalid argument: Cannot convert '"<< client << "'to an interger." << std::endl;
+                                server_ids.pop_back();
+                                continue;
+                            }
+
+                            // check wheter user has finished selecting their clients
+                            bool done3 = false;
+                            while(!done3) {
+                                std::cout << "Are finished adding all the clients you to message too? (YES/NO): " << std::endl;
+                                std::string yes_or_no;
+                                std::getline(std::cin, yes_or_no);
+                                if (yes_or_no == "YES") {
+                                    done3 = true;
+                                    done2 = true;
+                                    std::vector<EVP_PKEY*> list_public_keys;
+                                    
+                                    for (int i = 0; i < server_ids.size(); i++) {
+                                    std::string public_key = global_client_list->retrieveClient(server_ids[i], client_ids[i]).second;
+                                    list_public_keys.push_back(Client_Key_Gen::stringToPEM(public_key));
+                                    }
+                                    
+                                    ClientUtilities::send_chat(&endpoint, id, message, privKey, pubKey,list_public_keys,,12345,);  //send to server
+                                } else if (yes_or_no == "NO") {
+                                    std::cout << "Ok, let's add more clients" << std::endl;
+                                    done3 = true;
+                                } else {
+                                    std::cout << "Input Invalid: Must be either YES or NO." << std::endl;
+                                }
+
+                            }
+                        }
+    
+                    } else if(msgType == "public"){
                         // Send public message
+                        ClientUtilities::send_public_chat(&endpoint, id, message, privKey, pubKey, 12345);  //send to server
                     }   
                 } else {
                     std::cout << "> Unknown connection id " << id << std::endl;
