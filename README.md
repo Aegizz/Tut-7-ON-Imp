@@ -72,12 +72,14 @@ To set up new servers in the neighbourhood there are a few important files to ch
 
  # How to use the userClient and Server
  Run ```./server``` or ```./serverX``` where X is the number of the server process.
- - connect <ws uri>
- - send <message type> <connection id>
+ 
+ Run ```./userClient``` or ```./userClientX``` where X is the number of the server process to start the userClient.
+ - connect ws_uri
+ - send message_type connection_id
    - Message types are private and public
      - If private, it will prompt you for Server IDs and Client IDs of recipients
- - close <connection id> <close code:default=1000> <close reason>
- - show <connection id>
+ - close connection_id close_code:default=1000 close_reason
+ - show connection_id
  - help: Display this help text
  - quit: Exit the program
   
