@@ -5,17 +5,20 @@ void Client_Key_Gen::handleErrors() {
     abort();
 }
 
-int Client_Key_Gen::key_gen(int client_id, const std::string& directory) {
-    std::string privFilename = "client/private_key" + std::to_string(client_id) + ".pem";
-    std::string pubFilename = "client/public_key" + std::to_string(client_id) + ".pem";
-    // Append directory if provided
-    if (!directory.empty()) {
-        // Erase client directory
-        privFilename.erase(0,7); 
-        pubFilename.erase(0,7);
-        // Append new directory
-        privFilename = directory + "/" + privFilename;
-        pubFilename = directory + "/" + pubFilename;
+int Client_Key_Gen::key_gen(int client_id, bool test, bool clientTests){
+    std::string idString = std::to_string(client_id);
+
+    std::string privFilename = "client/private_key" + idString + ".pem";
+    std::string pubFilename = "client/public_key" + idString + ".pem";
+
+    if(test){
+        privFilename = "tests/private_key" + idString + ".pem";
+        pubFilename = "tests/public_key" + idString + ".pem";
+    }
+
+    if(clientTests){
+        privFilename = "tests/test-keys/private_key" + idString + ".pem";
+        pubFilename = "tests/test-keys/public_key" + idString + ".pem";
     }
 
     // 1. Initialize OpenSSL

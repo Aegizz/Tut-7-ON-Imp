@@ -55,8 +55,8 @@
 const int ClientNumber = 2;
 
 // Create key file names
-std::string privFileName = "client/private_key" + std::to_string(ClientNumber) + ".pem";
-std::string pubFileName = "client/public_key" + std::to_string(ClientNumber) + ".pem";
+std::string privFileName = "tests/private_key" + std::to_string(ClientNumber) + ".pem";
+std::string pubFileName = "tests/public_key" + std::to_string(ClientNumber) + ".pem";
 
 // Define keys
 EVP_PKEY* privKey;
@@ -84,7 +84,7 @@ int main() {
     // If keys files don't exist, create keys and load from newly created files
     if(!privKey || !pubKey){
         std::cout << "\nCreating key files\n" << std::endl;
-        if(!Client_Key_Gen::key_gen(ClientNumber)){
+        if(!Client_Key_Gen::key_gen(ClientNumber, true)){
             privKey = Client_Key_Gen::loadPrivateKey(privFileName.c_str());
             pubKey = Client_Key_Gen::loadPublicKey(pubFileName.c_str());
         }else{

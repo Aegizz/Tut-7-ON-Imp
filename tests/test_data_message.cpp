@@ -14,13 +14,13 @@ int main(){
     // Generate RSA keys for recipients of data message
     for(int i=1; i<=numRecipients; i++){
         // Generate RSA keys (public and private)
-        if (Client_Key_Gen::key_gen(i, "tests")) {
+        if (Client_Key_Gen::key_gen(i, false, true)) {
             std::cerr << "Key generation failed!" << std::endl;
             return 1;
         }
 
         // Load the public key from the file
-        std::string filename = "tests/public_key" + std::to_string(i) + ".pem";
+        std::string filename = "tests/test-keys/public_key" + std::to_string(i) + ".pem";
         EVP_PKEY *pubKey = Client_Key_Gen::loadPublicKey(filename.c_str());
         if (!pubKey) {
             std::cerr << "Failed to load public key!" << std::endl;
@@ -28,7 +28,7 @@ int main(){
         }
 
         // Load the private key from the file
-        filename = "tests/private_key" + std::to_string(i) + ".pem";
+        filename = "tests/test-keys/private_key" + std::to_string(i) + ".pem";
         EVP_PKEY *privKey = Client_Key_Gen::loadPrivateKey(filename.c_str());
         if (!privKey) {
             std::cerr << "Failed to load private key!" << std::endl;

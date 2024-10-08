@@ -6,14 +6,14 @@
 
 int main() {
     // Step 1: Generate or load your private and public keys
-    EVP_PKEY* your_private_key = Client_Key_Gen::loadPrivateKey("tests/private_key0.pem"); // Simulate loading/generating a private key
-    EVP_PKEY* your_public_key = Client_Key_Gen::loadPublicKey("tests/public_key0.pem"); // Extract public key from private
+    EVP_PKEY* your_private_key = Client_Key_Gen::loadPrivateKey("tests/test-keys/private_key0.pem"); // Simulate loading/generating a private key
+    EVP_PKEY* your_public_key = Client_Key_Gen::loadPublicKey("tests/test-keys/public_key0.pem"); // Extract public key from private
 
     // Step 2: Generate recipient public keys
     std::vector<EVP_PKEY*> their_public_keys;
     for (int i = 0; i < 3; ++i) {
         // Simulate generating/receiving public keys of recipients
-        their_public_keys.push_back(Client_Key_Gen::loadPublicKey(("tests/public_key" + std::to_string(i) + ".pem").c_str())); 
+        their_public_keys.push_back(Client_Key_Gen::loadPublicKey(("tests/test-keys/public_key" + std::to_string(i) + ".pem").c_str())); 
     }
 
     // Step 3: Destination servers for the message
