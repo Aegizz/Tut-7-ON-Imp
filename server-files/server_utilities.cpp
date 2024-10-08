@@ -225,12 +225,68 @@ int ServerUtilities::send_public_chat_client(server* s, websocketpp::connection_
     }
 }
 
-// Send public chat to all clients but specified client
+// Send public chat to all clients but specified client (if specified)
 void ServerUtilities::broadcast_public_chat_clients(std::unordered_map<websocketpp::connection_hdl, std::shared_ptr<connection_data>, connection_hdl_hash, connection_hdl_equal> client_server_map, std::string message, int client_id_nosend){
     for(const auto& connectPair: client_server_map){
         auto connection = connectPair.second;
         if(connection->client_id != client_id_nosend){
             send_public_chat_client(connection->server_instance, connection->connection_hdl, client_server_map, message);
+        }
+    }
+}
+
+// Send private chat to connection
+int ServerUtilities::send_private_chat_server(client* c, websocketpp::connection_hdl hdl, std::unordered_map<websocketpp::connection_hdl, std::shared_ptr<connection_data>, connection_hdl_hash, connection_hdl_equal> outbound_server_server_map, std::string message){
+
+    if(!is_connection_open(c, hdl)){
+        std::cout << "Connection is not open to send private chat to server " << outbound_server_server_map[hdl]->server_id << std::endl;
+        return -1;
+    }
+
+    try {
+        c->send(hdl, message, websocketpp::frame::opcode::text);
+        std::cout << "Sent private chat to server " << outbound_server_server_map[hdl]->server_id << std::endl;
+        return 0;
+    } catch (const websocketpp::exception & e) {
+        std::cout << "Failed to send private chat to server " << outbound_server_server_map[hdl]->server_id << " because: " << e.what() << std::endl;
+        return -1;
+    }
+}
+
+// Send private chat to all required servers
+void ServerUtilities::broadcast_private_chat_servers(std::unordered_set<std::string> serverSet, std::unordered_map<websocketpp::connection_hdl, std::shared_ptr<connection_data>, connection_hdl_hash, connection_hdl_equal> outbound_server_server_map, std::string message){
+    for(const auto& address : serverSet){
+        for(const auto& connectPair : outbound_server_server_map){
+            auto connection = connectPair.second;
+            std::string serverAddress = connection->server_address.substr(5, (connection->server_address.length()-5));
+            
+            if(serverAddress == address){
+                send_private_chat_server(connection->client_instance, connection->connection_hdl, outbound_server_server_map, message);
+            }
+        }
+    }
+}
+
+// Send private chat to client
+int ServerUtilities::send_private_chat_client(server* s, websocketpp::connection_hdl hdl, std::unordered_map<websocketpp::connection_hdl, std::shared_ptr<connection_data>, connection_hdl_hash, connection_hdl_equal> client_server_map, std::string message){
+    // Check if connection is open before sending
+
+    try {
+        s->send(hdl, message, websocketpp::frame::opcode::text);
+        std::cout << "Sent private chat to client " << client_server_map[hdl]->client_id << std::endl;
+        return 0;
+    } catch (const websocketpp::exception & e) {
+        std::cout << "Failed to send private chat to client " << client_server_map[hdl]->client_id << " because: " << e.what() << std::endl;
+        return -1;
+    }
+}
+
+// Send private chat to all clients but specified client (if specified)
+void ServerUtilities::broadcast_private_chat_clients(std::unordered_map<websocketpp::connection_hdl, std::shared_ptr<connection_data>, connection_hdl_hash, connection_hdl_equal> client_server_map, std::string message, int client_id_nosend){
+    for(const auto& connectPair: client_server_map){
+        auto connection = connectPair.second;
+        if(connection->client_id != client_id_nosend){
+            send_private_chat_client(connection->server_instance, connection->connection_hdl, client_server_map, message);
         }
     }
 }

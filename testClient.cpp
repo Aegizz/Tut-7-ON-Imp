@@ -113,14 +113,18 @@ int main() {
         ClientUtilities::send_hello_message(&endpoint, initId, privKey, pubKey, 12345);
         ClientUtilities::send_client_list_request(&endpoint, initId);
 
-        ClientUtilities::send_public_chat(&endpoint, initId, "Test Message1", privKey, pubKey, 12345);
+        //ClientUtilities::send_public_chat(&endpoint, initId, "Test Message1", privKey, pubKey, 12345);
 
-        std::vector<std::string> destination_servers = {"127.0.0.1:9003"};
+        // Sends a message to client 2 and 3 on servers 2 and 3
+        std::vector<std::string> destination_servers = {"127.0.0.1:9003", "127.0.0.1:9004"};
 
         std::string pubkey2string="-----BEGIN PUBLIC KEY-----\nMIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAoLkUMv77BFKwKGL0JAJy\nrLnYe8GRPX4yqVVKjwSLlymtiv4RmIMVRUD2nCMuHN6gE5iuRvgFb8pWmDGjjxYI\njSPLIDfqHzIUjT6xWJjfzhzKGJMAmbHcS/BOAn1BgjP1F75FvkiFPXP4WAOfS5+t\nfilkR7djQqTG81L0+3EdYUf8qfAU13thRXjOmcIPkTRMEppOQRz7G75mm/JiGxCa\nSpMDCPc39D+AcguVngYT3J85nB3uXsPQA0vl8rhePP6X31ukcBayuYWqAsWL2U3a\nJQeOiSHtFmtACErJyWVR8Xti9yTck0VvBWN/UsYA10TJ3+7k9lKCeFSO19eh6Wpn\nfwIDAQAB\n-----END PUBLIC KEY-----\n";
+        std::string pubkey3string="-----BEGIN PUBLIC KEY-----\nMIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAqsEGAr57TGSkFPasWHs6\n7SvqQ299t52ObVVtwpDtVB56Y8Aq6EkYEJosc/pY+F4nKOXutXEfZ+8UuQejpDbx\nGFLvSiZt5vGx1NK7r+EGeCArNVlEMJLlJZp+IctA8XKjlondYUBh4xLb7uVsdKUs\nD5nuPTmZ4AGc926Ck4zmSSGKHIqyNSDnIInBRevYoWH1bSqkgmqQDJf8evHnuKzC\ncZYI4Nj8T69IsVba+Xa7Zdu/R7R5LNwlioIS4Z0ceKw3JQH/7MfwpMvMdubGRtVA\n+eTwO6MheQOpPVe23VBn1CKL2RDTwQAdNMcsmhIE7NsQUF8Wd2GVrPXevHjX66s6\nGwIDAQAB\n-----END PUBLIC KEY-----\n";
         EVP_PKEY* pubkey2 = Client_Key_Gen::stringToPEM(pubkey2string);
+        EVP_PKEY* pubkey3 = Client_Key_Gen::stringToPEM(pubkey3string);
         std::vector<EVP_PKEY*> theirPubKeys;
         theirPubKeys.push_back(pubkey2);
+        theirPubKeys.push_back(pubkey3);
 
         ClientUtilities::send_chat(&endpoint, initId, "Hello World!", privKey, pubKey, theirPubKeys, destination_servers, 12345);
         
