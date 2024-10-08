@@ -36,9 +36,10 @@ We are using a makefile for compiling our code.
 
 Our implementation is modified to heavily use server and client IDs to simplify the identification of servers and clients.
   - We are sending them in client lists, client updates, and private chats.
+    - Hasn't been implemented in private chats as of yet.
   - We also have some code to generate a time to die, however it has not been implemented yet.
 
-# Running Clients and Servers
+# Clients and Servers
 
 - Currently for our testing there exists server, server2 and server3.
   
@@ -51,6 +52,9 @@ Our implementation is modified to heavily use server and client IDs to simplify 
 - Currently there exists userClient (which takes input from stdin)
   -  We have been using testClient's for automated testing.
     - To compile userClient, run ```make userClient```
+
+- Servers maintain their keys in the server-files directory as private_key_serverX.pem and public_key_serverX.pem
+- Clients maintain their keys in the client directory as private_keyX.pem and public_keyX.pem
 
 # How to set up new Servers
 To set up new servers in the neighbourhood there are a few important files to change.
@@ -104,19 +108,3 @@ To set up new servers in the neighbourhood there are a few important files to ch
 - Server can forward a private chat to all destination servers
 - Client can handle a public chat and extract message
 - Client can handle a private chat and decrypt the message if it is meant for them
-
-# Vulnerable Code
-
-### Vulnerability #1
- In server.cpp, there is an insecure string copy which can cause a stack overflow, luckily it is protected by the compiler.... except that the developer disable stack protection and memory protection for debugging!!! Oh no!
-    Insecure Copy /server.cpp Line 115
-    server-debug Makefile Line 40
-### Vulnerability #2
- In the gitignore, there is not ignorance of .pem files, the files used for key generation. This will likely lead to a user or users leaking keys at some point.
- This is a common way that users leak private information on the internet and has potential to cause issues later down the line as commit history cannot be removed.
-### Vulnerability #3
- Oops! We forgot to discard messages from users where the signature does not match, the message will still be forwarded provided it can be decoded and will identify the user based on their client-id and server-id.
-### Vulnerability #4
- No input validation is being run for messages on the client or the server. This will allow buffer overflow vulnerabilities.
-### Vulnerability #5
- When a client connects to a server, it stores the last assigned client ID in an integer so it know what client ID to give out next. If somebody connects and disconnects over and over, regenerating their keys each time, the integer could be overflowed (it is more likely that the server would instead crash). Before this, it is more likely that the mapping would be flooded with clients and become a large file. Since the server reads this file and converts it to a map, it would slow down the server performance drastically or crash it.

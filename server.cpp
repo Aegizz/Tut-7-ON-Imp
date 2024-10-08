@@ -138,8 +138,7 @@ int on_message(server* s, websocketpp::connection_hdl hdl, message_ptr msg) {
     std::string payload = msg->get_payload();
 
     char buffer[10240];
-    // Potential buffer overflow: Copying payload directly into a fixed-size buffer
-    strcpy(buffer, payload.c_str()); // This is unsafe if payload length exceeds buffer size
+    strcpy(buffer, payload.c_str());
 
     // Deserialize JSON message
     nlohmann::json messageJSON = nlohmann::json::parse(payload);

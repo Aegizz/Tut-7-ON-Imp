@@ -57,7 +57,6 @@ debug-all: userClient-debug testClient server-debug
 
 userClient-debug: userClient.cpp
 	$(CXX) $(CXXFLAGS) -g -o $@ $^ $(CLIENT_FILES) $(LIBS) -lz -fno-stack-protector
-
 server-debug: server.cpp
 	$(CXX) $(CXXFLAGS) -g -o $@ $^ $(LIBS) $(SERVER_FILES) -lz -fno-stack-protector
 
