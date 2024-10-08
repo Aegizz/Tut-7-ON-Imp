@@ -7,6 +7,7 @@ ClientList::ClientList(nlohmann::json data){
             std::unordered_map<int, std::string> client_list;
             std::unordered_map<std::string, std::string> fingerprintsKeys;
             int server_id = server["server-id"];
+            serverAddresses[server_id] = server["address"];
             //std::cout << "Server ID: " << server_id << std::endl;
             if (server.contains("clients")){
                 for (const auto& client: server["clients"]){
@@ -29,6 +30,14 @@ ClientList::ClientList(nlohmann::json data){
     }
 }
 
+std::string ClientList::retrieveAddress(int server_id){
+    if(serverAddresses.find(server_id) != serverAddresses.end()){
+        return serverAddesses[server_id];
+    }
+    return "";
+}
+
+// Retrieves a pair of a client's client id and public key using
 std::pair<int, std::string> ClientList::retrieveClient(int server_id, int client_id) {
     // Check if the server exists
     if (servers.find(server_id) != servers.end()) {
