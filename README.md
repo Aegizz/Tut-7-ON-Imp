@@ -97,6 +97,9 @@ To set up new servers in the neighbourhood there are a few important files to ch
 
  server-files/server_utilities.h contains comments about each ServerUtilities function.  
 
+ # Queries
+ Any queries and issues can be directed to Grady at a1851704@adelaide.edu.au.
+
 # Current Implemented Features
 - Client <-> Server communication with multiple clients able to connect to a server
 - Server <-> Server communication with multiple clients and servers able to connect to each server
