@@ -18,7 +18,9 @@ class ClientList{
         std::unordered_map<std::string, std::pair<int, std::pair<int, std::string>>> clientFingerprintsKeys;
         std::unordered_map<int, std::string> serverAddresses;
     public:
-        ClientList(nlohmann::json data);
+        ClientList();
+        void update(nlohmann::json data);
+        void printUsers(int server_id, int client_id);
         std::pair<int, std::string> retrieveClient(int server_id, int client_id);
         std::string retrieveAddress(int server_id);
         std::pair<int, std::pair<int, std::string>> retrieveClientFromFingerprint(std::string fingerprint);

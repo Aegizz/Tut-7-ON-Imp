@@ -38,7 +38,9 @@ int main() {
     nlohmann::json data = nlohmann::json::parse(json_str);
 
     // Create a ClientList object and pass the JSON data
-    ClientList client_list(data);
+    ClientList client_list;
+
+    client_list.update(data);
 
     // Test retrieveClient method
     try {

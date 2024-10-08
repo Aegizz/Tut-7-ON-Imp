@@ -31,6 +31,8 @@ test: debug-all server server2 client testClient test.sh test-client-list test-c
 
 userClient: userClient.cpp
 	$(CXX) $(CXXFLAGS) -o $@ $^ $(CLIENT_FILES) $(LIBS)
+userClient2: userClient2.cpp
+	$(CXX) $(CXXFLAGS) -o $@ $^ $(CLIENT_FILES) $(LIBS)
 
 # For testing 
 testClient: testClient.cpp
