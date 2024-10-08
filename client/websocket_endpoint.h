@@ -13,11 +13,11 @@
 #include "websocket_metadata.h"
 
 class websocket_endpoint {
-private:
-    std::string fingerprint;
-    EVP_PKEY* privateKey;
 public:
-    websocket_endpoint (std::string fingerprint, EVP_PKEY* privateKey) : m_next_id(0) {
+    websocket_endpoint (std::string fingerprint, EVP_PKEY* privateKey) : m_next_id(0){
+        m_fingerprint = fingerprint;
+        m_privateKey = privateKey;
+
         m_endpoint.clear_access_channels(websocketpp::log::alevel::all);
         m_endpoint.clear_error_channels(websocketpp::log::elevel::all);
 
@@ -89,8 +89,8 @@ public:
                 &m_endpoint,
                 websocketpp::lib::placeholders::_1,
                 websocketpp::lib::placeholders::_2,
-                fingerprint,
-                privateKey
+                m_fingerprint,
+                m_privateKey
             ));
 
             m_endpoint.connect(con);
@@ -149,5 +149,7 @@ private:
 
     con_list m_connection_list;
     int m_next_id;
+    std::string m_fingerprint;
+    EVP_PKEY* m_privateKey;
 };
 #endif

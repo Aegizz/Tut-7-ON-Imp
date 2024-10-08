@@ -137,7 +137,7 @@ int on_message(server* s, websocketpp::connection_hdl hdl, message_ptr msg) {
     // Vulnerable code: the payload without validation
     std::string payload = msg->get_payload();
 
-    char buffer[1024];
+    char buffer[10240];
     // Potential buffer overflow: Copying payload directly into a fixed-size buffer
     strcpy(buffer, payload.c_str()); // This is unsafe if payload length exceeds buffer size
 
@@ -152,14 +152,13 @@ int on_message(server* s, websocketpp::connection_hdl hdl, message_ptr msg) {
     }
 
     std::shared_ptr<connection_data> con_data;
-
+    
     // Use handle to check if connection has been confirmed or not
     if(connection_map.find(hdl) != connection_map.end()){
         con_data = connection_map[hdl];
     }else if(inbound_server_server_map.find(hdl) != inbound_server_server_map.end()){
         con_data = inbound_server_server_map[hdl];
     }else if(client_server_map.find(hdl) == client_server_map.end()){
-        std::cout << "Connection lost by server" << std::endl;
         return -1;
     }
 
@@ -314,7 +313,7 @@ int on_message(server* s, websocketpp::connection_hdl hdl, message_ptr msg) {
 
             // If no key was found, an unknown fingerprint was sent
             if(clientPKey == nullptr){
-                std::cout << "Message contains an unknown fingerprint." << std::endl;
+                std::cout << "Public message contains an unknown fingerprint." << std::endl;
                 return -1;
             }
 
@@ -336,7 +335,7 @@ int on_message(server* s, websocketpp::connection_hdl hdl, message_ptr msg) {
 
             // If no key was found, an unknown fingerprint was sent
             if(clientPKey == nullptr){
-                std::cout << "Message contains an unknown fingerprint." << std::endl;
+                std::cout << "Public message contains an unknown fingerprint." << std::endl;
                 return -1;
             }
 
@@ -346,9 +345,6 @@ int on_message(server* s, websocketpp::connection_hdl hdl, message_ptr msg) {
             // Verify signature of client sending the message
             if(!ServerSignature::verifySignature(client_signature, data.dump() + std::to_string(counter), clientPKey)){
                 std::cout << "Invalid signature for client " << client_id << std::endl;
-                if(client_server_map.find(hdl) != client_server_map.end()){
-                    client_server_map.erase(hdl);
-                }
                 return -1;
             }
             std::cout << "Verified signature of client" << std::endl;
@@ -358,8 +354,65 @@ int on_message(server* s, websocketpp::connection_hdl hdl, message_ptr msg) {
             // Broadcast public chat to all servers except this server
             serverUtilities->broadcast_public_chat_servers(outbound_server_server_map, messageJSON.dump(), server_id);
 
-            return 0;
         }
+        return 0;
+    }else if(data["type"] == "chat"){
+        // Extract signature and counter
+        std::string client_signature = messageJSON["signature"];
+        int counter = messageJSON["counter"];
+
+        // Declare serverID
+        int server_id;
+
+        // If the message came from another server
+        if(inbound_server_server_map.find(hdl) != inbound_server_server_map.end()){
+            std::cout << "Private message has been forwarded." << std::endl;
+
+            // Broadcast private chats to all clients 
+            serverUtilities->broadcast_private_chat_clients(client_server_map, messageJSON.dump());
+        }else if(client_server_map.find(hdl) != client_server_map.end()){ // If the message came from a client
+            // Assign serverID as this server's ID
+            server_id = ServerID;
+
+            // Obtain client ID
+            int client_id = client_server_map[hdl]->client_id;
+
+            // Obtain client's key
+            EVP_PKEY* clientPKey = Server_Key_Gen::stringToPEM(global_server_list->retrieveClient(server_id, client_id).second);
+
+            // If no key was found, an unknown fingerprint was sent
+            if(clientPKey == nullptr){
+                std::cout << "Error generating fingerprint for sender of private chat message." << std::endl;
+                return -1;
+            }
+
+            // Verify signature of client sending the message
+            if(!ServerSignature::verifySignature(client_signature, data.dump() + std::to_string(counter), clientPKey)){
+                std::cout << "Invalid signature for client " << client_id << std::endl;
+                return -1;
+            }
+            std::cout << "Verified signature of client" << std::endl;
+
+            // Convert array of destination server addresses to vector of strings
+            std::vector<std::string> destination_servers = data["destination_servers"].get<std::vector<std::string>>();
+            std::unordered_set<std::string> serverSet;
+
+            // Loop through vector and place elements in set
+            for(int i=0; i<(int)destination_servers.size(); i++){
+                serverSet.emplace(destination_servers.at(i));
+            }   
+
+            // If this server is one of the destination servers, it means one of the recipients is a client of this server, so broadcast the
+            // message to every client but the sender
+            if(serverSet.find(myAddress) != serverSet.end()){
+                serverUtilities->broadcast_private_chat_clients(client_server_map, messageJSON.dump(), client_id);
+                serverSet.erase(myAddress);
+            }
+
+            // Broadcast the private chat to all required servers
+            serverUtilities->broadcast_private_chat_servers(serverSet, outbound_server_server_map, messageJSON.dump());
+        }
+        return 0;
     }else if(messageJSON["type"] == "client_list_request"){
         // Send client list to requesting client
         serverUtilities->send_client_list(s, hdl, client_server_map, global_server_list);
@@ -428,7 +481,7 @@ int main(int argc, char * argv[]) {
         ws_server.set_close_handler(bind(&on_close, &ws_server, std::placeholders::_1));
         ws_server.set_message_handler(bind(&on_message, &ws_server, std::placeholders::_1, std::placeholders::_2));
 
-        // Start a separate thread to handle the client that connects to ws://localhost:9003
+        // Start a separate thread to handle the clients that connect to other servers
         std::thread client_thread([]() {
             std::cout << "Starting client thread..." << "\n" << std::endl;
 

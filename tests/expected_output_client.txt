@@ -2,7 +2,7 @@
 > Hello message sent
 > Client list request sent
 
->  Public chat message sent
+>  Chat message sent
 
 Client list received: {"servers":[{"address":"127.0.0.1:9002","clients":[{"client-id":1001,"public-key":"-----BEGIN PUBLIC KEY-----\nMIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEA22mg6Er/nRqIfs/a0vDQ\nwnKw4OJ0ddzhAjmg50nLbOhjDt1KZUnYCSb4et0UIXX5wPoOjYDqnSdJjCOdgfpD\nsXrlqm1Tx6OoyJuPC7PYrAgHO2t82NRKOhnRPF5RttliMsNsRPUB7k2fEUGkpdSk\n8D0QsXMPobnNe3jKtwrz1T7b2gKTn+IOpeuYigbxTuX9qRQLg0E/SLNa9aEwlG12\ne/HIkCzGECAH9tYgk5OcrxQ5bpze6jWyaLC/9JrA/MWlK8LJyUiCFbS7X+26aUhH\n65pW6Vs2HBgAYDWYfazxUmG3lrJ9aK89ljhnbqscEBaXiRw6cEvxuha/pgZR4/23\ntQIDAQAB\n-----END PUBLIC KEY-----\n"}],"server-id":1},{"address":"127.0.0.1:9003","clients":[],"server-id":2}],"type":"client_list"}
 

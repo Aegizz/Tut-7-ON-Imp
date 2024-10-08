@@ -32,6 +32,33 @@ int main() {
     // Print the decrypted message
     std::cout << "Decrypted message: " << decrypted << std::endl;
 
+    BIO * bio = BIO_new(BIO_s_mem());
+    if (!PEM_write_bio_PUBKEY(bio, publicKey)){
+        BIO_free(bio);
+        std::cerr << "Failed to write public key" << std::endl;
+        return 1;
+    }
+    char * pemKey = nullptr;
+    long pemLen = BIO_get_mem_data(bio, &pemKey);
+    std::string publicKeyStr(pemKey, pemLen);
+    
+    publicKey = Client_Key_Gen::stringToPEM(publicKeyStr);
+    std::cout << "Converted string key to PEM" << std::endl;
+
+    bio = BIO_new(BIO_s_mem());
+    if (!PEM_write_bio_PUBKEY(bio, publicKey)){
+        BIO_free(bio);
+        std::cerr << "Failed to write public key" << std::endl;
+        return 1;
+    }
+    char * pemKey2 = nullptr;
+    long pemLen2 = BIO_get_mem_data(bio, &pemKey2);
+    std::string publicKeyStr2(pemKey2, pemLen2);
+    
+    if(publicKeyStr == publicKeyStr2){
+        std::cout << "Keys match after format conversions" << std::endl;
+    }
+
     // Clean up
     EVP_PKEY_free(privateKey);
     EVP_PKEY_free(publicKey);

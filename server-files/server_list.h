@@ -33,6 +33,7 @@ class ServerList{
 
         EVP_PKEY* getPKey(int server_id);
         int ObtainID(std::string address);
+
         std::unordered_map<int, std::string> getUris();
 
         std::unordered_map<int, std::string> getClients(int server_id);
