@@ -46,27 +46,6 @@ bool ServerUtilities::is_connection_open(client* c, websocketpp::connection_hdl 
     return false;
 }
 
-/*
-    Converts hex To Bytes from the base64 encoding to be passed to the decryption function.
-*/
-std::vector<unsigned char> hexToBytes(const std::string& hex) {
-    std::vector<unsigned char> bytes;
-    size_t length = hex.length();
-
-    // Ensure the length of hex string is even
-    if (length % 2 != 0) {
-        throw std::invalid_argument("Hex string must have an even length.");
-    }
-
-    for (size_t i = 0; i < length; i += 2) {
-        std::string byteString = hex.substr(i, 2); // Get two characters
-        unsigned char byte = static_cast<unsigned char>(strtol(byteString.c_str(), nullptr, 16));
-        bytes.push_back(byte);
-    }
-    
-    return bytes;
-}
-
 // Send server hello message
 int ServerUtilities::send_server_hello(client* c, websocketpp::connection_hdl hdl, EVP_PKEY* private_key, int counter){
     nlohmann::json signedMessage;
