@@ -40,12 +40,13 @@ public:
         m_server = con->get_response_header("Server");
     }
 
-    void on_fail(client * c, websocketpp::connection_hdl hdl) {
+    void on_fail(client * c, websocketpp::connection_hdl hdl, std::map<int, connection_metadata::ptr>* m_connection_list) {
         m_status = "Failed";
 
         client::connection_ptr con = c->get_con_from_hdl(hdl);
         m_server = con->get_response_header("Server");
         m_error_reason = con->get_ec().message();
+        m_connection_list->clear();
     }
     
     void on_close(client * c, websocketpp::connection_hdl hdl) {
@@ -74,12 +75,15 @@ public:
         }
 
         if(messageJSON["type"] == "client_list"){
-            std::cout << "Client list received: " << payload << std::endl;
-            if (global_client_list != nullptr){
-                delete global_client_list;
+            std::cout << "\n\nClient list received" << std::endl;
+
+            global_client_list->update(messageJSON);
+            std::cout << "\n";
+
+            std::pair<int, std::pair<int, std::string>> myInfo = global_client_list->retrieveClientFromFingerprint(fingerprint);
+            if(myInfo.first != -1){
+                global_client_list->printUsers(myInfo.first, myInfo.second.first);
             }
-            // Process client list
-            global_client_list = new ClientList(messageJSON);
         }else if(data["type"] == "public_chat"){
             std::pair<int, std::pair<int, std::string>> chatInfo = global_client_list->retrieveClientFromFingerprint(data["sender"]);
             if(chatInfo.first == -1){

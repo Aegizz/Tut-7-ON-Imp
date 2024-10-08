@@ -49,7 +49,7 @@ Our implementation is modified to heavily use server and client IDs to simplify 
 - See 'How to set up new Servers below' to see what files need to be changed to modify the neighbourhood.
   
 - Currently there exists userClient (which takes input from stdin)
-  -  We have been using testClient's for automated testing.
+  -  We have been using testClient's for automated testing but the userClient is easier to use.
     - To compile userClient, run ```make userClient```
 
 # How to set up new Servers
@@ -74,15 +74,24 @@ To set up new servers in the neighbourhood there are a few important files to ch
  Run ```./server``` or ```./serverX``` where X is the number of the server process.
  
  Run ```./userClient``` or ```./userClientX``` where X is the number of the server process to start the userClient.
- - connect ws_uri
- - send message_type connection_id
+
+ Only one connection exists at a time. Haven't gotten around to fixing the messages being received overwriting the terminal. Does function fine.
+ - connect
+ - send message_type
    - Message types are private and public
      - If private, it will prompt you for Server IDs and Client IDs of recipients
- - close connection_id close_code:default=1000 close_reason
- - show connection_id
+ - close close_code:default=1000 close_reason
+ - show
+   - Displays metadata about the connection
  - help: Display this help text
  - quit: Exit the program
-  
+
+ # Additional Documentation
+ Additional documentation can be found in client/ClientDocumentation.md and server-files/serverDocumentation.md.
+
+ client/MessageGenerator.h contains comments about each MessageGenerator function and client/client_utilities.h contains comments about each ClientUtilities function.
+
+ server-files/server_utilities.h contains comments about each ServerUtilities function.  
 
 # Current Implemented Features
 - Client <-> Server communication with multiple clients able to connect to a server

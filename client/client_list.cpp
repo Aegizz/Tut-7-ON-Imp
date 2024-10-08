@@ -1,6 +1,15 @@
 #include "client_list.h"
 
-ClientList::ClientList(nlohmann::json data){
+ClientList::ClientList(){}
+
+// Clears the client list and other maps and updates the client list using the new client list message received.
+// Calculates fingerprint of each client and stores it against a pair of pairs <server_id <client_id, public_key>>
+// Stores an unordered_map<client_id, public_key> against each server's ID
+// Stores a map of server addresses against each server's ID 
+void ClientList::update(nlohmann::json data){
+    servers.clear();
+    clientFingerprintsKeys.clear();
+    serverAddresses.clear();
 
     if (data.contains("servers")){
         for (const auto& server: data["servers"]){
@@ -30,11 +39,28 @@ ClientList::ClientList(nlohmann::json data){
     }
 }
 
+// Retrieves a server address using a server ID. Returns an empty string if the server ID is invalid.
 std::string ClientList::retrieveAddress(int server_id){
     if(serverAddresses.find(server_id) != serverAddresses.end()){
-        return serverAddesses[server_id];
+        return serverAddresses[server_id];
     }
     return "";
+}
+
+// Prints all users connected in neighbourhood to terminal, labelling the user with the matching server_id and client_id parameters as "You"
+void ClientList::printUsers(int server_id, int client_id){
+    std::cout << "Connected Users" << std::endl;
+    for(const auto& server: servers){
+        int serverID = server.first;
+        for(const auto& client: server.second){
+            int clientID = client.first;
+            if(serverID == server_id && clientID == client_id){
+                std::cout << "You are ServerID: " << serverID << " ClientID: " << clientID << std::endl;   
+            }else{
+                std::cout << "ServerID: " << serverID << " ClientID: " << clientID << std::endl;
+            }  
+        }
+    }
 }
 
 // Retrieves a pair of a client's client id and public key using
@@ -46,10 +72,12 @@ std::pair<int, std::string> ClientList::retrieveClient(int server_id, int client
         if (client_list.find(client_id) != client_list.end()) {
             return {client_id, client_list[client_id]};
         } else {
-            throw std::runtime_error("Client ID not found.");
+            std::cerr << "Client ID not found." << std::endl;
+            return {server_id, ""};
         }
     } else {
-        throw std::runtime_error("Server ID not found.");
+        std::cerr << "Server ID not found." << std::endl;
+        return {-1, ""};
     }
 }
 

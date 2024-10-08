@@ -75,7 +75,8 @@ public:
                 &connection_metadata::on_fail,
                 metadata_ptr,
                 &m_endpoint,
-                websocketpp::lib::placeholders::_1
+                websocketpp::lib::placeholders::_1,
+                &m_connection_list
             ));
             con->set_close_handler(websocketpp::lib::bind(
                 &connection_metadata::on_close,
