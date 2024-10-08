@@ -30,7 +30,7 @@ test: debug-all server server2 client testClient test.sh test-client-list test-c
 	./test-message-generator
 
 userClient: userClient.cpp
-	$(CXX) $(CXXFLAGS) -o $@ $^ $(LIBS)
+	$(CXX) $(CXXFLAGS) -o $@ $^ $(CLIENT_FILES) $(LIBS)
 
 # For testing 
 testClient: testClient.cpp
@@ -56,7 +56,7 @@ clean:
 debug-all: userClient-debug testClient server-debug
 
 userClient-debug: userClient.cpp
-	$(CXX) $(CXXFLAGS) -g -o $@ $^ $(LIBS) -lz -fno-stack-protector
+	$(CXX) $(CXXFLAGS) -g -o $@ $^ $(CLIENT_FILES) $(LIBS) -lz -fno-stack-protector
 
 server-debug: server.cpp
 	$(CXX) $(CXXFLAGS) -g -o $@ $^ $(LIBS) $(SERVER_FILES) -lz -fno-stack-protector

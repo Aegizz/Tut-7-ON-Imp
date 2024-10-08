@@ -1,36 +1,41 @@
-[2024-10-05 14:03:13] [devel] endpoint constructor
-[2024-10-05 14:03:13] [devel] server constructor
+[2024-10-08 21:06:04] [devel] endpoint constructor
+[2024-10-08 21:06:04] [devel] server constructor
 Starting client thread...
 
 Connection to ws://127.0.0.1:9004 failed, retrying in 500ms...
 Connection to ws://127.0.0.1:9004 failed, retrying in 500ms...
 
-Connection initiated from: 127.0.0.1:39416
+Connection initiated from: 127.0.0.1:41560
 
 Successfully connected to ws://127.0.0.1:9003
 > Server hello sent
 
-Sent client update request to 2
+Sent client update request to server 2
 Connection to ws://127.0.0.1:9004 failed, retrying in 500ms...
-Received message: {"data":{"sender":"127.0.0.1:9003","type":"server_hello"}}
+Received message: {"counter":12345,"data":"{\"sender\":\"127.0.0.1:9003\",\"type\":\"server_hello\"}","signature":"img94eEzrkZ8pK+jJ1mIhcshD6U+K5JQ6oY8EBdmwPAJMiS7qvf2hR20amKJaNhS6FVcd1RF5vzg6Xsa+XNBKeFWRSkMhgh3M4nPuxiW4svGOVnDhckLiHYf5PXgvAYvKv1hLdTDo/GIYlTTyVKC6mjX7xKO2N/AJeTgf4uYeSDM7X0H1FNIo2w+Koov0Gmp5fmYqXzJoUAOI6gSPy0hiTCwc3CCc3Dgry5vJuNI6yT13q7nBxRPZ8pcxMY3HWcHunDPK+hW1Eb6FyK2vjNrqu+b3cbp1ZIfmQOqPiTy9xJbW2E6h1ZTCgTIVhKa+UFT2M74Jtsw10YAXbhJ36vg6w==","type":"signed_data"}
 Cancelling server connection timer
+Verified signature of server 2
 
 Received message: {"type":"client_update_request"}
-Sent client update to 2
+Sent client update to server 2
 
+Connection to ws://127.0.0.1:9004 failed, retrying in 500ms...
 Received message: {"clients":[],"type":"client_update"}
-Connection to ws://127.0.0.1:9004 failed, retrying in 500ms...
 
 Connection to ws://127.0.0.1:9004 failed, retrying in 500ms...
 
-Connection initiated from: 127.0.0.1:39422
-Received message: {"data":{"public_key":"ABCDEF","time-to-die":"2024-10-05T14:04:15Z","type":"hello"}}
+Connection initiated from: 127.0.0.1:41568
+Received message: {"counter":12345,"data":"{\"public_key\":\"-----BEGIN PUBLIC KEY-----\\nMIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEA22mg6Er/nRqIfs/a0vDQ\\nwnKw4OJ0ddzhAjmg50nLbOhjDt1KZUnYCSb4et0UIXX5wPoOjYDqnSdJjCOdgfpD\\nsXrlqm1Tx6OoyJuPC7PYrAgHO2t82NRKOhnRPF5RttliMsNsRPUB7k2fEUGkpdSk\\n8D0QsXMPobnNe3jKtwrz1T7b2gKTn+IOpeuYigbxTuX9qRQLg0E/SLNa9aEwlG12\\ne/HIkCzGECAH9tYgk5OcrxQ5bpze6jWyaLC/9JrA/MWlK8LJyUiCFbS7X+26aUhH\\n65pW6Vs2HBgAYDWYfazxUmG3lrJ9aK89ljhnbqscEBaXiRw6cEvxuha/pgZR4/23\\ntQIDAQAB\\n-----END PUBLIC KEY-----\\n\",\"type\":\"hello\"}","signature":"wXu77rn8oZjgRRRye3BeDd9qp9EGIjL4MyphpT9SCpOh43c2z1O5y07J1iPmgE53jXRv97tLYPw41BjdjSNzdil6RLVVDDL6LGLDtXs+902W/FJikmoFmoF4yFBnbEPzavkuRNIjLUwVHchHXMydmynVNDgKrinOpUv8awpKA6gKvBWDYbEOrv01DA9s6h1SSaXO8r38jcEwSVGr9pQbSVh/1S9SKkqUGiC6O+Pvj6yMkVZFo30cJmOOc/c9MZBQZ2tf0yeMsa1wRtfDHiBG4UqmmDe6T+nYHt1cLI/YYGyF93MKzm844ISjvTDkEc6mjzKJA5STWSBOe7iGfKZngQ==","type":"signed_data"}
 Cancelling client connection timer
-Sent client update to 2
+Verified signature of client 1001
+Sent client update to server 2
 
 Received message: {"type":"client_list_request"}
 Sent client list to client 1001
 
+Received message: {"counter":12345,"data":"{\"chat\":\"YmU3ZWY0MzhkZmM5ZDIxMjkxMTkxNGViMWVjOTJmNTVjODI1YzIwMWUwZGM3NjA3YmI4NTAxZWU1ZGI5NGQ3MGVjYWQzNDI5ZDcyZGIzOTNlNTE2ZTg5NzBjYjNiODhjMjg3MGM1MzUzZjU3YWI4OTgxMTQ4NzVlYTFmYzE0NWEyOTAzODQzYTA5YTg4ZWJhYmI2MTc2MTJkOWRhZWU1ZmQwNmFhZWRkZTYxZGQ5MjVkNzZkMDEzOTM2ZGM2ZjI4ZjRhZTIxYTBkOTMyNWE2ZGE4MjQ5NTZlMTU3MTg0M2M3ZDE1OWQ4ZDFkZWVmMTYxMTdlYWIyZWJkMzdhNzRkNGQ4MjBjZTIzMWYxMjVjYjM4N2RlYjY5MGVmN2QwNjZkZDYxODU4ODk4OTVjZjIxZWQxZTRjYmQyNzY3YjJkNjhhYjYyN2I3OTI1MTYxOWRlYTliNWYxODM0NWI4NzU5YTQ0ZDZmOGEzZjlhMmYxMWRjNzMyODgxZmQ1NjkwNDk2NmVhODQ4YTEyMzhmNTFlNmZjNDVkNjMwNDVhMzhkNjg4ZjA0YTBhMTVhNGRhZjkwOTk2Y2FhNzJhNjhjMGEzZGFhYzE4ZmYzM2RlYWY3YjA4YzBjMzQ1NmUyZDhjMjZkZmUyNDU2YjQxYTUwYTQ5YjIwNDQyYmI5MWIyYTU5YmY3NmY1ZjFlOGFjYjI2ZTRhYzVhNDAzMmU4NDdiZjdmMmZlYjBmNjY1MTI0NjU5NWJhZTk3YjU0YWZmMzkwZjVlOThjOWRlNTJlM2I2MzcxOTc3ZjI4NmNlOGVjNjNjZWFkZGI4MGM1YzJkN2Q0N2Q4OWU3NzY5OTNkYjYxZDYzNTdiMjQ4YmM5MjQwOTdkYWU5NGJiNDcyNw==\",\"destination_servers\":[\"127.0.0.1:9003\",\"127.0.0.1:9004\"],\"iv\":\"YTJjYmM1MmI2OTBkODVlZjhmYzU5Y2NlOTNlNDY5YzA=\",\"symm_keys\":[\"AYpLcpkBTusuQRcXecc07q5T78IO9YPXUsKE+IaCZkNu1LEOcwj14Y7FgFgMzbTop2hBFHkHVcW3CZnw2U6oIuL8NywWuOv/9p7fX4rpZ3JypVCWw40aLoYy0sxxYVvB0FPlL3bqyR1UXjoELR7AjOGIVzv4wqf/wxSuLdmBE1gtjp80EJcBsBr9nRjZi/jDDTgrSD08boDKJisEPF/soO0g8oP6+rXUH4gY3uXby0iFord6D1Ywg5SYlVVaBA2YgWMeIbk1fLRCEaBxdTDAw1DGhSeMvd6HDFvLvtUyAxUFtKzXJQ0nM5pkCfzH4ICXNO9G3xioypvZVuG010Z6QQ==\",\"NwTu1w5NW/CLnEtg23TT/bH7m1vqd912Ve52dNmSJ6Xflu30jBsYC3gn2s4V0fv2Pzapg4Wsps+2w5W8InWoN8e3fNZwGLwnsyeDvd4PngMuZjA2B7LFVAL36P+ebp26MUY34eKxGWGNXh5UW5lQV7G7OZ3dYEkNNBeacABxXs//Q7ludGiWFlDvVJpCDLbrGFwBSWz07uE/85zBmgpUYMsYrisvZmmKrwcSYhxmzvCd262vOJVUenxoQuqUi3fmEv7D0oaMw8yi0aaqngCeNqzHDVJNcpncaUvDEa7wKJQFFNGbGdV/ihY8CoB43EzgupW//10oTOjFzVWF01hk4A==\"],\"type\":\"chat\"}","signature":"cbrMJo0ZNo5hGjVVoJGuy+lO/XSjQfStLPmYQqeLDef1+XR8PZHaa1w5z15/z9IkP5nBbWNxBPL/hN07YoR7uR+6TlEafnobgT2sLq2+CwKguu1IdsJ2hdoFSrsGLrY9v9lupulCCFLOHvAvDQ6DLJEPfPhsriGdKlsr2to9xPVYqTdptMr8PcJNHjkJ87QEinQLswb1fAMCCwKJu0gh9MWKCvINnTIWu1tqUNw8j2y9AErqZN8WAmPsYl62F0gNG6AeEgV/r40FWLk3JEWzIz1Atyera2+05jcqi9URKHsJvTqBT5yXLXFp2B/cqU3pxu4LXCpZC0Lom4LFnLVoPA==","type":"signed_data"}
+Verified signature of client
+Sent private chat to server 2
 Connection to ws://127.0.0.1:9004 failed, retrying in 500ms...
 Connection to ws://127.0.0.1:9004 failed, retrying in 500ms...
 Connection to ws://127.0.0.1:9004 failed, retrying in 500ms...
@@ -40,14 +45,4 @@ Connection to ws://127.0.0.1:9004 failed, retrying in 500ms...
 Exceeded retry limit. Giving up on connecting to ws://127.0.0.1:9004
 
 Client 1001 closing their connection
-Sent client update to 2
-
-Server 2 closing outbound connection
-Server 
-2 closing inbound connection
-Trying to reconnect to server 2
-Connection to ws://127.0.0.1:9003 failed, retrying in 500ms...
-
-Connection initiated from: 127.0.0.1:59386
-Received message: {"counter":1,"data":"{\"chat\":\"YTQ3ODczZTViMzhmNGUzMjgyYWQyOWJlZmM3NWUxOGM2YTZiMjI3Zjc3YWE1YmNkMTg2NDA2MjU=\",\"destination_servers\":[\"ws://localhost::9002\"],\"iv\":\"ZjI4MWY3ZjljNTgwZjA3M2M0NzdjOTc5NWI4NzFhNjU=\",\"symm_keys\":[\"dUk4aehv2eZyfXo8o9spM6/9ZYTZViSc2Hf5gXTCXQ6naQBtYWDLll+kSyhfPUNETWr3ogQkeGc5NAsGtC0fXnPwLk8R13iKCjtz4wYnBQkfLByhlH0kbNMkvXZb7oGGFSmF6VqYS2DiSeaGKbWLlMiyFPvuN/h95rzav+hSllKW6h9AMUQOtocwtbHe6g4R9ixop6GDbClgG1Xoy3BSLWfETvBVU4ZFoev/dM2irOmXkge87rr/vahi8feB8U6SNMOthDiePkd4FtPEqKsGckk5iiV/vHb/lymeA0+mNdLCEYtEsqS+yU/GZV5V7uQagyZjQsYD5V8kZ43ZmUMdfw==\"],\"type\":\"chat\"}","signature":"rjJL5aQwK1TA4cYkG45XETO8JZSifzGLXwbvyJJPD+KTe5vmXuYbFc91aX2eny5+wM63bwkMpZfINtvtbEGDjCXzRNxk0PkEwTutuvmuaz4i+ocMDCbuKtS7otyXcuXyWOM3eLPTfHTxs7HcUzAcbGnncpGILgiiZLEBqhTSO/34Xe9HArEytj5UCs0bke/KOglKQa6BqO0VavLcTTHwL3C/15JXlu4G1z4sCXgwuxdOjVUcg4wFSNdj8HknpVQs7lE8/Wz+lGTUlDeL7cqUtgigHc95mJgI+ODC2jCHF+astbpTRqlvUF8SprMgVYCdfH0pa4i8L+77LLVu0+TNyg==","type":"signed_data"}
-Standard exception: [json.exception.type_error.305] cannot use operator[] with a string argument with string
+Sent client update to server 2

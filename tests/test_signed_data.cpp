@@ -52,8 +52,8 @@ ClientList * global_client_list = nullptr;
 
 int main() {
     // Load keys
-    EVP_PKEY* privateKey = Client_Key_Gen::loadPrivateKey("tests/private_key0.pem");
-    EVP_PKEY* publicKey = Client_Key_Gen::loadPublicKey("tests/public_key0.pem");
+    EVP_PKEY* privateKey = Client_Key_Gen::loadPrivateKey("tests/test-keys/private_key0.pem");
+    EVP_PKEY* publicKey = Client_Key_Gen::loadPublicKey("tests/test-keys/public_key0.pem");
     if (!privateKey) {
         std::cerr << "Failed to load private key!" << std::endl;
         return 1; // Exit if key loading fails
