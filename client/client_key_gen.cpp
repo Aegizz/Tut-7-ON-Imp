@@ -171,7 +171,17 @@ int Client_Key_Gen::rsaDecrypt(EVP_PKEY* privKey, const unsigned char* encrypted
     memset(*decrypted, 0, decrypted_len);
 
     // Decrypt the data
-    if (EVP_PKEY_decrypt(ctx, *decrypted, &decrypted_len, encrypted, encrypted_len) <= 0) handleErrors();
+    if (EVP_PKEY_decrypt(ctx, *decrypted, &decrypted_len, encrypted, encrypted_len) <= 0) {
+        // If decryption fails, check the error code
+        /*unsigned long err_code = ERR_get_error();
+        if (err_code) {
+            char err_buf[120];
+            ERR_error_string_n(err_code, err_buf, sizeof(err_buf));
+            std::cerr << "Decryption failed: " << err_buf << std::endl;
+        }*/
+        EVP_PKEY_CTX_free(ctx);
+        return -1;  // Return -1 to indicate decryption failure
+    }
 
     EVP_PKEY_CTX_free(ctx);
     return decrypted_len;  // Return length of the decrypted data
