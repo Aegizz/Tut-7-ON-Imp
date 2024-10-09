@@ -50,6 +50,14 @@ void testSendAndReceive(SignedData& signedData, EVP_PKEY* privateKey, std::vecto
 
 ClientList * global_client_list = nullptr;
 
+#include <unistd.h>  // For fork(), exec(), and kill()
+#include <sys/types.h>
+#include <sys/wait.h>
+#include <signal.h>  // For SIGTERM
+
+
+// Your existing includes and code...
+
 int main() {
     // Load keys
     EVP_PKEY* privateKey = Client_Key_Gen::loadPrivateKey("tests/test-keys/private_key0.pem");
@@ -58,13 +66,32 @@ int main() {
         std::cerr << "Failed to load private key!" << std::endl;
         return 1; // Exit if key loading fails
     }
+    if (!publicKey){
+        std::cerr << "Failed to load public key!" << std::endl;
+        return 1;
+    }
 
     // Generate fingerprints
     std::string fingerprint = Fingerprint::generateFingerprint(publicKey);
 
+    // Start the server
+    pid_t server_pid = fork();
+    if (server_pid == 0) {
+        // In the child process, replace it with the server executable
+        execl("./server", "server", nullptr);
+        // If execl returns, an error occurred
+        std::cerr << "Failed to start server!" << std::endl;
+        return 1;
+    } else if (server_pid < 0) {
+        std::cerr << "Fork failed!" << std::endl;
+        return 1;
+    }
+
+    // Give the server a moment to start
+    sleep(1);  // Adjust the duration as necessary
+
     // Initialize WebSocket server (or endpoint) here
     websocket_endpoint endpoint(fingerprint, privateKey);
-    // You would typically set up the endpoint, including any necessary configurations.
     
     // Mock connection metadata
     int id = endpoint.connect("ws://localhost:9002", global_client_list); // Example connection ID
@@ -73,10 +100,14 @@ int main() {
     SignedData signedData;
 
     // Test sending and receiving messages
-    testSendAndReceive(signedData, privateKey, std::vector<EVP_PKEY*>({publicKey}),std::vector<std::string>({"ws://localhost::9002"}),&endpoint, id);
+    testSendAndReceive(signedData, privateKey, std::vector<EVP_PKEY*>({publicKey}), std::vector<std::string>({"ws://localhost:9002"}), &endpoint, id);
 
     // Clean up resources (if needed)
     EVP_PKEY_free(privateKey); // Free the private key when done
+
+    // Terminate the server after client operations
+    kill(server_pid, SIGTERM); // Send a termination signal to the server
+    waitpid(server_pid, nullptr, 0); // Wait for the server process to terminate
 
     return 0;
 }

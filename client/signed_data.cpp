@@ -2,32 +2,52 @@
 #include "hexToBytes.h"
 
 
-void SignedData::sendSignedMessage(std::string data, EVP_PKEY * private_key, websocket_endpoint* endpoint, int id, int counter){
-    nlohmann::json message;
+void SignedData::sendSignedMessage(std::string data, EVP_PKEY * private_key, websocket_endpoint* endpoint, int id, int counter) {
+    if (!endpoint) {
+        std::cerr << "Error: endpoint is null." << std::endl;
+        return;
+    }
 
+    nlohmann::json message;
     message["type"] = "signed_data";
     message["data"] = data;
     message["counter"] = counter;
-    message["signature"] = ClientSignature::generateSignature(data, private_key, std::to_string(counter));
+
+    // Generate signature and check if it is valid
+    std::string signature = ClientSignature::generateSignature(data, private_key, std::to_string(counter));
+    if (signature.empty()) {
+        std::cerr << "Error: Signature generation failed." << std::endl;
+        return;
+    }
+    message["signature"] = signature;
 
     std::string json_string = message.dump();
 
-
-    /* When  */
+    // Get metadata for the connection
     connection_metadata::ptr metadata = endpoint->get_metadata(id);
-
-    if (!(metadata->get_status() == "Open")){
+    if (!metadata) {
+        std::cerr << "Error: Metadata not found for id " << id << std::endl;
         return;
     }
+
+    // Check if the connection is open
+    if (metadata->get_status() != "Open") {
+        std::cerr << "Connection is not open." << std::endl;
+        return;
+    }
+
+    // Send the message
     websocketpp::lib::error_code ec;
     endpoint->send(id, json_string, websocketpp::frame::opcode::text, ec);
 
+    // Check for errors in sending
     if (ec) {
         std::cerr << "> Error sending signed_data message: " << ec.message() << std::endl;
     } else {
         std::cout << "> signed_data message sent" << std::endl;
     }
 }
+
 
 
 std::string SignedData::decryptSignedMessage(std::string message, EVP_PKEY * private_key) {

@@ -103,5 +103,6 @@
         "*.def": "cpp",
         "*.ipp": "cpp",
         "shared_mutex": "cpp"
-    }
+    },
+    "makefile.configureOnOpen": false
 }
