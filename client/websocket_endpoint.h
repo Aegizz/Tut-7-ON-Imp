@@ -12,6 +12,8 @@
 #include "client.h"
 #include "websocket_metadata.h"
 
+class SignedData;
+
 class websocket_endpoint {
 public:
     websocket_endpoint (std::string fingerprint, EVP_PKEY* privateKey) : m_next_id(0){

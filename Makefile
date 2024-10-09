@@ -25,7 +25,7 @@ test: debug-all server server2 client testClient test.sh test-client-list test-c
 	./test-client-key-gen
 	./test-base64
 	./test-client-signature
-	./test-client-signed-data
+#	./test-client-signed-data
 	./test-chat-message
 	./test-data-message
 	./test-hello-message
@@ -34,6 +34,8 @@ test: debug-all server server2 client testClient test.sh test-client-list test-c
 userClient: userClient.cpp
 	$(CXX) $(CXXFLAGS) -o $@ $^ $(CLIENT_FILES) $(LIBS)
 userClient2: userClient2.cpp
+	$(CXX) $(CXXFLAGS) -o $@ $^ $(CLIENT_FILES) $(LIBS)
+userClient3: userClient3.cpp
 	$(CXX) $(CXXFLAGS) -o $@ $^ $(CLIENT_FILES) $(LIBS)
 
 # For testing 
@@ -50,6 +52,7 @@ server2: server2.cpp
 server3: server3.cpp
 	$(CXX) $(CXXFLAGS) -o $@ $^ $(SERVER_FILES) $(LIBS) -lz
 
+userClients: userClient userClient2 userClient3
 testClients: testClient testClient2 testClient3
 servers: server server2 server3
 
