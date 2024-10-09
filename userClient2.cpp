@@ -73,6 +73,7 @@ std::ostream & operator<< (std::ostream & out, connection_metadata const & data)
 }
 
 int main() {
+    int numConnections=0;
     // Load keys
     privKey = Client_Key_Gen::loadPrivateKey(privFileName.c_str());
     pubKey = Client_Key_Gen::loadPublicKey(pubFileName.c_str());
@@ -117,6 +118,11 @@ int main() {
                 << "quit: Exit the program\n"
                 << std::endl;
         } else if (input == "connect") {
+            if(numConnections > 0){
+                std::cout << "You cannot connect to more than one server" << std::endl;
+                continue;
+            }
+
             bool validUri=false;
             while(!validUri){
                 std::cout << "Enter server uri: " << std::endl;
@@ -141,6 +147,8 @@ int main() {
                                 continue;
                             }else if(metadata->get_status() == "Open"){
                                 std::cout << "> Established connection with " << uri << std::endl;
+                                numConnections++;
+
                                 // Send hello message
                                 ClientUtilities::send_hello_message(&endpoint, currentID, privKey, pubKey, 12345);
 
@@ -173,6 +181,8 @@ int main() {
 
             std::getline(ss,reason);
             endpoint.close(currentID, close_code, reason);
+
+            numConnections--;
         }  else if (input.substr(0,4) == "show") {
             connection_metadata::ptr metadata = endpoint.get_metadata(currentID);
             if (metadata) {

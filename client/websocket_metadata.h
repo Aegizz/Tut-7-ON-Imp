@@ -40,13 +40,12 @@ public:
         m_server = con->get_response_header("Server");
     }
 
-    void on_fail(client * c, websocketpp::connection_hdl hdl, std::map<int, connection_metadata::ptr>* m_connection_list) {
+    void on_fail(client * c, websocketpp::connection_hdl hdl) {
         m_status = "Failed";
 
         client::connection_ptr con = c->get_con_from_hdl(hdl);
         m_server = con->get_response_header("Server");
         m_error_reason = con->get_ec().message();
-        m_connection_list->clear();
     }
     
     void on_close(client * c, websocketpp::connection_hdl hdl) {
