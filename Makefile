@@ -15,9 +15,6 @@ all: userClient userClient2 server server2 server3 testClient testClient2 testCl
 #all: userClient userClient2 server server2 server3 test-client
 
 test: debug-all server server2 client testClient test.sh test-client-list test-client-aes-encrypt test-client-sha256 test-client-key-gen test-base64 test-client-signature test-client-signed-data test-hello-message test-chat-message test-data-message test-message-generator
-	echo "Running tests..."
-	chmod +x test.sh
-	bash test.sh
 	echo "Running client tests..."
 	./test-client-list
 	./test-client-aes-encrypt
@@ -30,6 +27,10 @@ test: debug-all server server2 client testClient test.sh test-client-list test-c
 	./test-data-message
 	./test-hello-message
 	./test-message-generator
+	echo "Running tests..."
+	chmod +x test.sh
+	bash test.sh
+
 
 userClient: userClient.cpp
 	$(CXX) $(CXXFLAGS) -o $@ $^ $(CLIENT_FILES) $(LIBS)
