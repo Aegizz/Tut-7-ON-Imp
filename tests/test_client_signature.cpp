@@ -35,7 +35,7 @@ int main() {
         std::cerr << "Failed to generate signature!" << std::endl;
         EVP_PKEY_free(privKey);
         EVP_PKEY_free(pubKey);
-        return 1;
+        return -1;
     }
 
     std::cout << "Generated signature: " << signature << std::endl;
@@ -46,6 +46,7 @@ int main() {
         std::cout << "Signature verification succeeded!" << std::endl;
     } else {
         std::cerr << "Signature verification failed!" << std::endl;
+        return -1;
     }
 
     // Clean up OpenSSL key structures
