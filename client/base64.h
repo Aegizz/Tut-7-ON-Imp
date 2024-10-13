@@ -4,6 +4,8 @@
 #include <string>
 #include <vector>
 
+// Note: These functions were generated using ChatGPT
+
 class Base64 {
 public:
     // Encode the input string to Base64

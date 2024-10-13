@@ -4,6 +4,8 @@
 #include <vector>
 #include <string>
 
+// Note: These functions were generated using ChatGPT
+
 // Declaration of functions
 std::vector<unsigned char> hexToBytes(const std::string& hex);
 std::string hexToBytesString(const std::string& hex);

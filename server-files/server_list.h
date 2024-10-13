@@ -18,7 +18,7 @@ class ServerList{
 
         std::unordered_map<int, std::string> currentClients; // Clients currently connected to THIS server
         std::unordered_map<int, std::string> knownClients; // Clients that belong to this server
-        std::unordered_map<int, std::string> knownServers; // List of Serves with their Public Keys
+        std::unordered_map<int, std::string> knownServers; // List of Servers with their Public Keys
 
         // Temporary way to store server addresses against their ID
         std::unordered_map<int, std::string> serverAddresses = {{1, "127.0.0.1:9002"}, {2, "127.0.0.1:9003"}, {3, "127.0.0.1:9004"}};

@@ -2,15 +2,44 @@
 
 
 std::string Sha256Hash::hashStringSha256(const std::string &input){
-    unsigned char hash[SHA256_DIGEST_LENGTH];
-    SHA256_CTX sha256;
-    SHA256_Init(&sha256);
-    SHA256_Update(&sha256, input.c_str(), input.size());
-    SHA256_Final(hash, &sha256);
-    std::stringstream ss;
-    for(int i = 0; i < SHA256_DIGEST_LENGTH; i++)
-    {
-        ss << std::hex << std::setw(2) << std::setfill('0') << (int)hash[i];
+    // Create a context for the hashing operation
+    EVP_MD_CTX *ctx = EVP_MD_CTX_new();
+    if (ctx == nullptr) {
+        // Handle error: failed to create context
+        return "";
     }
+
+    // Initialize the context for SHA-256 hashing
+    if (EVP_DigestInit_ex(ctx, EVP_sha256(), nullptr) != 1) {
+        // Handle error: failed to initialize digest
+        EVP_MD_CTX_free(ctx);
+        return "";
+    }
+
+    // Update the context with the input data
+    if (EVP_DigestUpdate(ctx, input.data(), input.size()) != 1) {
+        // Handle error: failed to update digest
+        EVP_MD_CTX_free(ctx);
+        return "";
+    }
+
+    // Finalize the hashing operation
+    unsigned char hash[EVP_MAX_MD_SIZE];
+    unsigned int hash_len;
+    if (EVP_DigestFinal_ex(ctx, hash, &hash_len) != 1) {
+        // Handle error: failed to finalize digest
+        EVP_MD_CTX_free(ctx);
+        return "";
+    }
+
+    // Clean up the context
+    EVP_MD_CTX_free(ctx);
+
+    // Convert the hash to a hexadecimal string
+    std::stringstream ss;
+    for (unsigned int i = 0; i < hash_len; ++i) {
+        ss << std::hex << std::setw(2) << std::setfill('0') << static_cast<int>(hash[i]);
+    }
+
     return ss.str();
 }

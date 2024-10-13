@@ -149,7 +149,10 @@ int ServerList::insertClient(std::string public_key){
         // If the client's public key matches, use previous ID
         if(client.second  == public_key){
             servers[my_server_id][client.first] = public_key;
-            serversFingerprints[my_server_id][Fingerprint::generateFingerprint(Server_Key_Gen::stringToPEM(public_key))] = public_key;
+
+            std::string fingerprintString = Fingerprint::generateFingerprint(Server_Key_Gen::stringToPEM(public_key));
+            serversFingerprints[my_server_id][fingerprintString] = public_key;
+
             currentClients[client.first] = public_key;
 
             return client.first;
@@ -183,11 +186,7 @@ void ServerList::removeClient(int client_id){
         }
     }
     
-    for(const auto& clients: serversFingerprints[my_server_id]){
-        if(clients.second == pubKey){
-            serversFingerprints[my_server_id].erase(clients.first);
-        }
-    }
+    serversFingerprints[my_server_id].erase(Fingerprint::generateFingerprint(Server_Key_Gen::stringToPEM(pubKey)));
 
     servers[my_server_id].erase(client_id);
 

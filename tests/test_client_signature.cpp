@@ -12,14 +12,14 @@ int main() {
     }
 
     // Load the private key from the file
-    EVP_PKEY *privKey = Client_Key_Gen::loadPrivateKey("tests/private_key0.pem");
+    EVP_PKEY *privKey = Client_Key_Gen::loadPrivateKey("tests/test-keys/private_key0.pem");
     if (!privKey) {
         std::cerr << "Failed to load private key!" << std::endl;
         return 1;
     }
 
     // Load the public key from the file
-    EVP_PKEY *pubKey = Client_Key_Gen::loadPublicKey("tests/public_key0.pem");
+    EVP_PKEY *pubKey = Client_Key_Gen::loadPublicKey("tests/test-keys/public_key0.pem");
     if (!pubKey) {
         std::cerr << "Failed to load public key!" << std::endl;
         EVP_PKEY_free(privKey);  // Clean up before exiting
@@ -35,7 +35,7 @@ int main() {
         std::cerr << "Failed to generate signature!" << std::endl;
         EVP_PKEY_free(privKey);
         EVP_PKEY_free(pubKey);
-        return 1;
+        return -1;
     }
 
     std::cout << "Generated signature: " << signature << std::endl;
@@ -46,6 +46,9 @@ int main() {
         std::cout << "Signature verification succeeded!" << std::endl;
     } else {
         std::cerr << "Signature verification failed!" << std::endl;
+        EVP_PKEY_free(privKey);
+        EVP_PKEY_free(pubKey);
+        return -1;
     }
 
     // Clean up OpenSSL key structures

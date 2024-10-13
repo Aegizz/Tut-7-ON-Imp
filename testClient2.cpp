@@ -53,8 +53,8 @@
 const int ClientNumber = 2;
 
 // Create key file names
-std::string privFileName = "tests/private_key" + std::to_string(ClientNumber) + ".pem";
-std::string pubFileName = "tests/public_key" + std::to_string(ClientNumber) + ".pem";
+std::string privFileName = "tests/test-client-keys/private_key" + std::to_string(ClientNumber) + ".pem";
+std::string pubFileName = "tests/test-client-keys/public_key" + std::to_string(ClientNumber) + ".pem";
 
 // Define keys
 EVP_PKEY* privKey;
@@ -113,7 +113,7 @@ int main() {
 
         //ClientUtilities::send_public_chat(&endpoint, initId, "Test Message2", privKey, pubKey, 12345);
         
-        sleep(60);
+        sleep(5);
         
         int close_code = websocketpp::close::status::normal;
         endpoint.close(initId, close_code, "Reached end of run");

@@ -7,10 +7,13 @@
 #include <openssl/bn.h>  // For BIGNUM
 #include <openssl/bio.h>
 #include <openssl/err.h>
+#include <openssl/core_names.h>  // For OSSL_PARAM names like OSSL_PKEY_PARAM_RSA_E
+#include <openssl/param_build.h>  // For OSSL_PARAM_BLD functions
 #include <cstdio>
 #include <cstring>
 #include <iostream>
 
+// Note: Much of this code was generated using ChatGPT
 
 class Client_Key_Gen{
     public:
