@@ -7,6 +7,7 @@
 #include <vector>
 #include <cstring>
 
+// Note: These functions were generated using ChatGPT
 
 // Constants
 const int AES_GCM_KEY_SIZE = 16;  // 128-bit key

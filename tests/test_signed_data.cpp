@@ -107,6 +107,8 @@ int main() {
     // Clean up resources (if needed)
     EVP_PKEY_free(privateKey); // Free the private key when done
 
+    sleep(2);
+
     // Terminate the server after client operations
     kill(server_pid, SIGTERM);  // Send termination signal to the server
     waitpid(server_pid, nullptr, 0);

@@ -2,7 +2,7 @@ name: Olaf-Neighbourhood Protocol App
 
 on:
   push:
-    branches: [ "main", "Lloyd" ]
+    branches: [ "main", "Lloyd", "Grady"]
   pull_request:
     branches: [ "main" ]
 
