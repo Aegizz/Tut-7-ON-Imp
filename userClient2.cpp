@@ -191,6 +191,7 @@ int main() {
             endpoint.close(currentID, close_code, reason);
 
             numConnections--;
+            done=true;
         }  else if (input == "show") { // If show was entered
             
             // Obtain metadata and print it

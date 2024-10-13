@@ -142,7 +142,7 @@ public:
                     std::cout << "Invalid signature" << std::endl;
                     return;
                 }
-                std::cout << "Verified signature\n" << std::endl;
+                std::cout << "Verified signature" << std::endl;
 
                 std::cout << "Chat received from client " << client_id << " on server " << server_id << std::endl << std::endl;
                 std::cout << chat["message"] << "\n" << std::endl;

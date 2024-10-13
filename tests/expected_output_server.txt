@@ -5,14 +5,14 @@ Starting client thread...
 Connection to ws://127.0.0.1:9004 failed, retrying in 500ms...
 Connection to ws://127.0.0.1:9004 failed, retrying in 500ms...
 
-Connection initiated from: 127.0.0.1:42020
+Connection initiated from: 127.0.0.1:46742
 
 Successfully connected to ws://127.0.0.1:9003
 > Server hello sent
 
 Sent client update request to server 2
+Received message: {"counter":12345,"data":"{\"sender\":\"127.0.0.1:9003\",\"type\":\"server_hello\"}","signature":"i2YjMfZERqWaDUkFwJpHBdtTa2oe3cHRI8zMXi+vIMkB3m0kTTyvGIr/OwZ7Iq0mXIFOLdJ5cPsopOqSDsW8mRFDLpemflcd+CHLFcZRXRdMmWpWvszUKqloxAmwT1Y0HMlmqwVOQ/OAgTyWk5oWrySD5JufFmvAk12PHatwm4h0w/EoljvCZwB1XVGFlmi2Y5lH4pUQiOVUrlyMwfr+r1tVNnjcJerUQPZUihL0EC0Yd7uDUNTIlkDffxxjJwyVZTsvqxHrYYFX6iDcI9GjAgv6fV1uJWJD4QhgHgPbfATu5HbNGVzSyKi8rLrIWywiROFyh5ZXw1IbZ370XmW6Pw==","type":"signed_data"}
 Connection to ws://127.0.0.1:9004 failed, retrying in 500ms...
-Received message: {"counter":12345,"data":"{\"sender\":\"127.0.0.1:9003\",\"type\":\"server_hello\"}","signature":"YHR7G1cPfVBoSLTXdfLz2hT4pw5zm1geTRL80D6XsJRwEA4F+oSaAVU6nY3Wuwe4IjVF64KRLarlJ+M7hF7NVIcsPljBBrE5feiCYAc7qt6EH26s6q3v0nq0keTR6Z1AnjnoD8aeIx/iIY+Td5biPpwdrA57MZA2uI6OOCnqormCDezRe+R+AvS9YdkBcQ59Q+xI5OQE8UeOX99Se5ufSbnJhskArYn5enJE0ujeNKg0Fm1yVj6nNjbhe5Sf2SUryMikotSlIiZY/aKDh6c/c6oDPXGp6D5oo0JoY5HJz+Pe19hDpcBnncFh3nGohaeT9B7hoVbtyo01tkSeGIxGMQ==","type":"signed_data"}
 Cancelling server connection timer
 Verified signature of server 2
 
@@ -20,11 +20,11 @@ Received message: {"type":"client_update_request"}
 Sent client update to server 2
 
 Received message: {"clients":[],"type":"client_update"}
+
 Connection to ws://127.0.0.1:9004 failed, retrying in 500ms...
 
-
-Connection initiated from: 127.0.0.1:42036
-Received message: {"counter":12345,"data":"{\"public_key\":\"-----BEGIN PUBLIC KEY-----\\nMIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEA22mg6Er/nRqIfs/a0vDQ\\nwnKw4OJ0ddzhAjmg50nLbOhjDt1KZUnYCSb4et0UIXX5wPoOjYDqnSdJjCOdgfpD\\nsXrlqm1Tx6OoyJuPC7PYrAgHO2t82NRKOhnRPF5RttliMsNsRPUB7k2fEUGkpdSk\\n8D0QsXMPobnNe3jKtwrz1T7b2gKTn+IOpeuYigbxTuX9qRQLg0E/SLNa9aEwlG12\\ne/HIkCzGECAH9tYgk5OcrxQ5bpze6jWyaLC/9JrA/MWlK8LJyUiCFbS7X+26aUhH\\n65pW6Vs2HBgAYDWYfazxUmG3lrJ9aK89ljhnbqscEBaXiRw6cEvxuha/pgZR4/23\\ntQIDAQAB\\n-----END PUBLIC KEY-----\\n\",\"type\":\"hello\"}","signature":"cgsycPXaw/TcRGXrL3cBW1Ud/MYjMLdW/AawapP6sGzuyms7/y4Bg/k5eUQHhF5pFToC7Fmf96g7oH15EvoduPEkANKuMu3Egq0oDdIWxpNhHTCnRFkl4rECk9wXw7SxBK/7NLk5KODZs5E9Y+BuWYLJYupoBpwN44ODVctUezXUv9XXis8nPq0G3nyaIw/JAlnTCEmfEVLMYO2VXJU9hS3YZy37mwe/3nsWkJfBt/YuDlAH6i5kiOq4DMWAG2PmevHvje2R9snJRVfg70tg0cHSwAhBaDmse2XxUudnSviNFLtyqfktcHgZO8H1AVolMQKxWXhJtL+65bl2s8znDQ==","type":"signed_data"}
+Connection initiated from: 127.0.0.1:46744
+Received message: {"counter":12345,"data":"{\"public_key\":\"-----BEGIN PUBLIC KEY-----\\nMIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEA22mg6Er/nRqIfs/a0vDQ\\nwnKw4OJ0ddzhAjmg50nLbOhjDt1KZUnYCSb4et0UIXX5wPoOjYDqnSdJjCOdgfpD\\nsXrlqm1Tx6OoyJuPC7PYrAgHO2t82NRKOhnRPF5RttliMsNsRPUB7k2fEUGkpdSk\\n8D0QsXMPobnNe3jKtwrz1T7b2gKTn+IOpeuYigbxTuX9qRQLg0E/SLNa9aEwlG12\\ne/HIkCzGECAH9tYgk5OcrxQ5bpze6jWyaLC/9JrA/MWlK8LJyUiCFbS7X+26aUhH\\n65pW6Vs2HBgAYDWYfazxUmG3lrJ9aK89ljhnbqscEBaXiRw6cEvxuha/pgZR4/23\\ntQIDAQAB\\n-----END PUBLIC KEY-----\\n\",\"type\":\"hello\"}","signature":"JPAAodH0kqo6KbVf8Ot9FDKVaGDYD52Yr7VpwoY7+FT0IbLf28mpRKQ58X5rmBoN+eIxnSTOoQJwzLu03nM3GDHb8VZ2qXNkZKmSx0RzSYh9BqfmlLLhn35yb49HjdIONSu7yqeYHy+OtKirVSfH5yiNGaA4cGY/8ekXpyPFBMpvxDZu5WP3w1PITU3YpJNGUv080HWnAnJraJkcBXPhRk6OD3y9BGl0a2E7iaCsGj7gXH3SiJfpWH7Iz+ft2h6jIgFpiv5nAkSLLQEfZkowJ36XicdcgkimuALdAh3TqLeA7c8Z6ikMiMCHsBo3UeUCAQEpGo6hWWhC/kNcBC0Gpg==","type":"signed_data"}
 Cancelling client connection timer
 Verified signature of client 1002
 Sent client update to server 2
@@ -33,7 +33,7 @@ Connection to ws://127.0.0.1:9004 failed, retrying in 500ms...
 Received message: {"type":"client_list_request"}
 Sent client list to client 1002
 
-Received message: {"counter":12345,"data":"{\"message\":\"Test Message1\",\"sender\":\"YjQ0NGQyMGY0YTI2Njg0ZmY0NGYxOWRkOTVhZGRlNDJhYThhODFkZmJiZDI1NDJlOTgzMjU5YTU4OTNiNTdjOQ==\",\"type\":\"public_chat\"}","signature":"XKAiOEgn1uamr7uSGyKoLmP98SPoisR0YIN/A/WqbcttdPsZxkS57e2OlZfZp43uv2GBLBkK4WU/0Azx2uvbZJDy7rQmbbCiX5dfCZIuLQSM9inDoJYTIQjjwwZUSotevKCo7UnQCyFG5v1Y4RshosmNkkklxn/j3iW09xydJFRjWHBIg6er5mamo/0TpTBvs/jeMtNvKuIpWTmFJTESkJoa748QCI0NdgG5tjdnIGPuNduOx7pOTvJdoIzSMK0Xoj54zAmEjlL2PFpt8EpXvpQQBDRLNwYtsfLtwY1CsZENtnmLsVEAbu1jlGDfCywb3wnPEk15xhCYloBAgQlXGA==","type":"signed_data"}
+Received message: {"counter":12345,"data":"{\"message\":\"Test Message1\",\"sender\":\"YjQ0NGQyMGY0YTI2Njg0ZmY0NGYxOWRkOTVhZGRlNDJhYThhODFkZmJiZDI1NDJlOTgzMjU5YTU4OTNiNTdjOQ==\",\"type\":\"public_chat\"}","signature":"xHVGUbPjyfZpFGbje7+t7ZgpNbsbHwKFPvnSstsq7Rry5i98+IFX/pKJwfzdsgQSE5Ijl/rEA4O75sDoIIRQh0koCyXv77hBsuSNK3TmEKQzDBQqtB9dguTLyE/oQh2IlUNcGjV80XrSlsI/Ehk5dLRrqexLp4MX6At/sSH7HzVkf/WsZYJbTDr7lvPM5KuELhN0H3UbQBz22ygY6FhXh+qyQkW8sWssr9EU7uSgPkWTeS85rrVSp4Bv+EKGiLON1DyY1St06eJOczPq4SqHZwPMMHGyJU2+mG531kU1GSeE6Bji0DMNVpXSzaHTtE1NWSNs8WSsLfyhFwJkrT7K2w==","type":"signed_data"}
 Verified signature of client
 Sent public chat to server 2
 Connection to ws://127.0.0.1:9004 failed, retrying in 500ms...
@@ -45,4 +45,3 @@ Connection to ws://127.0.0.1:9004 failed, retrying in 500ms...
 Exceeded retry limit. Giving up on connecting to ws://127.0.0.1:9004
 
 Client 1002 closing their connection
-Sent client update to server 2

@@ -22,7 +22,7 @@ test: debug-all server server2 client testClient test.sh test-client-list test-c
 	./test-client-key-gen
 	./test-base64
 	./test-client-signature
-#	./test-client-signed-data
+	./test-client-signed-data
 	./test-chat-message
 	./test-data-message
 	./test-hello-message

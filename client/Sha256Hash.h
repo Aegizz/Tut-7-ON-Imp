@@ -8,6 +8,8 @@
 #include <iomanip>
 #include <iostream>
 
+// Note: This function was generated using ChatGPT
+
 class Sha256Hash{
     public:
         /* 

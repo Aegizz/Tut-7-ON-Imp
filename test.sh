@@ -23,6 +23,7 @@ if grep -i "error" tests/server.log; then
     echo "Error found in server log."
     cat tests/server.log
     kill $SERVER_PID
+    kill $SERVER2_PID
     exit 1
 fi
 
@@ -65,6 +66,7 @@ else
     echo "Client output does not match expected output."
     diff "$CLIENT_OUTPUT" "$EXPECTED_OUTPUT_CLIENT"
     kill $SERVER_PID
+    kill $SERVER2_PID
     exit 1
 fi
 
