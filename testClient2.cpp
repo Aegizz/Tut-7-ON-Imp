@@ -113,7 +113,7 @@ int main() {
 
         //ClientUtilities::send_public_chat(&endpoint, initId, "Test Message2", privKey, pubKey, 12345);
         
-        sleep(60);
+        sleep(5);
         
         int close_code = websocketpp::close::status::normal;
         endpoint.close(initId, close_code, "Reached end of run");
