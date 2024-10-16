@@ -203,7 +203,15 @@ void ServerList::removeServer(int server_id){
 void ServerList::insertServer(int server_id, std::string update){
 
     // Convert string to JSON object
-    nlohmann::json updatedServerJSON = nlohmann::json::parse(update);
+    nlohmann::json updatedServerJSON;
+    try {
+        // Attempt to parse the string as JSON
+        updatedServerJSON = nlohmann::json::parse(update);
+        
+    }catch (nlohmann::json::parse_error& e) {
+        // Catch parse error exception and display error message
+        std::cerr << "Decrypted message is an Invalid JSON format: " << e.what() << std::endl;
+    }
 
     nlohmann::json clientsArray = updatedServerJSON["clients"];
 

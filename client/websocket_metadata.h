@@ -67,13 +67,31 @@ public:
         std::string payload = msg->get_payload();
 
         // Deserialize JSON message
-        nlohmann::json messageJSON = nlohmann::json::parse(payload);
+        nlohmann::json messageJSON;
+        try {
+            // Attempt to parse the string as JSON
+            messageJSON = nlohmann::json::parse(payload);
+            
+        }catch (nlohmann::json::parse_error& e) {
+            // Catch parse error exception and display error message
+            std::cerr << "Decrypted message is an Invalid JSON format: " << e.what() << std::endl;
+        }
+        //nlohmann::json messageJSON = nlohmann::json::parse(payload);
         std::string dataString;
         nlohmann::json data;
 
         if(messageJSON.contains("data")){
             dataString = messageJSON["data"].get<std::string>();
-            data = nlohmann::json::parse(dataString);
+            try {
+                // Attempt to parse the string as JSON
+                data = nlohmann::json::parse(dataString);
+                
+            }catch (nlohmann::json::parse_error& e) {
+                // Catch parse error exception and display error message
+                std::cerr << "Decrypted message is an Invalid JSON format: " << e.what() << std::endl;
+            }
+            //data = nlohmann::json::parse(dataString);
+
         }
 
         if(messageJSON["type"] == "client_list"){

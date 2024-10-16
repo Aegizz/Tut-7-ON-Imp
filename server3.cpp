@@ -137,18 +137,29 @@ int on_message(server* s, websocketpp::connection_hdl hdl, message_ptr msg) {
     // Vulnerable code: the payload without validation
     std::string payload = msg->get_payload();
 
-    char buffer[10240];
-    // Potential buffer overflow: Copying payload directly into a fixed-size buffer
-    strcpy(buffer, payload.c_str()); // This is unsafe if payload length exceeds buffer size
-
     // Deserialize JSON message
-    nlohmann::json messageJSON = nlohmann::json::parse(payload);
+    nlohmann::json messageJSON;
+    try {
+        // Attempt to parse the string as JSON
+        messageJSON = nlohmann::json::parse(payload);
+        
+    }catch (nlohmann::json::parse_error& e) {
+        // Catch parse error exception and display error message
+        std::cerr << "Decrypted message is an Invalid JSON format: " << e.what() << std::endl;
+    }
     std::string dataString;
     nlohmann::json data;
 
     if(messageJSON.contains("data")){
         dataString = messageJSON["data"].get<std::string>();
+        try {
+            // Attempt to parse the string as JSON
         data = nlohmann::json::parse(dataString);
+            
+        }catch (nlohmann::json::parse_error& e) {
+            // Catch parse error exception and display error message
+            std::cerr << "Decrypted message is an Invalid JSON format: " << e.what() << std::endl;
+        }
     }
 
     std::shared_ptr<connection_data> con_data;
@@ -168,9 +179,6 @@ int on_message(server* s, websocketpp::connection_hdl hdl, message_ptr msg) {
         con_data->timer->cancel();
         std::cout << "Cancelling client connection timer" << std::endl;
 
-        // Update client list
-        con_data->client_id = global_server_list->insertClient(data["public_key"]);
-
         // Extract signature and counter
         std::string client_signature = messageJSON["signature"];
         int counter = messageJSON["counter"];
@@ -187,6 +195,10 @@ int on_message(server* s, websocketpp::connection_hdl hdl, message_ptr msg) {
             }
             return -1;
         }
+
+        // Update client list
+        con_data->client_id = global_server_list->insertClient(data["public_key"]);
+        std::cout << "Verified signature of client " << con_data->client_id << std::endl;
 
         // Move to client server map
         client_server_map[hdl] = con_data;

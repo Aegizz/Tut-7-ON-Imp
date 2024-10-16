@@ -52,7 +52,16 @@ void SignedData::sendSignedMessage(std::string data, EVP_PKEY * private_key, web
 
 std::string SignedData::decryptSignedMessage(std::string message, EVP_PKEY * private_key) {
     // Parse the JSON message
-    nlohmann::json message_json = nlohmann::json::parse(message);
+    nlohmann::json message_json;
+    try {
+        // Attempt to parse the string as JSON
+        message_json = nlohmann::json::parse(message);
+        
+    }catch (nlohmann::json::parse_error& e) {
+        // Catch parse error exception and display error message
+        std::cerr << "Decrypted message is an Invalid JSON format: " << e.what() << std::endl;
+    }
+    
     if (message_json["type"] != "signed_data") {
         std::cerr << "Not signed data!" << std::endl;
         return "";
