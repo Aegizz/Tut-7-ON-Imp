@@ -36,21 +36,21 @@ We are using a makefile for compiling our code.
 
 Our implementation is modified to heavily use server and client IDs to simplify the identification of servers and clients.
   - We are sending them in client lists, client updates, and private chats.
-  - We also have some code to generate a time to die, however it has not been implemented yet.
+  - We also have time to die, however it has not been implemented yet.
 
 # Running Clients and Servers
 
-- Currently for our testing there exists server, server2 and server3.
+- In our current build, there exists server, server2 and server3.
   
     - server runs on ws://localhost:9002, server1 runs on ws://localhost:9003 and server3 runs on ws://localhost:9004
   
-    - To compile servers, run ```make servers```
+    - To compile server, run ```make server``` or to compile all three servers, run ```make servers```
 
 - See 'How to set up new Servers below' to see what files need to be changed to modify the neighbourhood.
   
-- Currently there exists userClient (which takes input from stdin)
-  -  We have been using testClient's for automated testing but the userClient is easier to use.
-    - To compile userClient, run ```make userClient```
+- Currently there exists userClient, userClient2, userClient3 (which takes input from stdin)
+    - We have been using testClient's for automated testing but the userClient is easier to use.
+    - To compile userClient, run ```make userClient``` or ```make userClients``` to compile all three clients
 
 # How to set up new Servers
 To set up new servers in the neighbourhood there are a few important files to change.
@@ -73,9 +73,9 @@ To set up new servers in the neighbourhood there are a few important files to ch
  # How to use the userClient and Server
  Run ```./server``` or ```./serverX``` where X is the number of the server process.
  
- Run ```./userClient``` or ```./userClientX``` where X is the number of the server process to start the userClient.
+ Run ```./userClient``` or ```./userClientX``` where X is the number of the client. This will be suffixed on the key files created for the userClient.
 
- Only one connection exists at a time. Haven't gotten around to fixing the messages being received overwriting the terminal. Does function fine.
+ OOnly one connection exists at a time. We haven't fixed messages being received overwriting the 'Enter command: ' prompt in the UI. However, it should function properly.
  - connect
  - send message_type
    - Message types are private and public
@@ -121,11 +121,9 @@ To set up new servers in the neighbourhood there are a few important files to ch
     Insecure Copy /server.cpp Line 115
     server-debug Makefile Line 40
 ### Vulnerability #2
- In the gitignore, there is not ignorance of .pem files, the files used for key generation. This will likely lead to a user or users leaking keys at some point.
+ In the gitignore, there is no ignorance of .pem files, the files used for key generation. This will likely lead to a user or users leaking keys at some point.
  This is a common way that users leak private information on the internet and has potential to cause issues later down the line as commit history cannot be removed.
 ### Vulnerability #3
- Oops! We forgot to discard messages from users where the signature does not match, the message will still be forwarded provided it can be decoded and will identify the user based on their client-id and server-id.
+ No input validation is being run for messages sent from a client to the server. This will allow buffer overflow vulnerabilities.
 ### Vulnerability #4
- No input validation is being run for messages on the client or the server. This will allow buffer overflow vulnerabilities.
-### Vulnerability #5
- When a client connects to a server, it stores the last assigned client ID in an integer so it know what client ID to give out next. If somebody connects and disconnects over and over, regenerating their keys each time, the integer could be overflowed (it is more likely that the server would instead crash). Before this, it is more likely that the mapping would be flooded with clients and become a large file. Since the server reads this file and converts it to a map, it would slow down the server performance drastically or crash it.
+The server mapping JSON files are not cleared over time. When clients connect to a server, if it is their first time connecting, it assigns them an ID and adds their public key to a JSON file containing ID<->Public Key mappings. If the server were to take on enough clients and the JSON mapping file were to become large enough, when the server reads this file and converts it to a map, it would consume too much memory and drastically decrease the server performance or cause it to crash. 
