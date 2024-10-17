@@ -45,7 +45,15 @@ int main(){
     std::cout << dataMsg << std::endl;
 
     // Parse the JSON object received in the message
-    nlohmann::json dataJSON = nlohmann::json::parse(dataMsg);
+    nlohmann::json dataJSON;
+    try {
+        // Attempt to parse the string as JSON
+        dataJSON = nlohmann::json::parse(dataMsg);
+        
+    }catch (nlohmann::json::parse_error& e) {
+        // Catch parse error exception and display error message
+        std::cerr << "Decrypted message is an Invalid JSON format: " << e.what() << std::endl;
+    }
 
     // Decode cipher text and IV from Base64 into hex, then convert from hex to bytes
     std::string ciphertextHex = Base64::decode(dataJSON["chat"]);

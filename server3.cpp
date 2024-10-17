@@ -137,18 +137,29 @@ int on_message(server* s, websocketpp::connection_hdl hdl, message_ptr msg) {
     // Vulnerable code: the payload without validation
     std::string payload = msg->get_payload();
 
-    char buffer[10240];
-    // Potential buffer overflow: Copying payload directly into a fixed-size buffer
-    strcpy(buffer, payload.c_str()); // This is unsafe if payload length exceeds buffer size
-
     // Deserialize JSON message
-    nlohmann::json messageJSON = nlohmann::json::parse(payload);
+    nlohmann::json messageJSON;
+    try {
+        // Attempt to parse the string as JSON
+        messageJSON = nlohmann::json::parse(payload);
+        
+    }catch (nlohmann::json::parse_error& e) {
+        // Catch parse error exception and display error message
+        std::cerr << "Invalid JSON format: " << e.what() << std::endl;
+    }
     std::string dataString;
     nlohmann::json data;
 
     if(messageJSON.contains("data")){
         dataString = messageJSON["data"].get<std::string>();
+        try {
+            // Attempt to parse the string as JSON
         data = nlohmann::json::parse(dataString);
+            
+        }catch (nlohmann::json::parse_error& e) {
+            // Catch parse error exception and display error message
+            std::cerr << "Invalid JSON format: " << e.what() << std::endl;
+        }
     }
 
     std::shared_ptr<connection_data> con_data;
@@ -163,13 +174,28 @@ int on_message(server* s, websocketpp::connection_hdl hdl, message_ptr msg) {
         return -1;
     }
 
+    if(data.empty()){
+        if(!messageJSON.contains("type")){
+            std::cerr << "Invalid JSON" << std::endl;
+            return 0;
+        }
+    }else{
+        if(!data.contains("type")){
+            std::cerr << "Invalid JSON" << std::endl;
+            return 0;
+        }
+    }
+
     if(data["type"] == "hello"){
+        if(messageJSON.contains("signature") && messageJSON.contains("counter") && data.contains("public_key")){
+
+        }else{
+            std::cerr << "Invalid JSON provided" << std::endl;
+            return 0;
+        }
         // Cancel connection timer
         con_data->timer->cancel();
         std::cout << "Cancelling client connection timer" << std::endl;
-
-        // Update client list
-        con_data->client_id = global_server_list->insertClient(data["public_key"]);
 
         // Extract signature and counter
         std::string client_signature = messageJSON["signature"];
@@ -188,6 +214,10 @@ int on_message(server* s, websocketpp::connection_hdl hdl, message_ptr msg) {
             return -1;
         }
 
+        // Update client list
+        con_data->client_id = global_server_list->insertClient(data["public_key"]);
+        std::cout << "Verified signature of client " << con_data->client_id << std::endl;
+
         // Move to client server map
         client_server_map[hdl] = con_data;
         if(connection_map.find(hdl) != connection_map.end()){
@@ -199,6 +229,12 @@ int on_message(server* s, websocketpp::connection_hdl hdl, message_ptr msg) {
 
         serverUtilities->broadcast_client_updates(outbound_server_server_map, global_server_list);
     }else if(data["type"] == "server_hello"){
+        if(data.contains("sender") && messageJSON.contains("signature") && messageJSON.contains("counter")){
+
+        }else{
+            std::cerr << "Invalid JSON provided" << std::endl;
+            return 0;
+        }
         // Cancel connection timer
         con_data->timer->cancel();
         std::cout << "Cancelling server connection timer" << std::endl;
@@ -295,6 +331,12 @@ int on_message(server* s, websocketpp::connection_hdl hdl, message_ptr msg) {
         serverUtilities->broadcast_client_updates(outbound_server_server_map, global_server_list, con_data->server_id);
 
     }else if(data["type"] == "public_chat"){
+        if(data.contains("sender") && messageJSON.contains("signature") && messageJSON.contains("counter")){
+
+        }else{
+            std::cerr << "Invalid JSON provided" << std::endl;
+            return 0;
+        }
         // Extract signature and counter
         std::string client_signature = messageJSON["signature"];
         int counter = messageJSON["counter"];
@@ -358,6 +400,12 @@ int on_message(server* s, websocketpp::connection_hdl hdl, message_ptr msg) {
         }
         return 0;
     }else if(data["type"] == "chat"){
+        if(messageJSON.contains("signature") && messageJSON.contains("counter") && data.contains("destination_servers")){
+
+        }else{
+            std::cerr << "Invalid JSON provided" << std::endl;
+            return 0;
+        }
         // Extract signature and counter
         std::string client_signature = messageJSON["signature"];
         int counter = messageJSON["counter"];
