@@ -145,7 +145,7 @@ int on_message(server* s, websocketpp::connection_hdl hdl, message_ptr msg) {
         
     }catch (nlohmann::json::parse_error& e) {
         // Catch parse error exception and display error message
-        std::cerr << "Decrypted message is an Invalid JSON format: " << e.what() << std::endl;
+        std::cerr << "Invalid JSON format: " << e.what() << std::endl;
     }
     std::string dataString;
     nlohmann::json data;
@@ -158,7 +158,7 @@ int on_message(server* s, websocketpp::connection_hdl hdl, message_ptr msg) {
             
         }catch (nlohmann::json::parse_error& e) {
             // Catch parse error exception and display error message
-            std::cerr << "Decrypted message is an Invalid JSON format: " << e.what() << std::endl;
+            std::cerr << "Invalid JSON format: " << e.what() << std::endl;
         }
     }
 
@@ -174,7 +174,25 @@ int on_message(server* s, websocketpp::connection_hdl hdl, message_ptr msg) {
         return -1;
     }
 
+    if(data.empty()){
+        if(!messageJSON.contains("type")){
+            std::cerr << "Invalid JSON" << std::endl;
+            return 0;
+        }
+    }else{
+        if(!data.contains("type")){
+            std::cerr << "Invalid JSON" << std::endl;
+            return 0;
+        }
+    }
+
     if(data["type"] == "hello"){
+        if(messageJSON.contains("signature") && messageJSON.contains("counter") && data.contains("public_key")){
+
+        }else{
+            std::cerr << "Invalid JSON provided" << std::endl;
+            return 0;
+        }
         // Cancel connection timer
         con_data->timer->cancel();
         std::cout << "Cancelling client connection timer" << std::endl;
@@ -211,6 +229,12 @@ int on_message(server* s, websocketpp::connection_hdl hdl, message_ptr msg) {
 
         serverUtilities->broadcast_client_updates(outbound_server_server_map, global_server_list);
     }else if(data["type"] == "server_hello"){
+        if(data.contains("sender") && messageJSON.contains("signature") && messageJSON.contains("counter")){
+
+        }else{
+            std::cerr << "Invalid JSON provided" << std::endl;
+            return 0;
+        }
         // Cancel connection timer
         con_data->timer->cancel();
         std::cout << "Cancelling server connection timer" << std::endl;
@@ -307,6 +331,12 @@ int on_message(server* s, websocketpp::connection_hdl hdl, message_ptr msg) {
         serverUtilities->broadcast_client_updates(outbound_server_server_map, global_server_list, con_data->server_id);
 
     }else if(data["type"] == "public_chat"){
+        if(data.contains("sender") && messageJSON.contains("signature") && messageJSON.contains("counter")){
+
+        }else{
+            std::cerr << "Invalid JSON provided" << std::endl;
+            return 0;
+        }
         // Extract signature and counter
         std::string client_signature = messageJSON["signature"];
         int counter = messageJSON["counter"];
@@ -370,6 +400,12 @@ int on_message(server* s, websocketpp::connection_hdl hdl, message_ptr msg) {
         }
         return 0;
     }else if(data["type"] == "chat"){
+        if(messageJSON.contains("signature") && messageJSON.contains("counter") && data.contains("destination_servers")){
+
+        }else{
+            std::cerr << "Invalid JSON provided" << std::endl;
+            return 0;
+        }
         // Extract signature and counter
         std::string client_signature = messageJSON["signature"];
         int counter = messageJSON["counter"];

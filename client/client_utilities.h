@@ -70,8 +70,6 @@ class ClientUtilities{
             int counter - Current counter value
         */
         static void send_chat(websocket_endpoint* endpoint, int connection_id, std::string message, EVP_PKEY* privKey, EVP_PKEY* pubKey, std::vector<EVP_PKEY*> their_public_keys, std::vector<std::string> destination_servers_vector, int counter, int client_id=0, int server_id=0);
-
-        static void catch_malformed_json(std::string json_string);
 };
 
 #endif

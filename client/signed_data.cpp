@@ -59,13 +59,17 @@ std::string SignedData::decryptSignedMessage(std::string message, EVP_PKEY * pri
         
     }catch (nlohmann::json::parse_error& e) {
         // Catch parse error exception and display error message
-        std::cerr << "Decrypted message is an Invalid JSON format: " << e.what() << std::endl;
+        std::cerr << "Invalid JSON format: " << e.what() << std::endl;
     }
     
-    if (message_json["type"] != "signed_data") {
-        std::cerr << "Not signed data!" << std::endl;
-        return "";
+    if(message_json.contains("type")){
+        if (message_json["type"] != "signed_data") {
+            std::cerr << "Not signed data!" << std::endl;
+            return "";
+        }
     }
+
+    
     nlohmann::json data;
     // Extract the data field from the JSON message
     if (message_json.contains("data")) {
@@ -98,7 +102,7 @@ std::string SignedData::decryptSignedMessage(std::string message, EVP_PKEY * pri
 
     // Iterate over the encrypted symmetric keys
 
-    if (data["symm_keys"].is_array()) {
+    if (data.contains("symm_keys") && data["symm_keys"].is_array()) {
 
         for (const auto& element : data["symm_keys"]) {
             if  (!element.is_string()){

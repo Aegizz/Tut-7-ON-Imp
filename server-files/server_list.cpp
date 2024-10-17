@@ -210,7 +210,12 @@ void ServerList::insertServer(int server_id, std::string update){
         
     }catch (nlohmann::json::parse_error& e) {
         // Catch parse error exception and display error message
-        std::cerr << "Decrypted message is an Invalid JSON format: " << e.what() << std::endl;
+        std::cerr << "Invalid JSON format: " << e.what() << std::endl;
+    }
+
+    if(!updatedServerJSON.contains("clients")){
+        std::cerr << "Invalid JSON" << std::endl;
+        return;
     }
 
     nlohmann::json clientsArray = updatedServerJSON["clients"];
@@ -220,9 +225,15 @@ void ServerList::insertServer(int server_id, std::string update){
     std::unordered_map<std::string, std::string> updatedServerFingerprints;
 
     for(const auto& client: clientsArray){
-        updatedServer[client["client_id"]] = client["public_key"];
-        std::string fingerprintString = Fingerprint::generateFingerprint(Server_Key_Gen::stringToPEM(client["public_key"]));
-        updatedServerFingerprints[fingerprintString] = client["public_key"];
+        if(client.contains("client-id") && client.contains("public-key")){
+
+        }else{
+            std::cerr << "Invalid JSON" << std::endl;
+            return;
+        }
+        updatedServer[client["client-id"]] = client["public-key"];
+        std::string fingerprintString = Fingerprint::generateFingerprint(Server_Key_Gen::stringToPEM(client["public-key"]));
+        updatedServerFingerprints[fingerprintString] = client["public-key"];
     }
 
     // Store map
@@ -299,8 +310,8 @@ std::string ServerList::exportUpdate(){
     // Build array of client public keys
     for(const auto& client: currentClients){
         nlohmann::json clientJSON;
-        clientJSON["client_id"] = client.first;
-        clientJSON["public_key"] = client.second;
+        clientJSON["client-id"] = client.first;
+        clientJSON["public-key"] = client.second;
 
         clientsArray.push_back(clientJSON);
     }
