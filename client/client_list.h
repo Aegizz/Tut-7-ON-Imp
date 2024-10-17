@@ -17,6 +17,7 @@ class ClientList{
         std::unordered_map<int, std::unordered_map<int, std::string>> servers;
         std::unordered_map<std::string, std::pair<int, std::pair<int, std::string>>> clientFingerprintsKeys;
         std::unordered_map<int, std::string> serverAddresses;
+        int clientCount;
     public:
         ClientList();
         void update(nlohmann::json data);
