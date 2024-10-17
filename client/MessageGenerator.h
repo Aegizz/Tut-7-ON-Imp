@@ -77,7 +77,7 @@ class MessageGenerator{
                 "signature": "<Base64 signature of data + counter>"
             }
         */
-        static std::string chatMessage(std::string message, EVP_PKEY * your_private_key, EVP_PKEY * your_public_key, std::vector<EVP_PKEY*> their_public_keys, std::vector<std::string> destination_servers_vector, int counter, int client_id=0, int server_id=0);
+        static std::string chatMessage(std::string message, EVP_PKEY * your_private_key, EVP_PKEY * your_public_key, std::vector<EVP_PKEY*> their_public_keys, std::vector<std::string> destination_servers_vector, int counter, std::string ttd, int client_id=0, int server_id=0);
         /*
         Public chat
         Public chats are not encrypted at all and are broadcasted as plaintext.
@@ -93,6 +93,7 @@ class MessageGenerator{
                 "type": "signed_data",
                 "data": {  },
                 "counter": 12345,
+                "time-to-die":"UTC-Timestamp",
                 "signature": "<Base64 signature of data + counter>"
             }
         */
