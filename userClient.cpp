@@ -96,6 +96,8 @@ int main() {
     websocket_endpoint endpoint(fingerprint, privKey);
     int currentID=-1;
 
+    std::cout << "Welcome to our Chat System. Type help to list commands." << std::endl;
+
     while (!done) {
         // Print all clients, labelling this client as "You". Fingerprint is used to obtain server_id and client_id of this user.
         std::pair<int, std::pair<int, std::string>> myInfo = global_client_list->retrieveClientFromFingerprint(fingerprint);
@@ -178,7 +180,7 @@ int main() {
             
             std::string cmd;
             int close_code = websocketpp::close::status::normal;
-            std::string reason = "Client logging off";
+            std::string reason = "Client closing connection with server";
             
             ss >> cmd >> close_code;
 
@@ -191,7 +193,10 @@ int main() {
             endpoint.close(currentID, close_code, reason);
 
             numConnections--;
-            done=true;
+
+            nlohmann::json empty_data;
+            global_client_list->update(empty_data);
+
         }  else if (input == "show") { // If show was entered
             
             // Obtain metadata and print it
