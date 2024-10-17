@@ -133,9 +133,9 @@ public:
                     std::cout << "Invalid TTD Format";
                 }
 
-                auto ttd_timepoint = std::mktime(&ttd_tm);
+                std::time_t ttd_timepoint = std::mktime(&ttd_tm);
 
-                auto now = ClientUtilities::current_time();
+                std::time_t now = ClientUtilities::current_time();
 
                 if (now > ttd_timepoint) {
                     std::cout << "Message expired based on TTD, discarding packet." << std::endl;
