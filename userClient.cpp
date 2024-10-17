@@ -197,6 +197,8 @@ int main() {
             nlohmann::json empty_data;
             global_client_list->update(empty_data);
 
+            currentID=-1;
+
         }  else if (input == "show") { // If show was entered
             
             // Obtain metadata and print it
