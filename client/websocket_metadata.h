@@ -133,7 +133,7 @@ public:
                     std::cout << "Invalid TTD Format";
                 }
 
-                auto ttd_timepoint = std::chrono::system_clock::from_time_t(std::mktime(&ttd_tm));
+                auto ttd_timepoint = std::mktime(&ttd_tm);
 
                 auto now = ClientUtilities::current_time();
 
