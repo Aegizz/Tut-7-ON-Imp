@@ -326,7 +326,7 @@ class ServerUtilities{
             outbound_server_server_map - Pointer to map of outbound connections (need to add created connections to the map)
         */
         void connect_to_server(client* c, std::string const & uri, int server_id, EVP_PKEY* private_key, int counter, std::unordered_map<websocketpp::connection_hdl, std::shared_ptr<connection_data>, connection_hdl_hash, connection_hdl_equal>* outbound_server_server_map, int retry_attempts = 0);
-
+        static std::chrono::system_clock::time_point current_time();
 };
 
 #endif

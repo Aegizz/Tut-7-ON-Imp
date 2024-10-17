@@ -345,3 +345,8 @@ void ServerUtilities::connect_to_server(client* c, std::string const & uri, int 
     // Try to connect to the server
     c->connect(con);
 }
+
+std::chrono::system_clock::time_point ServerUtilities::current_time(){
+    // Generate current time
+    return std::chrono::system_clock::now();
+}

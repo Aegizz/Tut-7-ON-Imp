@@ -366,6 +366,26 @@ int on_message(server* s, websocketpp::connection_hdl hdl, message_ptr msg) {
         std::string client_signature = messageJSON["signature"];
         int counter = messageJSON["counter"];
 
+        std::string ttd_timestamp_str = messageJSON["time-to-die"];
+
+        //parse the TTD timestamp
+        std::tm ttd_tm = {};
+        std::istringstream ss(ttd_timestamp_str);
+        ss >> std::get_time(&ttd_tm, "%Y-%m-%dT%H:%M:%SZ");
+
+        if (ss.fail()) {
+            std::cout << "Invalid TTD Format";
+        }
+
+        auto ttd_timepoint = std::chrono::system_clock::from_time_t(std::mktime(&ttd_tm));
+
+        auto now = ServerUtilities::current_time();
+
+        if (now > ttd_timepoint) {
+            std::cout << "Message expired based on TTD, discarding packet." << std::endl;
+            return;
+        }
+
         // Declare serverID
         int server_id;
 
