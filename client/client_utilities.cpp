@@ -21,6 +21,11 @@ std::string ClientUtilities::get_ttd(){
     return timeString.str();
 }
 
+std::chrono::system_clock::time_point ClientUtilities::current_time(){
+    // Generate current time
+    return std::chrono::system_clock::now();
+}
+
 bool ClientUtilities::is_connection_open(websocket_endpoint* endpoint, int id){
     connection_metadata::ptr metadata = endpoint->get_metadata(id);
 

@@ -17,10 +17,8 @@
 #include "client_signature.h"
 #include "client_key_gen.h"
 #include "signed_data.h"
-// For UTC timestamp
-#include <chrono>
-#include <ctime> 
-#include <sstream>
+// using to generate current time
+#include "client_utilities.h"
 
 class websocket_endpoint;
 
@@ -137,7 +135,7 @@ public:
 
                 auto ttd_timepoint = std::chrono::system_clock::from_time_t(std::mktime(&ttd_tm));
 
-                auto now = std::chrono::system_clock::now();
+                auto now = ClientUtilities::current_time();
 
                 if (now > ttd_timepoint) {
                     std::cout << "Message expired based on TTD, discarding packet." << std::endl;
