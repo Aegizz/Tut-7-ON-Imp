@@ -373,13 +373,13 @@ int on_message(server* s, websocketpp::connection_hdl hdl, message_ptr msg) {
             std::cout << "Invalid TTD Format";
         }
 
-        auto ttd_timepoint = std::chrono::system_clock::from_time_t(std::mktime(&ttd_tm));
+        auto ttd_timepoint = std::mktime(&ttd_tm);
 
         auto now = ServerUtilities::current_time();
 
         if (now > ttd_timepoint) {
             std::cout << "Message expired based on TTD, discarding packet." << std::endl;
-            return;
+            return -1;
         }
 
         // Declare serverID

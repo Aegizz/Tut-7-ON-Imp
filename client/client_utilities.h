@@ -21,7 +21,7 @@
 class ClientUtilities{
     public:
         static std::string get_ttd();
-        static std::chrono::system_clock::time_point current_time();
+        static std::time_t current_time();
         static bool is_connection_open(websocket_endpoint* endpoint, int id);
 
         /*
