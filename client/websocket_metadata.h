@@ -17,6 +17,10 @@
 #include "client_signature.h"
 #include "client_key_gen.h"
 #include "signed_data.h"
+// For UTC timestamp
+#include <chrono>
+#include <ctime> 
+#include <sstream>
 
 class websocket_endpoint;
 
@@ -119,6 +123,26 @@ public:
             try {
                 // Attempt to parse the string as JSON
                 nlohmann::json chat = nlohmann::json::parse(decrypted_str);
+
+                std::string ttd_timestamp_str = messageJSON["time-to-die"];
+
+                //parse the TTD timestamp
+                std::tm ttd_tm = {};
+                std::istringstream ss(ttd_timestamp_str);
+                ss >> std::get_time(&ttd_tm, "%Y-%m-%dT%H:%M:%SZ");
+
+                if (ss.fail()) {
+                    std::cout << "Invalid TTD Format";
+                }
+
+                auto ttd_timepoint = std::chrono::system_clock::from_time_t(std::mktime(&ttd_tm));
+
+                auto now = std::chrono::system_clock::now();
+
+                if (now > ttd_timepoint) {
+                    std::cout << "Message expired based on TTD, discarding packet." << std::endl;
+                    return;
+                }
                 
                 // Convert participants to a std::vector<std::string>
                 std::vector<std::string> participants = chat["participants"].get<std::vector<std::string>>();
