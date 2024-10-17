@@ -20,7 +20,15 @@ void ClientList::update(nlohmann::json data){
             //std::cout << "Server ID: " << server_id << std::endl;
             if (server.contains("clients")){
                 for (const auto& client: server["clients"]){
-                    int client_id = client["client-id"];
+                    if (client["client-id"]){
+                        int client_id = client["client-id"];
+                        if (client_id > clientCount){
+                            clientCount = client_id + 1;
+                        }
+                    } else {
+                        clientCount++;
+                        int client_id = clientCount;
+                    }
                     std::string public_key = client["public-key"];
 
                     std::string fingerprint = Fingerprint::generateFingerprint(Client_Key_Gen::stringToPEM(public_key));
