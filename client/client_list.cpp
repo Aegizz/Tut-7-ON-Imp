@@ -21,7 +21,7 @@ void ClientList::update(nlohmann::json data){
             if (server.contains("clients")){
                 for (const auto& client: server["clients"]){
                     int client_id;
-                    if (client["client-id"]){
+                    if (client.contains("client-id")){
                         client_id = client["client-id"];
                         if (client_id > clientCount){
                             clientCount = client_id + 1;
