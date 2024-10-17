@@ -15,20 +15,29 @@ void ClientList::update(nlohmann::json data){
         for (const auto& server: data["servers"]){
             std::unordered_map<int, std::string> client_list;
             std::unordered_map<std::string, std::string> fingerprintsKeys;
+            if(server.contains("server-id") && server.contains("address")){
+
+            }else{
+                std::cerr << "Invalid JSON" << std::endl;
+                return;
+            }
             int server_id = server["server-id"];
             serverAddresses[server_id] = server["address"];
-            //std::cout << "Server ID: " << server_id << std::endl;
             if (server.contains("clients")){
                 for (const auto& client: server["clients"]){
+                    if(client.contains("client-id") && client.contains("public-key")){
+
+                    }else{
+                        std::cerr << "Invalid JSON" << std::endl;
+                        return;
+                    }
+                    
                     int client_id = client["client-id"];
                     std::string public_key = client["public-key"];
 
                     std::string fingerprint = Fingerprint::generateFingerprint(Client_Key_Gen::stringToPEM(public_key));
                     std::pair<int, std::string> clientIDKey(client_id, public_key);
                     clientFingerprintsKeys[fingerprint] = std::pair<int, std::pair<int, std::string>>(server_id, clientIDKey);
-
-                    //std::cout << "  Client ID: " << client_id << std::endl;
-                    //std::cout << "  Public Key: " << public_key << std::endl;
 
                     client_list.insert(std::pair<int, std::string>(client_id, public_key));
                 }

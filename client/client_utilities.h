@@ -6,6 +6,8 @@
 #include <ctime> 
 #include <sstream>
 
+#include <nlohmann/json.hpp> // For JSON library
+
 #include <websocketpp/config/asio_no_tls_client.hpp>
 #include <websocketpp/client.hpp>
 

@@ -35,7 +35,15 @@ int main() {
     })";
 
     // Parse the JSON
-    nlohmann::json data = nlohmann::json::parse(json_str);
+    nlohmann::json data;
+    try {
+        // Attempt to parse the string as JSON
+        data = nlohmann::json::parse(json_str);
+        
+    }catch (nlohmann::json::parse_error& e) {
+        // Catch parse error exception and display error message
+        std::cerr << "Decrypted message is an Invalid JSON format: " << e.what() << std::endl;
+    }
 
     // Create a ClientList object and pass the JSON data
     ClientList client_list;
