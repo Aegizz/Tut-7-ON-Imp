@@ -16,6 +16,9 @@ all: userClient userClient2 server server2 server3 testClient testClient2 testCl
 
 test: debug-all server server2 client testClient testClient2 test.sh test-client-list test-client-aes-encrypt test-client-sha256 test-client-key-gen test-base64 test-client-signature test-client-signed-data test-hello-message test-chat-message test-data-message test-message-generator
 	echo "Running client tests..."
+	./test-data-message
+	./test-hello-message
+	./test-message-generator
 	./test-client-list
 	./test-client-aes-encrypt
 	./test-client-sha256
@@ -24,9 +27,6 @@ test: debug-all server server2 client testClient testClient2 test.sh test-client
 	./test-client-signature
 	./test-client-signed-data
 	./test-chat-message
-	./test-data-message
-	./test-hello-message
-	./test-message-generator
 	echo "Running tests..."
 	chmod +x test.sh
 	bash test.sh
@@ -85,7 +85,7 @@ test-client-signature: client/base64.cpp client/client_key_gen.cpp client/client
 	$(CXX) $(CXXFLAGS) -g -o $@ $^ $(LIBS)
 test-client-signed-data: client/*.cpp client/Fingerprint.h tests/test_signed_data.cpp
 	$(CXX) $(CXXFLAGS) -g -o $@ $^ $(LIBS)
-test-data-message: client/aes_encrypt.cpp client/client_key_gen.cpp client/base64.cpp tests/test_data_message.cpp client/hexToBytes.cpp
+test-data-message: client/aes_encrypt.cpp client/client_key_gen.cpp client/base64.cpp tests/test_data_message.cpp client/hexToBytes.cpp client/client_utilities.cpp client/MessageGenerator.cpp client/Sha256Hash.cpp client/client_signature.cpp
 	$(CXX) $(CXXFLAGS) -g -o $@ $^ $(LIBS)
 test-chat-message: client/aes_encrypt.cpp client/client_key_gen.cpp client/base64.cpp tests/test_chat_message.cpp client/hexToBytes.cpp
 	$(CXX) $(CXXFLAGS) -g -o $@ $^ $(LIBS)

@@ -16,9 +16,9 @@ using websocketpp::connection_hdl;
 
 typedef websocketpp::server<websocketpp::config::asio> server;
 
-void testSendAndReceive(SignedData& signedData, EVP_PKEY* privateKey, std::vector<EVP_PKEY *> recipent_pub_keys, std::vector<std::string> server_addresses, websocket_endpoint* endpoint, int id) {
+void testSendAndReceive(SignedData& signedData, EVP_PKEY* privateKey, std::vector<EVP_PKEY *> recipent_pub_keys, std::vector<std::string> server_addresses, websocket_endpoint* endpoint, int id, std::string ttd) {
     // Sample data to send
-    std::string data = DataMessage::generateDataMessage("Hello world!", recipent_pub_keys, server_addresses);
+    std::string data = DataMessage::generateDataMessage("Hello world!", recipent_pub_keys, server_addresses, ttd);
     int counter = 1;
 
     // Sending a signed message
@@ -100,9 +100,10 @@ int main() {
 
     // Create an instance of SignedData
     SignedData signedData;
-
+    //ttd
+    std::string ttd = ClientUtilities::get_ttd();
     // Test sending and receiving messages
-    testSendAndReceive(signedData, privateKey, std::vector<EVP_PKEY*>({publicKey}), std::vector<std::string>({"ws://localhost:9002"}), &endpoint, id);
+    testSendAndReceive(signedData, privateKey, std::vector<EVP_PKEY*>({publicKey}), std::vector<std::string>({"ws://localhost:9002"}), &endpoint, id, ttd);
 
     // Clean up resources (if needed)
     EVP_PKEY_free(privateKey); // Free the private key when done

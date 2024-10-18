@@ -24,9 +24,10 @@ class DataMessage{
 
             Need to add client and server id will ask around
         */
-        static std::string generateDataMessage(std::string text, std::vector<EVP_PKEY*> public_keys, std::vector<std::string> server_addresses){
+        static std::string generateDataMessage(std::string text, std::vector<EVP_PKEY*> public_keys, std::vector<std::string> server_addresses, std::string ttd){
             nlohmann::json data;
             data["type"] = "chat";
+            data["time-to-die"] = ttd;
             data["destination_servers"] = server_addresses;
             // Generate random AES key
             std::vector<unsigned char> key(AES_GCM_KEY_SIZE);
