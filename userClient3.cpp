@@ -26,6 +26,13 @@
 
 // **NOTE:** This file is based on the WebSocket++ utility client tutorial.
 
+/*
+    Lloyd Draysey a1870678
+    Graydon Clark a1851704
+    Christopher Evans a1851242
+    Sunjay Gounder a1860381
+*/
+
 #include <websocketpp/config/asio_no_tls_client.hpp>
 #include <websocketpp/client.hpp>
 
@@ -222,6 +229,23 @@ int main() {
                     std::cout << "Enter message to send: " << std::endl;
                     std::string message;
                     std::getline(std::cin, message);  // Get the message from the user
+
+                    // message Input Validation 
+                    if (message.empty()) {
+                        std::cout << "Message cannot be empty." << std::endl;
+                        continue;
+                    }
+
+                    if (message.length() > 500) {
+                        std::cout << "Message exceeds maximum length of 500 characters." << std::endl;
+                        continue;
+                    }
+
+                    // Didn't have time to bug fix
+                    /*std::regex special_char_regex("[^a-zA-Z0-9]");
+                    if (std::regex_search(message, special_char_regex)) {
+                        std::cout << "Message containd invalid characters. Only alphannumeric characters are allowed" << std::endl;
+                    }*/
 
                     // Check message type entered is valid
                     bool validType=false;
