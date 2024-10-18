@@ -381,13 +381,13 @@ int on_message(server* s, websocketpp::connection_hdl hdl, message_ptr msg) {
                 return -1;
             }
 
-            // counter check
+            // check if the counter is greater than the last known value for this sender
             if (counter <= latestCounters[client_signature]) {
                 std::cout << "Replay attack detected! Message discarded." << std::endl;
                 return -1;
             }        
 
-            //update latest counter
+            //otherwise, process the message
             latestCounters[client_signature] = counter;
 
             // Broadcast public chats to all clients 
@@ -416,13 +416,13 @@ int on_message(server* s, websocketpp::connection_hdl hdl, message_ptr msg) {
             }
             std::cout << "Verified signature of client" << std::endl;
 
-            // counter check
+            // check if the counter is greater than the last known value for this sender
             if (counter <= latestCounters[client_signature]) {
                 std::cout << "Replay attack detected! Message discarded." << std::endl;
                 return -1;
             }        
 
-            //update latest counter
+            //otherwise, process the message
             latestCounters[client_signature] = counter;
 
             // Broadcast public chat to all clients except the sender
@@ -443,7 +443,7 @@ int on_message(server* s, websocketpp::connection_hdl hdl, message_ptr msg) {
         std::string client_signature = messageJSON["signature"];
         int counter = messageJSON["counter"];
 
-        std::string ttd_timestamp_str = messageJSON["time-to-die"];
+        std::string ttd_timestamp_str = data["time-to-die"];
 
         //parse the TTD timestamp
         std::tm ttd_tm = {};
@@ -495,13 +495,13 @@ int on_message(server* s, websocketpp::connection_hdl hdl, message_ptr msg) {
             }
             std::cout << "Verified signature of client" << std::endl;
 
-            // counter check
+            // check if the counter is greater than the last known value for this sender
             if (counter <= latestCounters[client_signature]) {
                 std::cout << "Replay attack detected! Message discarded." << std::endl;
                 return -1;
             }        
 
-            //update latest counter
+            //otherwise, process the message
             latestCounters[client_signature] = counter;
 
             // Convert array of destination server addresses to vector of strings
