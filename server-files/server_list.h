@@ -48,6 +48,8 @@ class ServerList{
 
         std::string exportUpdate();
         std::string exportClientList();
+
+        void prune_client_list(int server_id);
 };
 
 #endif
