@@ -11,6 +11,8 @@ CLIENT_FILES=client/*.cpp
 SERVER_FILES=server-files/*.cpp client/Sha256Hash.cpp client/base64.cpp client/hexToBytes.cpp
 # Targets
 
+default: userClient server
+
 all: userClient userClient2 server server2 server3 testClient testClient2 testClient3 test-client
 #all: userClient userClient2 server server2 server3 test-client
 
