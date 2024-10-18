@@ -72,7 +72,7 @@ userClient-debug: userClient.cpp
 server-debug: server.cpp
 	$(CXX) $(CXXFLAGS) -g -o $@ $^ $(LIBS) $(SERVER_FILES) -lz -fno-stack-protector
 
-test-client: test-client-list test-client-aes-encrypt test-client-sha256 test-base64 test-client-key-gen test-client-signature test-client-signed-data test-chat-message test-data-message test-hello-messsage
+test-client: test-client-list test-client-aes-encrypt test-client-sha256 test-base64 test-client-key-gen test-client-signature test-client-signed-data test-chat-message test-data-message test-hello-message
 
 test-client-list: tests/test_client_list.cpp client/*.cpp client/Fingerprint.h
 	$(CXX) $(CXXFLAGS) -g -o $@ $^ $(LIBS)
