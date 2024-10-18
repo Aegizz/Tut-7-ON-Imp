@@ -1,3 +1,10 @@
+/*
+    Lloyd Draysey a1870678
+    Graydon Clark a1851704
+    Christopher Evans a1851242
+    Sunjay Gounder a1860381
+*/
+
 #include <iostream>
 #include <websocketpp/config/debug_asio_no_tls.hpp>
 #include <websocketpp/server.hpp>
