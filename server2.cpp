@@ -133,6 +133,9 @@ void on_close(server* s, websocketpp::connection_hdl hdl){
     }
 }
 
+// Map to store latest counter for each user
+std::unordered_map <std::string, int> latestCounters;
+
 // Handle messages received by server
 int on_message(server* s, websocketpp::connection_hdl hdl, message_ptr msg) {
     std::cout << "Received message: " << msg->get_payload() << std::endl;
@@ -216,6 +219,15 @@ int on_message(server* s, websocketpp::connection_hdl hdl, message_ptr msg) {
             }
             return -1;
         }
+
+        // check if the counter is greater than the last known value for this sender
+        if (counter <= latestCounters[client_signature]) {
+            std::cout << "Replay attack detected! Message discarded." << std::endl;
+            return -1;
+        }
+
+        //otherwise, process the message
+        latestCounters[client_signature] = counter;
 
         // Update client list
         con_data->client_id = global_server_list->insertClient(data["public_key"]);
@@ -369,6 +381,15 @@ int on_message(server* s, websocketpp::connection_hdl hdl, message_ptr msg) {
                 return -1;
             }
 
+            // check if the counter is greater than the last known value for this sender
+            if (counter <= latestCounters[client_signature]) {
+                std::cout << "Replay attack detected! Message discarded." << std::endl;
+                return -1;
+            }
+
+            //otherwise, process the message
+            latestCounters[client_signature] = counter;
+
             // Broadcast public chats to all clients 
             serverUtilities->broadcast_public_chat_clients(client_server_map, messageJSON.dump());
             return 0;
@@ -395,6 +416,15 @@ int on_message(server* s, websocketpp::connection_hdl hdl, message_ptr msg) {
             }
             std::cout << "Verified signature of client" << std::endl;
 
+            // check if the counter is greater than the last known value for this sender
+            if (counter <= latestCounters[client_signature]) {
+                std::cout << "Replay attack detected! Message discarded." << std::endl;
+                return -1;
+            }
+
+            //otherwise, process the message
+            latestCounters[client_signature] = counter;
+
             // Broadcast public chat to all clients except the sender
             serverUtilities->broadcast_public_chat_clients(client_server_map, messageJSON.dump(), client_id);
             // Broadcast public chat to all servers except this server
@@ -412,6 +442,26 @@ int on_message(server* s, websocketpp::connection_hdl hdl, message_ptr msg) {
         // Extract signature and counter
         std::string client_signature = messageJSON["signature"];
         int counter = messageJSON["counter"];
+
+        std::string ttd_timestamp_str = messageJSON["time-to-die"];
+
+        //parse the TTD timestamp
+        std::tm ttd_tm = {};
+        std::istringstream ss(ttd_timestamp_str);
+        ss >> std::get_time(&ttd_tm, "%Y-%m-%dT%H:%M:%SZ");
+
+        if (ss.fail()) {
+            std::cout << "Invalid TTD Format";
+        }
+
+        auto ttd_timepoint = std::mktime(&ttd_tm);
+
+        auto now = ServerUtilities::current_time();
+
+        if (now >= ttd_timepoint) {
+            std::cout << "Message expired based on TTD, discarding packet." << std::endl;
+            return -1;
+        }
 
         // Declare serverID
         int server_id;
@@ -444,6 +494,15 @@ int on_message(server* s, websocketpp::connection_hdl hdl, message_ptr msg) {
                 return -1;
             }
             std::cout << "Verified signature of client" << std::endl;
+
+            // check if the counter is greater than the last known value for this sender
+            if (counter <= latestCounters[client_signature]) {
+                std::cout << "Replay attack detected! Message discarded." << std::endl;
+                return -1;
+            }
+
+            //otherwise, process the message
+            latestCounters[client_signature] = counter;
 
             // Convert array of destination server addresses to vector of strings
             std::vector<std::string> destination_servers = data["destination_servers"].get<std::vector<std::string>>();

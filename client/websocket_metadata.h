@@ -17,6 +17,9 @@
 #include "client_signature.h"
 #include "client_key_gen.h"
 #include "signed_data.h"
+// using to generate current time
+#include <chrono>
+#include <ctime>
 
 class websocket_endpoint;
 
@@ -61,6 +64,22 @@ public:
         m_error_reason = s.str();
         std::cout << s.str() << std::endl;
     }
+
+    std::time_t current_time(){
+        // Generate current time
+        std::chrono::system_clock::time_point now = std::chrono::system_clock::now();
+        std::time_t convTime = std::chrono::system_clock::to_time_t(now);
+
+        // Convert to GMT time and time structure
+        std::tm* utc_tm = std::gmtime(&convTime);
+
+        auto timepoint = std::mktime(utc_tm);
+
+        return timepoint;
+    }
+
+    // Map to store latest counter for each user
+    std::unordered_map <std::string, int> latestCounters;
 
     void on_message(client* c, websocketpp::connection_hdl hdl, client::message_ptr msg, std::string fingerprint, EVP_PKEY* privateKey) {
         // Vulnerable code: the payload without validation
@@ -131,6 +150,15 @@ public:
                 }
                 std::cout << "Verified signature" << std::endl;
 
+                // counter check
+                if (counter <= latestCounters[signature]) {
+                    std::cout << "Replay attack detected! Message discarded." << std::endl;
+                    return;
+                }        
+
+                //update latest counter
+                latestCounters[signature] = counter;
+
                 std::cout << "Public chat received from client " << client_id << " on server " << server_id << std::endl;
                 
                 std::cout << data["message"] << std::endl;
@@ -149,6 +177,28 @@ public:
                         std::cerr << "Invalid JSON provided" << std::endl;
                         return;
                     }
+
+                    std::string ttd_timestamp_str = messageJSON["time-to-die"];
+
+                    //parse the TTD timestamp
+                    std::tm ttd_tm = {};
+                    std::istringstream ss(ttd_timestamp_str);
+                    ss >> std::get_time(&ttd_tm, "%Y-%m-%dT%H:%M:%SZ");
+
+                    if (ss.fail()) {
+                        std::cout << "Invalid TTD Format";
+                    }
+
+                    std::time_t ttd_timepoint = std::mktime(&ttd_tm);
+
+                    std::time_t now = current_time();
+
+                    if (now >= ttd_timepoint) {
+                        std::cout << "Message expired based on TTD, discarding packet." << std::endl;
+                        return;
+                    }
+
+
                     // Convert participants to a std::vector<std::string>
                     std::vector<std::string> participants = chat["participants"].get<std::vector<std::string>>();
 
@@ -172,6 +222,15 @@ public:
                         return;
                     }
                     std::cout << "Verified signature" << std::endl;
+
+                    // counter check
+                    if (counter <= latestCounters[signature]) {
+                        std::cout << "Replay attack detected! Message discarded." << std::endl;
+                        return;
+                    }        
+
+                    //update latest counter
+                    latestCounters[signature] = counter;
 
                     std::cout << "Chat received from client " << client_id << " on server " << server_id << std::endl << std::endl;
                     std::cout << chat["message"] << "\n" << std::endl;
