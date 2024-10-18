@@ -25,7 +25,7 @@ std::string MessageGenerator::chatMessage(std::string message, EVP_PKEY * your_p
     std::string chat_message = ChatMessage::generateChatMessage(message, fingerprints);
 
     // Encrypt the chat message using the recipient's public keys and destination server list
-    data = DataMessage::generateDataMessage(chat_message, their_public_keys, destination_servers_vector);
+    data = DataMessage::generateDataMessage(chat_message, their_public_keys, destination_servers_vector, ttd);
 
     // Sign the encrypted message with the client's private key and a message counter
     nlohmann::json signed_message;
@@ -33,7 +33,6 @@ std::string MessageGenerator::chatMessage(std::string message, EVP_PKEY * your_p
     signed_message["type"] = "signed_data";
     signed_message["data"] = data;
     signed_message["counter"] = counter;
-    signed_message["time-to-die"] = ttd;
     signed_message["signature"] = ClientSignature::generateSignature(data, your_private_key, std::to_string(counter));
     
 

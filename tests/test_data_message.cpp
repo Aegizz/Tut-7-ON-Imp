@@ -1,6 +1,7 @@
 #include "../client/DataMessage.h"
 #include "../client/client_key_gen.h"
 #include "../client/hexToBytes.h"
+#include "../client/client_utilities.h"
 #include <iostream>
 
 int numRecipients=2;
@@ -40,8 +41,10 @@ int main(){
     }
     std::cout << "Generated Keys" << std::endl;
 
+    std::string ttd = ClientUtilities::get_ttd();
+
     // Generate and print the data message
-    std::string dataMsg = DataMessage::generateDataMessage("Hello world!", public_keys, server_addresses);
+    std::string dataMsg = DataMessage::generateDataMessage("Hello world!", public_keys, server_addresses, ttd);
     std::cout << dataMsg << std::endl;
 
     // Parse the JSON object received in the message

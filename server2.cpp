@@ -443,7 +443,7 @@ int on_message(server* s, websocketpp::connection_hdl hdl, message_ptr msg) {
         std::string client_signature = messageJSON["signature"];
         int counter = messageJSON["counter"];
 
-        std::string ttd_timestamp_str = messageJSON["time-to-die"];
+        std::string ttd_timestamp_str = data["time-to-die"];
 
         //parse the TTD timestamp
         std::tm ttd_tm = {};
