@@ -40,6 +40,7 @@
 #include <map>
 #include <string>
 #include <vector>
+#include <regex>   //alphanumeric check
 #include <nlohmann/json.hpp> // For JSON library
 
 
@@ -234,6 +235,22 @@ int main() {
                     std::cout << "Enter message to send: " << std::endl;
                     std::string message;
                     std::getline(std::cin, message);  // Get the message from the user
+
+                                        // message Input Validation 
+                    if (message.empty()) {
+                        std::cout << "Message cannot be empty." << std::endl;
+                        continue;
+                    }
+
+                    if (message.length() > 500) {
+                        std::cout << "Message exceeds maximum length of 500 characters." << std::endl;
+                        continue;
+                    }
+
+                    std::regex special_char_regex("[^a-zA-Z0-9]");
+                    if (std::regex_search(message, special_char_regex)) {
+                        std::cout << "Message containd invalid characters. Only alphannumeric characters are allowed" << std::endl;
+                    }
 
                     // Check message type entered is valid
                     bool validType=false;
