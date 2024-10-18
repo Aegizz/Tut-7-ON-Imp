@@ -85,7 +85,7 @@ test-client-signature: client/base64.cpp client/client_key_gen.cpp client/client
 	$(CXX) $(CXXFLAGS) -g -o $@ $^ $(LIBS)
 test-client-signed-data: client/*.cpp client/Fingerprint.h tests/test_signed_data.cpp
 	$(CXX) $(CXXFLAGS) -g -o $@ $^ $(LIBS)
-test-data-message: client/aes_encrypt.cpp client/client_key_gen.cpp client/base64.cpp tests/test_data_message.cpp client/hexToBytes.cpp
+test-data-message: client/aes_encrypt.cpp client/client_key_gen.cpp client/base64.cpp tests/test_data_message.cpp client/hexToBytes.cpp client/client_utilities.cpp
 	$(CXX) $(CXXFLAGS) -g -o $@ $^ $(LIBS)
 test-chat-message: client/aes_encrypt.cpp client/client_key_gen.cpp client/base64.cpp tests/test_chat_message.cpp client/hexToBytes.cpp
 	$(CXX) $(CXXFLAGS) -g -o $@ $^ $(LIBS)
