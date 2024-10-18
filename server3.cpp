@@ -13,6 +13,7 @@
 #include <thread>
 #include <functional>
 #include <vector>
+#include <mutex>
 
 //Include server files
 #include "server-files/server_list.h"
@@ -58,6 +59,8 @@ std::unordered_map<websocketpp::connection_hdl, std::shared_ptr<connection_data>
 
 // Map for connections made from this server -> other servers
 std::unordered_map<websocketpp::connection_hdl, std::shared_ptr<connection_data>, connection_hdl_hash, connection_hdl_equal> outbound_server_server_map;
+std::mutex outbound_map_mutex;
+
 
 
 // Handle incoming connections
@@ -315,7 +318,7 @@ int on_message(server* s, websocketpp::connection_hdl hdl, message_ptr msg) {
                     // Initialize ASIO for the client
                     ws_client.init_asio();
 
-                    serverUtilities->connect_to_server(&ws_client, server_uri, serverID, privKey, 12345, &outbound_server_server_map);
+                    serverUtilities->connect_to_server(&ws_client, server_uri, serverID, privKey, 12345, &outbound_server_server_map, &outbound_map_mutex);
 
                     ws_client.run();
 
@@ -565,7 +568,7 @@ int main(int argc, char * argv[]) {
 
             // Loop through the server URIs and attempt connections
             for(const auto& uri: server_uris){
-                serverUtilities->connect_to_server(&ws_client, uri.second, uri.first, privKey, 12345, &outbound_server_server_map);
+                serverUtilities->connect_to_server(&ws_client, uri.second, uri.first, privKey, 12345, &outbound_server_server_map, &outbound_map_mutex);
                 
             }
 
