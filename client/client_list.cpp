@@ -25,21 +25,29 @@ void ClientList::update(nlohmann::json data){
             serverAddresses[server_id] = server["address"];
             if (server.contains("clients")){
                 for (const auto& client: server["clients"]){
-                    if(client.contains("client-id") && client.contains("public-key")){
-
-                    }else{
-                        std::cerr << "Invalid JSON" << std::endl;
-                        return;
+                    int client_id;
+                    if (client.contains("client-id")){
+                        client_id = client["client-id"];
+                        if (client_id > clientCount){
+                            clientCount = client_id + 1;
+                        }
+                    } else {
+                        clientCount++;
+                        client_id = clientCount;
                     }
-                    
-                    int client_id = client["client-id"];
-                    std::string public_key = client["public-key"];
+                    if (!client.contains("public-key")){
+                        std::cerr << "No public key!" << std::endl;
 
-                    std::string fingerprint = Fingerprint::generateFingerprint(Client_Key_Gen::stringToPEM(public_key));
-                    std::pair<int, std::string> clientIDKey(client_id, public_key);
-                    clientFingerprintsKeys[fingerprint] = std::pair<int, std::pair<int, std::string>>(server_id, clientIDKey);
+                    } else {
+                        std::string public_key = client["public-key"];
 
-                    client_list.insert(std::pair<int, std::string>(client_id, public_key));
+                        std::string fingerprint = Fingerprint::generateFingerprint(Client_Key_Gen::stringToPEM(public_key));
+                        std::pair<int, std::string> clientIDKey(client_id, public_key);
+                        clientFingerprintsKeys[fingerprint] = std::pair<int, std::pair<int, std::string>>(server_id, clientIDKey);
+
+                        client_list.insert(std::pair<int, std::string>(client_id, public_key));
+                    }
+
                 }
                 servers.insert(std::pair<int, std::unordered_map<int, std::string>>(server_id, client_list));
             }
