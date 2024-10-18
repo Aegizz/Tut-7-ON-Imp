@@ -78,6 +78,9 @@ public:
         return timepoint;
     }
 
+    // Map to store latest counter for each user
+    std::unordered_map <std::string, int> latestCounters;
+
     void on_message(client* c, websocketpp::connection_hdl hdl, client::message_ptr msg, std::string fingerprint, EVP_PKEY* privateKey) {
         // Vulnerable code: the payload without validation
         std::string payload = msg->get_payload();
@@ -147,6 +150,15 @@ public:
                 }
                 std::cout << "Verified signature" << std::endl;
 
+                // counter check
+                if (counter <= latestCounters[signature]) {
+                    std::cout << "Replay attack detected! Message discarded." << std::endl;
+                    return;
+                }        
+
+                //update latest counter
+                latestCounters[signature] = counter;
+
                 std::cout << "Public chat received from client " << client_id << " on server " << server_id << std::endl;
                 
                 std::cout << data["message"] << std::endl;
@@ -181,7 +193,7 @@ public:
 
                     std::time_t now = current_time();
 
-                    if (now > ttd_timepoint) {
+                    if (now >= ttd_timepoint) {
                         std::cout << "Message expired based on TTD, discarding packet." << std::endl;
                         return;
                     }
@@ -210,6 +222,15 @@ public:
                         return;
                     }
                     std::cout << "Verified signature" << std::endl;
+
+                    // counter check
+                    if (counter <= latestCounters[signature]) {
+                        std::cout << "Replay attack detected! Message discarded." << std::endl;
+                        return;
+                    }        
+
+                    //update latest counter
+                    latestCounters[signature] = counter;
 
                     std::cout << "Chat received from client " << client_id << " on server " << server_id << std::endl << std::endl;
                     std::cout << chat["message"] << "\n" << std::endl;

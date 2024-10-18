@@ -73,7 +73,7 @@ class MessageGenerator{
             {
                 "type": "signed_data",
                 "data": {  },
-                "counter": 12345,
+                "counter": 0,
                 "signature": "<Base64 signature of data + counter>"
             }
         */
@@ -92,7 +92,7 @@ class MessageGenerator{
             {
                 "type": "signed_data",
                 "data": {  },
-                "counter": 12345,
+                "counter": 0,
                 "time-to-die":"UTC-Timestamp",
                 "signature": "<Base64 signature of data + counter>"
             }
