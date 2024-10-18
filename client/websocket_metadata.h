@@ -18,7 +18,8 @@
 #include "client_key_gen.h"
 #include "signed_data.h"
 // using to generate current time
-#include "client_utilities.h"
+#include <chrono>
+#include <ctime>
 
 class websocket_endpoint;
 
@@ -62,6 +63,19 @@ public:
           << "), close reason: " << con->get_remote_close_reason();
         m_error_reason = s.str();
         std::cout << s.str() << std::endl;
+    }
+
+    std::time_t current_time(){
+        // Generate current time
+        std::chrono::system_clock::time_point now = std::chrono::system_clock::now();
+        std::time_t convTime = std::chrono::system_clock::to_time_t(now);
+
+        // Convert to GMT time and time structure
+        std::tm* utc_tm = std::gmtime(&convTime);
+
+        auto timepoint = std::mktime(utc_tm);
+
+        return timepoint;
     }
 
     void on_message(client* c, websocketpp::connection_hdl hdl, client::message_ptr msg, std::string fingerprint, EVP_PKEY* privateKey) {
@@ -135,7 +149,7 @@ public:
 
                 std::time_t ttd_timepoint = std::mktime(&ttd_tm);
 
-                std::time_t now = ClientUtilities::current_time();
+                std::time_t now = current_time();
 
                 if (now > ttd_timepoint) {
                     std::cout << "Message expired based on TTD, discarding packet." << std::endl;

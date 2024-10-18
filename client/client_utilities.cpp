@@ -21,19 +21,6 @@ std::string ClientUtilities::get_ttd(){
     return timeString.str();
 }
 
-std::time_t ClientUtilities::current_time(){
-    // Generate current time
-    std::chrono::system_clock::time_point now = std::chrono::system_clock::now();
-    std::time_t convTime = std::chrono::system_clock::to_time_t(now);
-
-    // Convert to GMT time and time structure
-    std::tm* utc_tm = std::gmtime(&convTime);
-
-    auto timepoint = std::mktime(utc_tm);
-
-    return timepoint;
-}
-
 bool ClientUtilities::is_connection_open(websocket_endpoint* endpoint, int id){
     connection_metadata::ptr metadata = endpoint->get_metadata(id);
 
