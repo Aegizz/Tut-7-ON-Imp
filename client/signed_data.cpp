@@ -1,5 +1,5 @@
 #include "signed_data.h"
-#include "hexToBytes.h"
+#include "websocket_endpoint.h"
 
 
 void SignedData::sendSignedMessage(std::string data, EVP_PKEY * private_key, websocket_endpoint* endpoint, int id, int counter) {
@@ -52,11 +52,24 @@ void SignedData::sendSignedMessage(std::string data, EVP_PKEY * private_key, web
 
 std::string SignedData::decryptSignedMessage(std::string message, EVP_PKEY * private_key) {
     // Parse the JSON message
-    nlohmann::json message_json = nlohmann::json::parse(message);
-    if (message_json["type"] != "signed_data") {
-        std::cerr << "Not signed data!" << std::endl;
-        return "";
+    nlohmann::json message_json;
+    try {
+        // Attempt to parse the string as JSON
+        message_json = nlohmann::json::parse(message);
+        
+    }catch (nlohmann::json::parse_error& e) {
+        // Catch parse error exception and display error message
+        std::cerr << "Invalid JSON format: " << e.what() << std::endl;
     }
+    
+    if(message_json.contains("type")){
+        if (message_json["type"] != "signed_data") {
+            std::cerr << "Not signed data!" << std::endl;
+            return "";
+        }
+    }
+
+    
     nlohmann::json data;
     // Extract the data field from the JSON message
     if (message_json.contains("data")) {
@@ -89,7 +102,7 @@ std::string SignedData::decryptSignedMessage(std::string message, EVP_PKEY * pri
 
     // Iterate over the encrypted symmetric keys
 
-    if (data["symm_keys"].is_array()) {
+    if (data.contains("symm_keys") && data["symm_keys"].is_array()) {
 
         for (const auto& element : data["symm_keys"]) {
             if  (!element.is_string()){
@@ -155,7 +168,7 @@ std::string SignedData::decryptSignedMessage(std::string message, EVP_PKEY * pri
     }  else {
         std::cerr << "symm_keys is not an array!" <<std::endl;
     }
-    std::cerr << "Could not decrypt the message" << std::endl;
+    std::cerr << "Message was not meant for you" << std::endl;
     return "";
 }
 

@@ -149,7 +149,10 @@ int ServerList::insertClient(std::string public_key){
         // If the client's public key matches, use previous ID
         if(client.second  == public_key){
             servers[my_server_id][client.first] = public_key;
-            serversFingerprints[my_server_id][Fingerprint::generateFingerprint(Server_Key_Gen::stringToPEM(public_key))] = public_key;
+
+            std::string fingerprintString = Fingerprint::generateFingerprint(Server_Key_Gen::stringToPEM(public_key));
+            serversFingerprints[my_server_id][fingerprintString] = public_key;
+
             currentClients[client.first] = public_key;
 
             return client.first;
@@ -183,11 +186,7 @@ void ServerList::removeClient(int client_id){
         }
     }
     
-    for(const auto& clients: serversFingerprints[my_server_id]){
-        if(clients.second == pubKey){
-            serversFingerprints[my_server_id].erase(clients.first);
-        }
-    }
+    serversFingerprints[my_server_id].erase(Fingerprint::generateFingerprint(Server_Key_Gen::stringToPEM(pubKey)));
 
     servers[my_server_id].erase(client_id);
 
@@ -204,7 +203,20 @@ void ServerList::removeServer(int server_id){
 void ServerList::insertServer(int server_id, std::string update){
 
     // Convert string to JSON object
-    nlohmann::json updatedServerJSON = nlohmann::json::parse(update);
+    nlohmann::json updatedServerJSON;
+    try {
+        // Attempt to parse the string as JSON
+        updatedServerJSON = nlohmann::json::parse(update);
+        
+    }catch (nlohmann::json::parse_error& e) {
+        // Catch parse error exception and display error message
+        std::cerr << "Invalid JSON format: " << e.what() << std::endl;
+    }
+
+    if(!updatedServerJSON.contains("clients")){
+        std::cerr << "Invalid JSON" << std::endl;
+        return;
+    }
 
     nlohmann::json clientsArray = updatedServerJSON["clients"];
 
@@ -213,9 +225,15 @@ void ServerList::insertServer(int server_id, std::string update){
     std::unordered_map<std::string, std::string> updatedServerFingerprints;
 
     for(const auto& client: clientsArray){
-        updatedServer[client["client_id"]] = client["public_key"];
-        std::string fingerprintString = Fingerprint::generateFingerprint(Server_Key_Gen::stringToPEM(client["public_key"]));
-        updatedServerFingerprints[fingerprintString] = client["public_key"];
+        if(client.contains("client-id") && client.contains("public-key")){
+
+        }else{
+            std::cerr << "Invalid JSON" << std::endl;
+            return;
+        }
+        updatedServer[client["client-id"]] = client["public-key"];
+        std::string fingerprintString = Fingerprint::generateFingerprint(Server_Key_Gen::stringToPEM(client["public-key"]));
+        updatedServerFingerprints[fingerprintString] = client["public-key"];
     }
 
     // Store map
@@ -292,8 +310,8 @@ std::string ServerList::exportUpdate(){
     // Build array of client public keys
     for(const auto& client: currentClients){
         nlohmann::json clientJSON;
-        clientJSON["client_id"] = client.first;
-        clientJSON["public_key"] = client.second;
+        clientJSON["client-id"] = client.first;
+        clientJSON["public-key"] = client.second;
 
         clientsArray.push_back(clientJSON);
     }
