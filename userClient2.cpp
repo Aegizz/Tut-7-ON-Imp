@@ -47,6 +47,7 @@
 #include <map>
 #include <string>
 #include <vector>
+#include <regex>   //alphanumeric check
 #include <nlohmann/json.hpp> // For JSON library
 
 
@@ -57,7 +58,7 @@
 #include "client/Fingerprint.h" // For fingerprint generation
 
 // Used to differentiate client processses locally
-const int ClientNumber = 2;
+const int ClientNumber = 2; 
 
 // Create key file names
 std::string privFileName = "client/private_key" + std::to_string(ClientNumber) + ".pem";
@@ -80,6 +81,8 @@ std::ostream & operator<< (std::ostream & out, connection_metadata const & data)
 }
 
 int main() {
+    // Initialise counter
+    int counter = 0;
     int numConnections=0;
     // Load keys
     privKey = Client_Key_Gen::loadPrivateKey(privFileName.c_str());
@@ -103,6 +106,8 @@ int main() {
     websocket_endpoint endpoint(fingerprint, privKey);
     int currentID=-1;
 
+    std::cout << "Welcome to our Chat System. Type help to list commands." << std::endl;
+
     while (!done) {
         // Print all clients, labelling this client as "You". Fingerprint is used to obtain server_id and client_id of this user.
         std::pair<int, std::pair<int, std::string>> myInfo = global_client_list->retrieveClientFromFingerprint(fingerprint);
@@ -110,7 +115,7 @@ int main() {
             global_client_list->printUsers(myInfo.first, myInfo.second.first);
         }
 
-        std::cout << "Enter Command: ";
+
         std::getline(std::cin, input);
 
         if (input == "quit") { // Quit program
@@ -164,8 +169,11 @@ int main() {
                                 std::cout << "> Established connection with " << uri << std::endl;
                                 numConnections++;
 
+                                //increment counter
+                                counter++;
+
                                 // Send hello message
-                                ClientUtilities::send_hello_message(&endpoint, currentID, privKey, pubKey, 12345);
+                                ClientUtilities::send_hello_message(&endpoint, currentID, privKey, pubKey, counter);
 
                                 // Send client list request
                                 ClientUtilities::send_client_list_request(&endpoint, currentID);
@@ -185,7 +193,7 @@ int main() {
             
             std::string cmd;
             int close_code = websocketpp::close::status::normal;
-            std::string reason = "Client logging off";
+            std::string reason = "Client closing connection with server";
             
             ss >> cmd >> close_code;
 
@@ -198,7 +206,12 @@ int main() {
             endpoint.close(currentID, close_code, reason);
 
             numConnections--;
-            done=true;
+
+            nlohmann::json empty_data;
+            global_client_list->update(empty_data);
+
+            currentID=-1;
+
         }  else if (input == "show") { // If show was entered
             
             // Obtain metadata and print it
@@ -272,7 +285,8 @@ int main() {
                                         std::cout << "No clients provided. You need to specify clients." << std::endl;
                                         continue;
                                     }else{ // Clients have been provided, send the chat
-                                        ClientUtilities::send_chat(&endpoint, currentID, message, privKey, pubKey, list_public_keys, destination_servers, 12345);  //send to server
+                                        counter++;
+                                        ClientUtilities::send_chat(&endpoint, currentID, message, privKey, pubKey, list_public_keys, destination_servers, counter);  //send to server
                                         break;
                                     }
                                 }else if(serverString == "cancel"){ // Cancel message
@@ -299,7 +313,7 @@ int main() {
                                         std::cout << "No clients provided. You need to specify clients." << std::endl;
                                         continue;
                                     }else{ // Clients have been provided, send the chat
-                                        ClientUtilities::send_chat(&endpoint, currentID, message, privKey, pubKey, list_public_keys, destination_servers, 12345);  //send to server
+                                        ClientUtilities::send_chat(&endpoint, currentID, message, privKey, pubKey, list_public_keys, destination_servers, counter);  //send to server
                                         break;
                                     }
                                 }else if(clientString == "cancel"){ // Cancel message
@@ -358,7 +372,8 @@ int main() {
                                         validYesNo = true;
                                         clientsEntered = true;
 
-                                        ClientUtilities::send_chat(&endpoint, currentID, message, privKey, pubKey, list_public_keys, destination_servers, 12345);  //send to server
+                                        counter++;
+                                        ClientUtilities::send_chat(&endpoint, currentID, message, privKey, pubKey, list_public_keys, destination_servers, counter);  //send to server
                                     } else if (yes_or_no == "NO") { // Continue prompting for clients
                                         std::cout << "Ok, let's add more clients" << std::endl;
                                         validYesNo = true;
@@ -371,9 +386,9 @@ int main() {
         
                         } else if(msgType == "public"){ // If the message type is public
                             validType=true;
-
+                            counter++;
                             // Send the public chat
-                            ClientUtilities::send_public_chat(&endpoint, currentID, message, privKey, pubKey, 12345);
+                            ClientUtilities::send_public_chat(&endpoint, currentID, message, privKey, pubKey, counter);
                         }else{ // An invalid message type was entered, re-prompt the user.
                             std::cout << "Invalid message type entered\nValid types are \"private\" and \"public\"" << std::endl;
                             break;

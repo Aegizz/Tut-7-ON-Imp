@@ -15,6 +15,7 @@
 #include <websocketpp/client.hpp>
 
 #include <unordered_set>
+#include <mutex>
 
 #include "server_signature.h"
 #include "server_key_gen.h"
@@ -325,8 +326,8 @@ class ServerUtilities{
             std::unordered_map<websocketpp::connection_hdl, std::shared_ptr<connection_data>, connection_hdl_hash, connection_hdl_equal> 
             outbound_server_server_map - Pointer to map of outbound connections (need to add created connections to the map)
         */
-        void connect_to_server(client* c, std::string const & uri, int server_id, EVP_PKEY* private_key, int counter, std::unordered_map<websocketpp::connection_hdl, std::shared_ptr<connection_data>, connection_hdl_hash, connection_hdl_equal>* outbound_server_server_map, int retry_attempts = 0);
-
+        void connect_to_server(client* c, std::string const & uri, int server_id, EVP_PKEY* private_key, int counter, std::unordered_map<websocketpp::connection_hdl, std::shared_ptr<connection_data>, connection_hdl_hash, connection_hdl_equal>* outbound_server_server_map, std::mutex* outbound_map_mutex, int retry_attempts = 0);
+        static std::time_t current_time();
 };
 
 #endif

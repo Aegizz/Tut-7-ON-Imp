@@ -3,6 +3,7 @@
 #include <openssl/evp.h>
 #include "../client/MessageGenerator.h"
 #include "../client/client_key_gen.h"
+#include "../client/client_utilities.h"
 
 int main() {
     // Step 1: Generate or load your private and public keys
@@ -26,7 +27,10 @@ int main() {
     // Step 5: Initialize message counter
     int counter = 1;
 
-    // Step 6: Create a chat message
+    // Step 6: Generate TTD
+    std::string ttd = ClientUtilities::get_ttd();
+
+    // Step 7: Create a chat message
     std::string message = "Hello, this is a test chat message!";
     std::string signed_chat_message = MessageGenerator::chatMessage(
         message, 
@@ -34,22 +38,23 @@ int main() {
         your_public_key, 
         their_public_keys, 
         destination_servers_vector, 
-        counter, 
+        counter,
+        ttd,
         client_id, 
         server_id
     );
 
     std::cout << "Signed Chat Message: " << signed_chat_message << std::endl << std::endl;
 
-    // Step 7: Create a client list request message
+    // Step 8: Create a client list request message
     std::string client_list_request = MessageGenerator::clientListRequestMessage();
     std::cout << "Client List Request Message: " << client_list_request << std::endl;
 
-    // Step 8: Create a hello message
+    // Step 9: Create a hello message
     std::string hello_message = MessageGenerator::helloMessage(your_private_key, your_public_key, counter);
     std::cout << "Signed Hello Message: " << hello_message << std::endl;
 
-    // Step 9: Create a public chat message
+    // Step 10: Create a public chat message
     std::string public_chat_message = "This is a public announcement!";
     std::string signed_public_chat_message = MessageGenerator::publicChatMessage(public_chat_message, your_private_key, your_public_key, counter);
     std::cout << "Signed Public Chat Message: " << signed_public_chat_message << std::endl;
