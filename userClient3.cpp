@@ -108,7 +108,6 @@ int main() {
             global_client_list->printUsers(myInfo.first, myInfo.second.first);
         }
 
-        std::cout << "Enter Command: ";
         std::getline(std::cin, input);
 
         if (input == "quit") { // Quit program
