@@ -271,7 +271,8 @@ void ServerUtilities::broadcast_private_chat_clients(std::unordered_map<websocke
 }
 
 // Define a function that will handle the client connections retry logic
-void ServerUtilities::connect_to_server(client* c, std::string const & uri, int server_id, EVP_PKEY* private_key, int counter, std::unordered_map<websocketpp::connection_hdl, std::shared_ptr<connection_data>, connection_hdl_hash, connection_hdl_equal>* outbound_server_server_map, int retry_attempts) {
+void ServerUtilities::connect_to_server(client* c, std::string const & uri, int server_id, EVP_PKEY* private_key, int counter, std::unordered_map<websocketpp::connection_hdl, std::shared_ptr<connection_data>, connection_hdl_hash, connection_hdl_equal>* outbound_server_server_map, std::mutex* outbound_map_mutex, int retry_attempts) {
+    std::lock_guard<std::mutex> map_lock(*outbound_map_mutex);
     for(const auto& connection: *outbound_server_server_map){
         if(connection.second->server_id == server_id){
             std::cout << "Outbound connection already exists to server " << server_id << std::endl;
@@ -288,24 +289,25 @@ void ServerUtilities::connect_to_server(client* c, std::string const & uri, int 
     }
 
     // Set fail handler to retry if connection fails
-    con->set_fail_handler([this, c, uri, server_id, private_key, counter, outbound_server_server_map, retry_attempts](websocketpp::connection_hdl hdl) {
+    con->set_fail_handler([this, c, uri, server_id, private_key, counter, outbound_server_server_map, outbound_map_mutex, retry_attempts](websocketpp::connection_hdl hdl) {
         std::cout << "Connection to " << uri << " failed, retrying in 500ms..." << std::endl;
 
         // Retry after 500ms
         std::this_thread::sleep_for(std::chrono::milliseconds(500));
         if (retry_attempts < 10) { 
-            connect_to_server(c, uri, server_id, private_key, counter, outbound_server_server_map, retry_attempts + 1);
+            connect_to_server(c, uri, server_id, private_key, counter, outbound_server_server_map, outbound_map_mutex, retry_attempts + 1);
         } else {
             std::cout << "Exceeded retry limit. Giving up on connecting to " << uri << std::endl;
         }
     });
 
     // Set open handler when connection succeeds
-    con->set_open_handler([this, c, uri, server_id, private_key, counter, outbound_server_server_map](websocketpp::connection_hdl hdl) {
+    con->set_open_handler([this, c, uri, server_id, private_key, counter, outbound_server_server_map, outbound_map_mutex](websocketpp::connection_hdl hdl) {
         std::cout << "\nSuccessfully connected to " << uri << std::endl;
 
         send_server_hello(c, hdl, private_key, counter);
         
+        std::lock_guard<std::mutex> map_lock(*outbound_map_mutex);
         auto con_data = std::make_shared<connection_data>();
         con_data->client_instance = c;
         con_data->connection_hdl = hdl;
@@ -320,10 +322,11 @@ void ServerUtilities::connect_to_server(client* c, std::string const & uri, int 
     });
 
     // Handler for when another server closes connection
-    con->set_close_handler([this, c, uri, server_id, private_key, counter, outbound_server_server_map](websocketpp::connection_hdl hdl) {
+    con->set_close_handler([this, c, uri, server_id, private_key, counter, outbound_server_server_map, outbound_map_mutex](websocketpp::connection_hdl hdl) {
         std::cout << "\nServer " << server_id << " closing outbound connection" << std::endl;
 
         // Erase connection from outbound connection map
+        std::lock_guard<std::mutex> map_lock(*outbound_map_mutex);
         if(outbound_server_server_map->find(hdl) != outbound_server_server_map->end()){
             outbound_server_server_map->erase(hdl);
         }
@@ -335,7 +338,7 @@ void ServerUtilities::connect_to_server(client* c, std::string const & uri, int 
         if(con->get_remote_close_reason() != "Server signature could not be verified."){
             // Attempt to reconnect
             std::cout << "Trying to reconnect to server " << server_id << std::endl;
-            connect_to_server(c, uri, server_id, private_key, counter, outbound_server_server_map);
+            connect_to_server(c, uri, server_id, private_key, counter, outbound_server_server_map, outbound_map_mutex);
         }else{
             std::cout << "Invalid signature sent in hello" << std::endl;
             return;
