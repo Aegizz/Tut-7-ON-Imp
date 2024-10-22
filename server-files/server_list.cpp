@@ -171,7 +171,10 @@ int ServerList::insertClient(std::string public_key){
 
     // Add new client to map of known clients and save new map to file
     knownClients[clientID] = public_key;
-    prune_client_list(my_server_id);
+
+    // Untested function
+    //prune_client_list(my_server_id);
+
     save_mapping_to_file();
     
     return clientID;
@@ -325,7 +328,7 @@ std::string ServerList::exportUpdate(){
     return json_string;
 }
 
-void ServerList::prune_client_list(int server_id){
+/*void ServerList::prune_client_list(int server_id){
     if(knownClients.size()<100)
         return;
 
@@ -344,4 +347,4 @@ void ServerList::prune_client_list(int server_id){
     }
 
     return;
-}
+}*/

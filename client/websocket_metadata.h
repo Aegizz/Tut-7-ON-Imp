@@ -171,14 +171,14 @@ public:
                 try {
                     // Attempt to parse the string as JSON
                     nlohmann::json chat = nlohmann::json::parse(decrypted_str);
-                    if(chat.contains("participants") && messageJSON.contains("signature") && messageJSON.contains("counter") && chat.contains("message")){
+                    if(chat.contains("participants") && messageJSON.contains("signature") && messageJSON.contains("counter") && chat.contains("message") && data.contains("time-to-die")){
 
                     }else{
                         std::cerr << "Invalid JSON provided" << std::endl;
                         return;
                     }
-
-                    std::string ttd_timestamp_str = messageJSON["time-to-die"];
+                    
+                    std::string ttd_timestamp_str = data["time-to-die"];
 
                     //parse the TTD timestamp
                     std::tm ttd_tm = {};

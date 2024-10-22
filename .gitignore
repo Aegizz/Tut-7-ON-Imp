@@ -1,5 +1,5 @@
 tests/*.log
 *
-!*.*
+*.pem
 !*/
-.pem
+!/server-files/formatKeys.sh
