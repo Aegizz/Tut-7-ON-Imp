@@ -1,5 +1,6 @@
 # Implementation of Olaf-Neighbourhood Protocol for Tutorial 7
 [![CodeQL](https://github.com/Aegizz/Tut-7-ON-Imp/actions/workflows/github-code-scanning/codeql/badge.svg?branch=impSubmit)](https://github.com/Aegizz/Tut-7-ON-Imp/actions/workflows/github-code-scanning/codeql)
+
 To compile the code the following commands will need to be run to install the websocketpp and nlohmann JSON C++ libraries required to run our implementation.
 
 ```bash
