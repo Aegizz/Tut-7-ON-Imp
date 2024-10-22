@@ -80,6 +80,8 @@ To set up new servers in the neighbourhood there are a few important files to ch
 - server-files/neighbourhood_mapping.json is currently empty as servers are not setup.
   - It should contain valid public keys belonging to the servers stored against their server ID (a value you decide) stored in JSON form.
 - In server-files/ there will exist private and public keys belonging to the servers after keys are generated.
+    - After generating keys which occurs when running a server for the first time, navigate to server-files directory and run ```./formatKeys.sh public_server_keyX.pem``` where X is the ID of the server. It will output the formatted keys as modified_public_key_serverX.txt.
+    - Copy and paste the contents of the .txt files with "" around them into the neighbourhood_mapping.json file.
 - In each serverX.cpp file where X is the ID of the server, there exists a const int ServerID, listenPort and a const std::string myAddress.
   - ServerID should be set to the ID of the server agreed upon by the neighbourhood.
   - listenPort should be set to the port you want the server to be listening on.
@@ -87,8 +89,10 @@ To set up new servers in the neighbourhood there are a few important files to ch
   - It is important that these are updated to match the current neighbourhood setup.
  
 - In server-files/server_list.h, a private member of the ServerList class serverAddresses stores the IP+Port combination of the websocket server against the server ID.
-  - It is important that after server keys are generated this is updated to match the neighbourhood mapping so connections are automatically established and maintained properly.
+    - The serverAddresses variable will be declared but initialized with nothing. An example of how it looks is provided above the declaration. 
+  - It is important that after server keys are generated this is updated to correctly match the neighbourhood mapping so connections are established to other servers and maintained properly.
 - In the server-files directory, each server will maintain a server_mappingX.json file where X is the ID of the server. These store the IDs of clients of that server against their public keys.
+    - These will not be present in the submission, and will be automatically created and populated when a user connects to the server for the first time. 
   - If you want to create new ID mappings, delete any existing clients in the mapping. New clients will be added to the JSON file when connecting for the first time so these files don't need to be manually changed to allow new clients to connect but if you want to use IDs that are already assigned then modification will be required.
 - Run ```cp server serverX.cpp``` to create another user client.
 - You will need to create a new call in the Makefile for serverX identical to server but replacing the dependency of server.cpp with serverX.cpp.

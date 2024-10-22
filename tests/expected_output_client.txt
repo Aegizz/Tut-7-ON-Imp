@@ -11,6 +11,6 @@ Creating key files
 Client list received
 
 Connected Users
-You are ServerID: 2 ClientID: 1002
+You are ServerID: 2 ClientID: 1001
 
 close code: 1000 (Normal close), close reason: Reached end of run
